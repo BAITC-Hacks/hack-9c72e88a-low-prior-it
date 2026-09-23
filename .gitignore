@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.pytest_cache/
+.streamlit/secrets.toml
+# сырой кэш ответов API: в репозитории хранится собранный CSV (data/weather/*.csv.gz)
+data/weather/cache/
+data/weather/*.csv
+outputs/single/
+*.tmp
+
+models/wind_model_asof_*
