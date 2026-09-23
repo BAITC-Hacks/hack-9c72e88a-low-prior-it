@@ -2274,7 +2274,7 @@
               "$ref": "#/components/schemas/EvidenceModel"
             },
             "type": "array",
-            "maxItems": 3,
+            "maxItems": 7,
             "minItems": 3,
             "title": "Models"
           }
@@ -2529,13 +2529,34 @@
             "enum": [
               "selected",
               "previous",
-              "persistence"
+              "constant",
+              "climatology",
+              "persistence",
+              "scada",
+              "weather_scada"
             ],
             "title": "Id"
           },
           "label": {
             "type": "string",
             "title": "Label"
+          },
+          "selected": {
+            "type": "boolean",
+            "title": "Selected",
+            "default": false
+          },
+          "scored_pairs_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scored Pairs Sha256"
           },
           "pooled": {
             "$ref": "#/components/schemas/EvidenceScore"
@@ -2616,6 +2637,16 @@
           },
           "data": {
             "$ref": "#/components/schemas/EvidenceData"
+          },
+          "weather": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceWeather"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "refit": {
             "$ref": "#/components/schemas/EvidenceRefit"
@@ -2756,6 +2787,67 @@
           "missing_slots"
         ],
         "title": "EvidenceSource"
+      },
+      "EvidenceWeather": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Source Sha256"
+          },
+          "run_hour_utc": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Run Hour Utc"
+          },
+          "issue_hour_utc": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Issue Hour Utc"
+          },
+          "publication_delay_hours": {
+            "type": "integer",
+            "maximum": 24.0,
+            "minimum": 0.0,
+            "title": "Publication Delay Hours"
+          },
+          "availability_basis": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Availability Basis"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "model",
+          "source_sha256",
+          "run_hour_utc",
+          "issue_hour_utc",
+          "publication_delay_hours",
+          "availability_basis",
+          "limitations"
+        ],
+        "title": "EvidenceWeather"
       },
       "ForecastPoint": {
         "properties": {

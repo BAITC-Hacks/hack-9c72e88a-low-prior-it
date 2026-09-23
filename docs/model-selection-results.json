@@ -1,21 +1,10 @@
 {
   "selection": {
     "plan": {
-      "created_at": "2026-09-23T10:31:11.425549+00:00",
       "candidates": [
         {
-          "name": "baseline",
-          "feature_set": "scada",
-          "iterations": 300,
-          "depth": 6,
-          "learning_rate": 0.05,
-          "loss_function": "RMSE",
-          "l2_leaf_reg": 3,
-          "origin_step_hours": 24
-        },
-        {
-          "name": "compact-mae",
-          "feature_set": "scada",
+          "name": "weather-compact-mae",
+          "feature_set": "weather-scada",
           "iterations": 500,
           "depth": 4,
           "learning_rate": 0.04,
@@ -24,218 +13,52 @@
           "origin_step_hours": 24
         },
         {
-          "name": "extended-rmse",
-          "feature_set": "scada-extended",
+          "name": "weather-depth6-mae",
+          "feature_set": "weather-scada",
           "iterations": 500,
-          "depth": 5,
-          "learning_rate": 0.04,
-          "loss_function": "RMSE",
-          "l2_leaf_reg": 10,
-          "origin_step_hours": 12
-        },
-        {
-          "name": "extended-mae",
-          "feature_set": "scada-extended",
-          "iterations": 500,
-          "depth": 5,
+          "depth": 6,
           "learning_rate": 0.04,
           "loss_function": "MAE",
           "l2_leaf_reg": 10,
-          "origin_step_hours": 12
+          "origin_step_hours": 24
+        },
+        {
+          "name": "weather-depth6-rmse",
+          "feature_set": "weather-scada",
+          "iterations": 300,
+          "depth": 6,
+          "learning_rate": 0.05,
+          "loss_function": "RMSE",
+          "l2_leaf_reg": 3,
+          "origin_step_hours": 24
         }
       ],
       "folds": [
         {
           "name": "november",
           "cutoff": "2025-11-01T00:00:00Z",
-          "end": "2025-11-14T00:00:00Z"
+          "start": "2025-11-01T12:00:00Z",
+          "end": "2025-11-28T12:00:00Z"
         },
         {
           "name": "december",
           "cutoff": "2025-12-01T00:00:00Z",
-          "end": "2025-12-14T00:00:00Z"
+          "start": "2025-12-01T12:00:00Z",
+          "end": "2025-12-29T12:00:00Z"
         }
       ],
-      "objective": "pooled MAE; pooled RMSE tie-break; baseline is eligible",
+      "objective": "pooled MAE on November/December only; pooled RMSE then candidate name tie-break",
       "january_used_for_selection": false,
       "random_seed": 42,
-      "first_origin": "2023-04-01T00:00:00Z",
-      "prepared": "data\\prepared\\utc6-start-provisional-v2"
+      "first_origin": "2024-03-15T12:00:00+00:00",
+      "issue_hour_utc": 12,
+      "run_hour_utc": 0
     },
     "results": [
       {
         "candidate": {
-          "name": "baseline",
-          "feature_set": "scada",
-          "iterations": 300,
-          "depth": 6,
-          "learning_rate": 0.05,
-          "loss_function": "RMSE",
-          "l2_leaf_reg": 3,
-          "origin_step_hours": 24
-        },
-        "folds": [
-          {
-            "name": "november",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\baseline\\november\\experiment-05f7cc6a1c4c41e0b5f146633ae6901d\\report.json",
-            "model_id": "model-0727a32206084eb6a91a6cd530856bcc",
-            "comparison": {
-              "catboost": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.2919426160714286,
-                    "rmse": 0.32952001156850874
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.32472962003968253,
-                    "rmse": 0.3660807110150918
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.3024498898809524,
-                    "rmse": 0.3416738308158314
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.328538810515873,
-                    "rmse": 0.37030664283453235
-                  }
-                ],
-                "scored_points": 1344,
-                "unscored_points": 0
-              },
-              "persistence": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.37074900793650795,
-                    "rmse": 0.47055349704858856
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.47660218253968256,
-                    "rmse": 0.569372326540515
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.3618948412698413,
-                    "rmse": 0.4631231858992382
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.46683035714285714,
-                    "rmse": 0.560491748673152
-                  }
-                ],
-                "scored_points": 1344,
-                "unscored_points": 0
-              }
-            }
-          },
-          {
-            "name": "december",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\baseline\\december\\experiment-1eb30fd4610144d5ae6b64b63c8c819b\\report.json",
-            "model_id": "model-371074b0d19f4a5d957467273fbb3661",
-            "comparison": {
-              "catboost": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.3348785763052209,
-                    "rmse": 0.3837924560011678
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.37850676004016065,
-                    "rmse": 0.4090907809392453
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.3254451523517382,
-                    "rmse": 0.3615744208046684
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.35407267484662575,
-                    "rmse": 0.3849131478208353
-                  }
-                ],
-                "scored_points": 1316,
-                "unscored_points": 28
-              },
-              "persistence": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.2973895582329317,
-                    "rmse": 0.44277129424723416
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.34234437751004015,
-                    "rmse": 0.4774547207587675
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.28598670756646216,
-                    "rmse": 0.4311256983262861
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.3397648261758691,
-                    "rmse": 0.47329369199480387
-                  }
-                ],
-                "scored_points": 1316,
-                "unscored_points": 28
-              }
-            }
-          }
-        ],
-        "pooled": {
-          "samples": 2660,
-          "mae": 0.3299176007518797,
-          "rmse": 0.36900429989959754
-        }
-      },
-      {
-        "candidate": {
-          "name": "compact-mae",
-          "feature_set": "scada",
+          "name": "weather-compact-mae",
+          "feature_set": "weather-scada",
           "iterations": 500,
           "depth": 4,
           "learning_rate": 0.04,
@@ -246,511 +69,1261 @@
         "folds": [
           {
             "name": "november",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\compact-mae\\november\\experiment-e3b8bed177c84c278a5e6d399bf3af12\\report.json",
-            "model_id": "model-960e63f798124c7ebc6613496677ed1c",
+            "model_id": "model-weather-experiment-2433ac6cf5f5a1c795161895",
             "comparison": {
               "catboost": {
+                "pooled": {
+                  "samples": 2688,
+                  "mae": 0.15567521217757938,
+                  "rmse": 0.22711913804885736
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.2939406607142857,
-                    "rmse": 0.3502249622914189
+                    "samples": 672,
+                    "mae": 0.15352228968253967,
+                    "rmse": 0.22442319067050348
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.33202266964285715,
-                    "rmse": 0.39381419371892346
+                    "samples": 672,
+                    "mae": 0.1572581001984127,
+                    "rmse": 0.22703146233696725
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.30034720238095236,
-                    "rmse": 0.3620358792111328
+                    "samples": 672,
+                    "mae": 0.15392852529761905,
+                    "rmse": 0.2261443743075023
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.34311481349206346,
-                    "rmse": 0.4084907635680065
+                    "samples": 672,
+                    "mae": 0.15799193353174604,
+                    "rmse": 0.2308291143675361
                   }
                 ],
-                "scored_points": 1344,
-                "unscored_points": 0
+                "scored_points": 2688,
+                "unscored_points": 0,
+                "scored_pairs_sha256": "3dbd830b56e6e941f7d200e3844d88d120484dd2663d094fbeda7f4b19259d1a"
               },
               "persistence": {
+                "pooled": {
+                  "samples": 2688,
+                  "mae": 0.4062915426587302,
+                  "rmse": 0.5149435783147052
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.37074900793650795,
-                    "rmse": 0.47055349704858856
+                    "samples": 672,
+                    "mae": 0.3692956349206349,
+                    "rmse": 0.47620827595700926
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.47660218253968256,
-                    "rmse": 0.569372326540515
+                    "samples": 672,
+                    "mae": 0.44000248015873017,
+                    "rmse": 0.5479080322513583
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.3618948412698413,
-                    "rmse": 0.4631231858992382
+                    "samples": 672,
+                    "mae": 0.3735813492063492,
+                    "rmse": 0.48121071955408123
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.46683035714285714,
-                    "rmse": 0.560491748673152
+                    "samples": 672,
+                    "mae": 0.44228670634920636,
+                    "rmse": 0.5496601357938853
                   }
                 ],
-                "scored_points": 1344,
-                "unscored_points": 0
+                "scored_points": 2688,
+                "unscored_points": 0,
+                "scored_pairs_sha256": "3dbd830b56e6e941f7d200e3844d88d120484dd2663d094fbeda7f4b19259d1a"
+              }
+            },
+            "training_summary": {
+              "turbine-1": {
+                "training_samples": 24934,
+                "missing_or_late_targets": 3338,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 77.60420808737283,
+                  "wind_direction_sin": 1.3263660056009885,
+                  "wind_direction_cos": 1.4138719474270625,
+                  "temperature_c": 1.692185046056949,
+                  "hour_sin": 0.628759088467495,
+                  "hour_cos": 0.24954225224500062,
+                  "day_sin": 0.9939121495098482,
+                  "day_cos": 2.7795401647023,
+                  "lead_hours": 0.6299370679013343,
+                  "last_power": 0.4415327896673972,
+                  "last_wind": 0.6534971073477435,
+                  "last_temperature": 2.7518441474845305,
+                  "observation_age_hours": 0.009195486614759133,
+                  "power_mean_3h": 0.23248905868667824,
+                  "power_std_3h": 0.18786927386471722,
+                  "power_count_3h": 0.01016734542047593,
+                  "wind_mean_3h": 0.33397196634545706,
+                  "wind_std_3h": 0.22838985861319286,
+                  "wind_count_3h": 0.010972919453989555,
+                  "temperature_mean_3h": 2.0790493257081777,
+                  "temperature_std_3h": 0.2542253101206744,
+                  "temperature_count_3h": 0.00841765138835029,
+                  "power_mean_6h": 0.11062850822123647,
+                  "power_std_6h": 0.1734645391211396,
+                  "power_count_6h": 0.01218203260335583,
+                  "wind_mean_6h": 0.09087668176985393,
+                  "wind_std_6h": 0.0887710395188867,
+                  "wind_count_6h": 0.033875846940071744,
+                  "temperature_mean_6h": 1.1681644152280495,
+                  "temperature_std_6h": 0.45607980819722677,
+                  "temperature_count_6h": 0.012285117872522601,
+                  "power_mean_24h": 0.17526919314548794,
+                  "power_std_24h": 0.27375528383605247,
+                  "power_count_24h": 0.051704955407570266,
+                  "wind_mean_24h": 0.28265185960906664,
+                  "wind_std_24h": 0.27847626717414053,
+                  "wind_count_24h": 0.02631100653559926,
+                  "temperature_mean_24h": 1.4612255518315531,
+                  "temperature_std_24h": 0.7623997070837908,
+                  "temperature_count_24h": 0.021934135904409614
+                },
+                "weather_origins": 589,
+                "weather_lineage_sha256": "523d85664b742eb30e8924911d7535efeba8466e98490e1d88a995f2e62a432a"
+              },
+              "turbine-2": {
+                "training_samples": 27538,
+                "missing_or_late_targets": 734,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 80.3031420731056,
+                  "wind_direction_sin": 1.2042339203076282,
+                  "wind_direction_cos": 1.750482107393507,
+                  "temperature_c": 0.9089201220104572,
+                  "hour_sin": 0.3821514987990124,
+                  "hour_cos": 0.33793168867789863,
+                  "day_sin": 1.0626717931473555,
+                  "day_cos": 2.3186366734237938,
+                  "lead_hours": 0.562169432467225,
+                  "last_power": 0.9236363351617752,
+                  "last_wind": 0.5831754730026836,
+                  "last_temperature": 1.981682836451589,
+                  "observation_age_hours": 0.0178877670526438,
+                  "power_mean_3h": 0.4473868971327785,
+                  "power_std_3h": 0.10992124359434095,
+                  "power_count_3h": 0.001548114140198689,
+                  "wind_mean_3h": 0.3781529396731521,
+                  "wind_std_3h": 0.10456663466762037,
+                  "wind_count_3h": 0.020868512266133617,
+                  "temperature_mean_3h": 1.9535408869627306,
+                  "temperature_std_3h": 0.18983296995136276,
+                  "temperature_count_3h": 0.03014731968909641,
+                  "power_mean_6h": 0.05946482651367973,
+                  "power_std_6h": 0.08590852605452037,
+                  "power_count_6h": 0.008351874110728527,
+                  "wind_mean_6h": 0.11512369160874805,
+                  "wind_std_6h": 0.20302521453044675,
+                  "wind_count_6h": 0.027278236651329352,
+                  "temperature_mean_6h": 1.01462777515395,
+                  "temperature_std_6h": 0.34816425514996346,
+                  "temperature_count_6h": 0.00982458599658219,
+                  "power_mean_24h": 0.1446226750260181,
+                  "power_std_24h": 0.17380296086035707,
+                  "power_count_24h": 0.016681948192416057,
+                  "wind_mean_24h": 0.18299896238123553,
+                  "wind_std_24h": 0.21651491116834526,
+                  "wind_count_24h": 0.0008731422069370844,
+                  "temperature_mean_24h": 1.0387184169084218,
+                  "temperature_std_24h": 0.760295017022036,
+                  "temperature_count_24h": 0.021035741385718884
+                },
+                "weather_origins": 589,
+                "weather_lineage_sha256": "59ad2424e9eb0e078c935227a12ade17d0dc41604ef98253ac296b1d1c43ec35"
               }
             }
           },
           {
             "name": "december",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\compact-mae\\december\\experiment-87f4be7222c745dfab21a2a6e374815a\\report.json",
-            "model_id": "model-7b7d6b270ba94279989c85dc10798e41",
+            "model_id": "model-weather-experiment-e770847ac2527e22a2193a1f",
             "comparison": {
               "catboost": {
+                "pooled": {
+                  "samples": 2756,
+                  "mae": 0.1938598658684083,
+                  "rmse": 0.2861380983601127
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.2971267078313253,
-                    "rmse": 0.3583641931258039
+                    "samples": 692,
+                    "mae": 0.18483425674373796,
+                    "rmse": 0.27470691230876876
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.3407743303212851,
-                    "rmse": 0.3831595324043406
+                    "samples": 692,
+                    "mae": 0.20107629479768785,
+                    "rmse": 0.29487346819934546
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.2867426349693251,
-                    "rmse": 0.3504347206125965
+                    "samples": 686,
+                    "mae": 0.18840300437317783,
+                    "rmse": 0.2796219133690056
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.32845020552147236,
-                    "rmse": 0.37331943780889654
+                    "samples": 686,
+                    "mae": 0.201141731292517,
+                    "rmse": 0.2948034330225217
                   }
                 ],
-                "scored_points": 1316,
-                "unscored_points": 28
+                "scored_points": 2756,
+                "unscored_points": 28,
+                "scored_pairs_sha256": "4a804b991c6d71d12f88febc1dc40e6b82127c396a789ed974aa1f0bf1d1ef8a"
               },
               "persistence": {
+                "pooled": {
+                  "samples": 2756,
+                  "mae": 0.3649455732946299,
+                  "rmse": 0.4865603925125904
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.2973895582329317,
-                    "rmse": 0.44277129424723416
+                    "samples": 692,
+                    "mae": 0.32758429672447015,
+                    "rmse": 0.45367140803401507
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.34234437751004015,
-                    "rmse": 0.4774547207587675
+                    "samples": 692,
+                    "mae": 0.3809947013487476,
+                    "rmse": 0.49990665875690493
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.28598670756646216,
-                    "rmse": 0.4311256983262861
+                    "samples": 686,
+                    "mae": 0.35825801749271136,
+                    "rmse": 0.4800700762406639
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.3397648261758691,
-                    "rmse": 0.47329369199480387
+                    "samples": 686,
+                    "mae": 0.3931316812439261,
+                    "rmse": 0.5108108110105801
                   }
                 ],
-                "scored_points": 1316,
-                "unscored_points": 28
+                "scored_points": 2756,
+                "unscored_points": 28,
+                "scored_pairs_sha256": "4a804b991c6d71d12f88febc1dc40e6b82127c396a789ed974aa1f0bf1d1ef8a"
+              }
+            },
+            "training_summary": {
+              "turbine-1": {
+                "training_samples": 26374,
+                "missing_or_late_targets": 3338,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 77.25637864638406,
+                  "wind_direction_sin": 1.3487545550053721,
+                  "wind_direction_cos": 1.4031671766203677,
+                  "temperature_c": 1.4916672679515728,
+                  "hour_sin": 0.5579588221050236,
+                  "hour_cos": 0.28238769862457896,
+                  "day_sin": 0.9723954626343102,
+                  "day_cos": 2.9204361050568424,
+                  "lead_hours": 0.6484238469879223,
+                  "last_power": 0.4231495877600001,
+                  "last_wind": 0.6102879697961356,
+                  "last_temperature": 2.295865760172589,
+                  "observation_age_hours": 0.005529029699705426,
+                  "power_mean_3h": 0.3008439741426039,
+                  "power_std_3h": 0.22741337339596102,
+                  "power_count_3h": 0.012304384708418775,
+                  "wind_mean_3h": 0.20884412084654932,
+                  "wind_std_3h": 0.19328660943737028,
+                  "wind_count_3h": 0.012188638006537302,
+                  "temperature_mean_3h": 2.4957402951061627,
+                  "temperature_std_3h": 0.27630978922064897,
+                  "temperature_count_3h": 0.01890704652746081,
+                  "power_mean_6h": 0.10150145613099751,
+                  "power_std_6h": 0.18068292569979738,
+                  "power_count_6h": 0.01664149295933338,
+                  "wind_mean_6h": 0.11476153292921398,
+                  "wind_std_6h": 0.09952945479631733,
+                  "wind_count_6h": 0.025658959195359023,
+                  "temperature_mean_6h": 1.4317278063463221,
+                  "temperature_std_6h": 0.4906092461594355,
+                  "temperature_count_6h": 0.017581007981470553,
+                  "power_mean_24h": 0.1520339751260321,
+                  "power_std_24h": 0.17566582294717828,
+                  "power_count_24h": 0.04700260408757898,
+                  "wind_mean_24h": 0.21663739877482896,
+                  "wind_std_24h": 0.18718080700605969,
+                  "wind_count_24h": 0.006434618489749548,
+                  "temperature_mean_24h": 1.758482360488271,
+                  "temperature_std_24h": 0.9847672966839063,
+                  "temperature_count_24h": 0.0308610740079646
+                },
+                "weather_origins": 619,
+                "weather_lineage_sha256": "3b80b0bfcc4ec38a853c5d46b992deb615a0a48227c3b3428f56f2f3402c6a71"
+              },
+              "turbine-2": {
+                "training_samples": 28978,
+                "missing_or_late_targets": 734,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 80.80501608539643,
+                  "wind_direction_sin": 1.0033109463181153,
+                  "wind_direction_cos": 1.532071859765636,
+                  "temperature_c": 0.7194864514877485,
+                  "hour_sin": 0.5031373560697329,
+                  "hour_cos": 0.3680894787685329,
+                  "day_sin": 0.9990583868113562,
+                  "day_cos": 2.4411543064873564,
+                  "lead_hours": 0.5675254529647162,
+                  "last_power": 0.9061723779914537,
+                  "last_wind": 0.6723610400171631,
+                  "last_temperature": 1.718835371460079,
+                  "observation_age_hours": 0.009981880379585209,
+                  "power_mean_3h": 0.5155535010505261,
+                  "power_std_3h": 0.290157631026247,
+                  "power_count_3h": 0.0,
+                  "wind_mean_3h": 0.3352830654917,
+                  "wind_std_3h": 0.11248716829338447,
+                  "wind_count_3h": 0.021880091117831874,
+                  "temperature_mean_3h": 1.559225757559471,
+                  "temperature_std_3h": 0.1304151598657339,
+                  "temperature_count_3h": 0.03179047479092346,
+                  "power_mean_6h": 0.05705499935996453,
+                  "power_std_6h": 0.14315067582132437,
+                  "power_count_6h": 0.010096404438792336,
+                  "wind_mean_6h": 0.08091621172926988,
+                  "wind_std_6h": 0.29736206474016974,
+                  "wind_count_6h": 0.02200552026429027,
+                  "temperature_mean_6h": 1.2197725525177407,
+                  "temperature_std_6h": 0.2706452929241567,
+                  "temperature_count_6h": 0.009290649049760517,
+                  "power_mean_24h": 0.055496791069054446,
+                  "power_std_24h": 0.09750794446855769,
+                  "power_count_24h": 0.007348936670803659,
+                  "wind_mean_24h": 0.17704803867897861,
+                  "wind_std_24h": 0.199613365975444,
+                  "wind_count_24h": 0.003952703283005934,
+                  "temperature_mean_24h": 1.1326707092014314,
+                  "temperature_std_24h": 0.9689097717333117,
+                  "temperature_count_24h": 0.004163524960204559
+                },
+                "weather_origins": 619,
+                "weather_lineage_sha256": "7b2b34b632a1a8f240f5e7698eafd2e5f3fe724eb469b6a2cd96dc59a71b86fc"
               }
             }
           }
         ],
         "pooled": {
-          "samples": 2660,
-          "mae": 0.31536200263157893,
-          "rmse": 0.37309693751787126
+          "samples": 5444,
+          "mae": 0.17500601775655156,
+          "rmse": 0.2586856053622849
         }
       },
       {
         "candidate": {
-          "name": "extended-rmse",
-          "feature_set": "scada-extended",
+          "name": "weather-depth6-mae",
+          "feature_set": "weather-scada",
           "iterations": 500,
-          "depth": 5,
-          "learning_rate": 0.04,
-          "loss_function": "RMSE",
-          "l2_leaf_reg": 10,
-          "origin_step_hours": 12
-        },
-        "folds": [
-          {
-            "name": "november",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-rmse\\november\\experiment-b5e0e7564bf44148b7066e848d2adbdb\\report.json",
-            "model_id": "model-02f2c7cc6b574ab09751eaadc5a02d96",
-            "comparison": {
-              "catboost": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.300313806547619,
-                    "rmse": 0.3384111551760027
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.3270593402777778,
-                    "rmse": 0.3683253676271783
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.30584732341269844,
-                    "rmse": 0.34315900071304023
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.3306747847222222,
-                    "rmse": 0.37111300727324537
-                  }
-                ],
-                "scored_points": 1344,
-                "unscored_points": 0
-              },
-              "persistence": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.37074900793650795,
-                    "rmse": 0.47055349704858856
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.47660218253968256,
-                    "rmse": 0.569372326540515
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.3618948412698413,
-                    "rmse": 0.4631231858992382
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.46683035714285714,
-                    "rmse": 0.560491748673152
-                  }
-                ],
-                "scored_points": 1344,
-                "unscored_points": 0
-              }
-            }
-          },
-          {
-            "name": "december",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-rmse\\december\\experiment-6c91acddf8ef4cdd88d272a1e0ee0cb8\\report.json",
-            "model_id": "model-2079af0645494712b5c5d59d0de5b7db",
-            "comparison": {
-              "catboost": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.34942267269076305,
-                    "rmse": 0.3806179008667399
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.3798970863453815,
-                    "rmse": 0.40525349876720984
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.3370764734151329,
-                    "rmse": 0.3668655940578031
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.36726438036809816,
-                    "rmse": 0.3918308024662276
-                  }
-                ],
-                "scored_points": 1316,
-                "unscored_points": 28
-              },
-              "persistence": {
-                "metrics": [
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.2973895582329317,
-                    "rmse": 0.44277129424723416
-                  },
-                  {
-                    "turbine_id": "turbine-1",
-                    "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.34234437751004015,
-                    "rmse": 0.4774547207587675
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.28598670756646216,
-                    "rmse": 0.4311256983262861
-                  },
-                  {
-                    "turbine_id": "turbine-2",
-                    "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.3397648261758691,
-                    "rmse": 0.47329369199480387
-                  }
-                ],
-                "scored_points": 1316,
-                "unscored_points": 28
-              }
-            }
-          }
-        ],
-        "pooled": {
-          "samples": 2660,
-          "mae": 0.3369992796992481,
-          "rmse": 0.37116646149275234
-        }
-      },
-      {
-        "candidate": {
-          "name": "extended-mae",
-          "feature_set": "scada-extended",
-          "iterations": 500,
-          "depth": 5,
+          "depth": 6,
           "learning_rate": 0.04,
           "loss_function": "MAE",
           "l2_leaf_reg": 10,
-          "origin_step_hours": 12
+          "origin_step_hours": 24
         },
         "folds": [
           {
             "name": "november",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-mae\\november\\experiment-67b98486a0b645b581d221509fe416cd\\report.json",
-            "model_id": "model-7d7f5d602b534956a1c10f9efb1b0d0f",
+            "model_id": "model-weather-experiment-ba28484e6dddfb6b9da24b5d",
             "comparison": {
               "catboost": {
+                "pooled": {
+                  "samples": 2688,
+                  "mae": 0.1541569911954365,
+                  "rmse": 0.22410228446199892
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.301753558531746,
-                    "rmse": 0.3541486211684228
+                    "samples": 672,
+                    "mae": 0.15242637202380951,
+                    "rmse": 0.22219251781738014
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.34267671924603177,
-                    "rmse": 0.3974476321934679
+                    "samples": 672,
+                    "mae": 0.1563894677579365,
+                    "rmse": 0.22389146396364665
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.3038215505952381,
-                    "rmse": 0.35330577057004264
+                    "samples": 672,
+                    "mae": 0.15265365922619048,
+                    "rmse": 0.22384661621063773
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.34615164583333335,
-                    "rmse": 0.39829658114460526
+                    "samples": 672,
+                    "mae": 0.1551584657738095,
+                    "rmse": 0.2264577784170429
                   }
                 ],
-                "scored_points": 1344,
-                "unscored_points": 0
+                "scored_points": 2688,
+                "unscored_points": 0,
+                "scored_pairs_sha256": "3dbd830b56e6e941f7d200e3844d88d120484dd2663d094fbeda7f4b19259d1a"
               },
               "persistence": {
+                "pooled": {
+                  "samples": 2688,
+                  "mae": 0.4062915426587302,
+                  "rmse": 0.5149435783147052
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.37074900793650795,
-                    "rmse": 0.47055349704858856
+                    "samples": 672,
+                    "mae": 0.3692956349206349,
+                    "rmse": 0.47620827595700926
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.47660218253968256,
-                    "rmse": 0.569372326540515
+                    "samples": 672,
+                    "mae": 0.44000248015873017,
+                    "rmse": 0.5479080322513583
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 336,
-                    "mae": 0.3618948412698413,
-                    "rmse": 0.4631231858992382
+                    "samples": 672,
+                    "mae": 0.3735813492063492,
+                    "rmse": 0.48121071955408123
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 336,
-                    "mae": 0.46683035714285714,
-                    "rmse": 0.560491748673152
+                    "samples": 672,
+                    "mae": 0.44228670634920636,
+                    "rmse": 0.5496601357938853
                   }
                 ],
-                "scored_points": 1344,
-                "unscored_points": 0
+                "scored_points": 2688,
+                "unscored_points": 0,
+                "scored_pairs_sha256": "3dbd830b56e6e941f7d200e3844d88d120484dd2663d094fbeda7f4b19259d1a"
+              }
+            },
+            "training_summary": {
+              "turbine-1": {
+                "training_samples": 24934,
+                "missing_or_late_targets": 3338,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 59.422362849034535,
+                  "wind_direction_sin": 2.6995458293919548,
+                  "wind_direction_cos": 2.949136372728878,
+                  "temperature_c": 2.3352346180188364,
+                  "hour_sin": 1.1389875290305485,
+                  "hour_cos": 0.9138657333684149,
+                  "day_sin": 2.427811268460069,
+                  "day_cos": 4.610484195421387,
+                  "lead_hours": 1.6285345324865665,
+                  "last_power": 0.9080212926980589,
+                  "last_wind": 1.1055926896121817,
+                  "last_temperature": 2.4571643637607155,
+                  "observation_age_hours": 0.024740618231947613,
+                  "power_mean_3h": 0.46428989071453397,
+                  "power_std_3h": 0.6816188044701135,
+                  "power_count_3h": 0.0985513246848431,
+                  "wind_mean_3h": 0.5590794441555359,
+                  "wind_std_3h": 0.6485113205347834,
+                  "wind_count_3h": 0.06493699868508628,
+                  "temperature_mean_3h": 2.1529109167243092,
+                  "temperature_std_3h": 0.646957947726781,
+                  "temperature_count_3h": 0.0076571889207981665,
+                  "power_mean_6h": 0.2392375938159513,
+                  "power_std_6h": 0.5948974062329835,
+                  "power_count_6h": 0.03331194824941247,
+                  "wind_mean_6h": 0.6502041766023839,
+                  "wind_std_6h": 0.5200385255320664,
+                  "wind_count_6h": 0.05282690382954215,
+                  "temperature_mean_6h": 2.054967958678186,
+                  "temperature_std_6h": 1.2608215017891717,
+                  "temperature_count_6h": 0.06948173007299999,
+                  "power_mean_24h": 0.700711473068912,
+                  "power_std_24h": 0.6621431001497545,
+                  "power_count_24h": 0.09008796727389577,
+                  "wind_mean_24h": 0.8526099511482621,
+                  "wind_std_24h": 0.9539759871871696,
+                  "wind_count_24h": 0.0554758073270583,
+                  "temperature_mean_24h": 1.6720849854493884,
+                  "temperature_std_24h": 1.5297408758618054,
+                  "temperature_count_24h": 0.0613863788701479
+                },
+                "weather_origins": 589,
+                "weather_lineage_sha256": "523d85664b742eb30e8924911d7535efeba8466e98490e1d88a995f2e62a432a"
+              },
+              "turbine-2": {
+                "training_samples": 27538,
+                "missing_or_late_targets": 734,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 61.80667378597516,
+                  "wind_direction_sin": 2.458542333504553,
+                  "wind_direction_cos": 2.723940591127155,
+                  "temperature_c": 1.9606224554007492,
+                  "hour_sin": 1.2178028547520952,
+                  "hour_cos": 0.9537432420330951,
+                  "day_sin": 2.5888453533619713,
+                  "day_cos": 3.9686820496918247,
+                  "lead_hours": 1.655720362082159,
+                  "last_power": 1.5494168077777843,
+                  "last_wind": 0.9826431044776771,
+                  "last_temperature": 1.8317988185988436,
+                  "observation_age_hours": 0.018261797519909685,
+                  "power_mean_3h": 0.6695120975505044,
+                  "power_std_3h": 0.7218863685847432,
+                  "power_count_3h": 0.08841624443726351,
+                  "wind_mean_3h": 0.7330633094091124,
+                  "wind_std_3h": 0.32173608551482635,
+                  "wind_count_3h": 0.01960956955775965,
+                  "temperature_mean_3h": 1.5990457090242653,
+                  "temperature_std_3h": 0.7560359267238161,
+                  "temperature_count_3h": 0.05003068723091794,
+                  "power_mean_6h": 0.4598353544341605,
+                  "power_std_6h": 0.45516519059076993,
+                  "power_count_6h": 0.04951586357400387,
+                  "wind_mean_6h": 0.6010290738401999,
+                  "wind_std_6h": 0.7213009299662073,
+                  "wind_count_6h": 0.07269481230900575,
+                  "temperature_mean_6h": 1.805843282846253,
+                  "temperature_std_6h": 0.965120685602598,
+                  "temperature_count_6h": 0.013695549905354152,
+                  "power_mean_24h": 0.4637557566740653,
+                  "power_std_24h": 0.8772373673684054,
+                  "power_count_24h": 0.09877511782810773,
+                  "wind_mean_24h": 0.5082294092117535,
+                  "wind_std_24h": 0.6113824269696588,
+                  "wind_count_24h": 0.016101255961920125,
+                  "temperature_mean_24h": 1.6691618886104898,
+                  "temperature_std_24h": 1.8415487644799764,
+                  "temperature_count_24h": 0.09357771549086313
+                },
+                "weather_origins": 589,
+                "weather_lineage_sha256": "59ad2424e9eb0e078c935227a12ade17d0dc41604ef98253ac296b1d1c43ec35"
               }
             }
           },
           {
             "name": "december",
-            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-mae\\december\\experiment-53d98172b4b34124988aee552521dd1e\\report.json",
-            "model_id": "model-14442b7725e64627834027385af3b5d8",
+            "model_id": "model-weather-experiment-5c108b427c318f5e54ab33cd",
             "comparison": {
               "catboost": {
+                "pooled": {
+                  "samples": 2756,
+                  "mae": 0.19473781652152877,
+                  "rmse": 0.28519907447414955
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.3288762359437751,
-                    "rmse": 0.370093276957993
+                    "samples": 692,
+                    "mae": 0.18523865655105973,
+                    "rmse": 0.27270600243189586
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.36935860542168675,
-                    "rmse": 0.3967909188993944
+                    "samples": 692,
+                    "mae": 0.20323571820809247,
+                    "rmse": 0.29602618114841883
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.3266484744376278,
-                    "rmse": 0.3653328726187676
+                    "samples": 686,
+                    "mae": 0.18550184742468415,
+                    "rmse": 0.27410997096373896
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.3526230408997955,
-                    "rmse": 0.3821430935906381
+                    "samples": 686,
+                    "mae": 0.2049838012633625,
+                    "rmse": 0.2970246275837981
                   }
                 ],
-                "scored_points": 1316,
-                "unscored_points": 28
+                "scored_points": 2756,
+                "unscored_points": 28,
+                "scored_pairs_sha256": "4a804b991c6d71d12f88febc1dc40e6b82127c396a789ed974aa1f0bf1d1ef8a"
               },
               "persistence": {
+                "pooled": {
+                  "samples": 2756,
+                  "mae": 0.3649455732946299,
+                  "rmse": 0.4865603925125904
+                },
                 "metrics": [
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "1-24",
-                    "samples": 332,
-                    "mae": 0.2973895582329317,
-                    "rmse": 0.44277129424723416
+                    "samples": 692,
+                    "mae": 0.32758429672447015,
+                    "rmse": 0.45367140803401507
                   },
                   {
                     "turbine_id": "turbine-1",
                     "horizon": "25-48",
-                    "samples": 332,
-                    "mae": 0.34234437751004015,
-                    "rmse": 0.4774547207587675
+                    "samples": 692,
+                    "mae": 0.3809947013487476,
+                    "rmse": 0.49990665875690493
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "1-24",
-                    "samples": 326,
-                    "mae": 0.28598670756646216,
-                    "rmse": 0.4311256983262861
+                    "samples": 686,
+                    "mae": 0.35825801749271136,
+                    "rmse": 0.4800700762406639
                   },
                   {
                     "turbine_id": "turbine-2",
                     "horizon": "25-48",
-                    "samples": 326,
-                    "mae": 0.3397648261758691,
-                    "rmse": 0.47329369199480387
+                    "samples": 686,
+                    "mae": 0.3931316812439261,
+                    "rmse": 0.5108108110105801
                   }
                 ],
-                "scored_points": 1316,
-                "unscored_points": 28
+                "scored_points": 2756,
+                "unscored_points": 28,
+                "scored_pairs_sha256": "4a804b991c6d71d12f88febc1dc40e6b82127c396a789ed974aa1f0bf1d1ef8a"
+              }
+            },
+            "training_summary": {
+              "turbine-1": {
+                "training_samples": 26374,
+                "missing_or_late_targets": 3338,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 59.62936702303144,
+                  "wind_direction_sin": 2.9382198597743128,
+                  "wind_direction_cos": 2.78914153690133,
+                  "temperature_c": 2.1302858243817484,
+                  "hour_sin": 1.3424602420802516,
+                  "hour_cos": 0.9217660263581893,
+                  "day_sin": 2.4560158502286997,
+                  "day_cos": 4.825393789517504,
+                  "lead_hours": 1.5091201148943678,
+                  "last_power": 0.8326979789244963,
+                  "last_wind": 1.0560968192546967,
+                  "last_temperature": 2.1840054053268583,
+                  "observation_age_hours": 0.01592440918440578,
+                  "power_mean_3h": 0.5642403476056671,
+                  "power_std_3h": 0.5650221506839107,
+                  "power_count_3h": 0.031608778038823844,
+                  "wind_mean_3h": 0.4696347653245402,
+                  "wind_std_3h": 0.5487837641917466,
+                  "wind_count_3h": 0.04599804794708388,
+                  "temperature_mean_3h": 1.979415065431493,
+                  "temperature_std_3h": 0.7138629816587332,
+                  "temperature_count_3h": 0.03272777667081776,
+                  "power_mean_6h": 0.39175330965512445,
+                  "power_std_6h": 0.5108138365669722,
+                  "power_count_6h": 0.012520979300162539,
+                  "wind_mean_6h": 0.5666782578922915,
+                  "wind_std_6h": 0.379863497345253,
+                  "wind_count_6h": 0.0812626334499766,
+                  "temperature_mean_6h": 1.9303283418122181,
+                  "temperature_std_6h": 1.1979003593080138,
+                  "temperature_count_6h": 0.060259563434883895,
+                  "power_mean_24h": 0.7330448737679368,
+                  "power_std_24h": 0.6176901563919015,
+                  "power_count_24h": 0.10608767292243189,
+                  "wind_mean_24h": 0.8171555772296337,
+                  "wind_std_24h": 0.7544535173867518,
+                  "wind_count_24h": 0.020484661185484258,
+                  "temperature_mean_24h": 2.2066675459186995,
+                  "temperature_std_24h": 1.9454907382393143,
+                  "temperature_count_24h": 0.08575592078184434
+                },
+                "weather_origins": 619,
+                "weather_lineage_sha256": "3b80b0bfcc4ec38a853c5d46b992deb615a0a48227c3b3428f56f2f3402c6a71"
+              },
+              "turbine-2": {
+                "training_samples": 28978,
+                "missing_or_late_targets": 734,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 61.7926101697941,
+                  "wind_direction_sin": 2.5092467597712504,
+                  "wind_direction_cos": 2.7104290299064777,
+                  "temperature_c": 2.0214797299183105,
+                  "hour_sin": 1.2634335264669498,
+                  "hour_cos": 1.0597589149523086,
+                  "day_sin": 1.970715067198969,
+                  "day_cos": 4.2866827498876345,
+                  "lead_hours": 1.5123514896235766,
+                  "last_power": 1.3341946466011119,
+                  "last_wind": 0.9341996418730368,
+                  "last_temperature": 2.073161401883006,
+                  "observation_age_hours": 0.01147917169011989,
+                  "power_mean_3h": 0.5601959171661726,
+                  "power_std_3h": 0.9438980405862345,
+                  "power_count_3h": 0.10103677867062699,
+                  "wind_mean_3h": 0.6004454063955423,
+                  "wind_std_3h": 0.4049575873793997,
+                  "wind_count_3h": 0.052596072224673336,
+                  "temperature_mean_3h": 1.4751907982433499,
+                  "temperature_std_3h": 0.9428080315615982,
+                  "temperature_count_3h": 0.014483274379472494,
+                  "power_mean_6h": 0.4619871106026317,
+                  "power_std_6h": 0.5491677667268814,
+                  "power_count_6h": 0.033179414607790524,
+                  "wind_mean_6h": 0.4933034064693563,
+                  "wind_std_6h": 0.6588433634874398,
+                  "wind_count_6h": 0.059520193676717,
+                  "temperature_mean_6h": 1.7369199159452346,
+                  "temperature_std_6h": 0.7809920363855023,
+                  "temperature_count_6h": 0.014702562350180788,
+                  "power_mean_24h": 0.5128517070067699,
+                  "power_std_24h": 0.655370035359414,
+                  "power_count_24h": 0.0982943240384812,
+                  "wind_mean_24h": 0.5344785999489944,
+                  "wind_std_24h": 0.9397216116893908,
+                  "wind_count_24h": 0.031590607422484554,
+                  "temperature_mean_24h": 1.6903424274557628,
+                  "temperature_std_24h": 2.135632776802447,
+                  "temperature_count_24h": 0.037747933850598006
+                },
+                "weather_origins": 619,
+                "weather_lineage_sha256": "7b2b34b632a1a8f240f5e7698eafd2e5f3fe724eb469b6a2cd96dc59a71b86fc"
               }
             }
           }
         ],
         "pooled": {
-          "samples": 2660,
-          "mae": 0.3339007701754386,
-          "rmse": 0.37762824123288075
+          "samples": 5444,
+          "mae": 0.17470084766103355,
+          "rmse": 0.25685503564316625
+        }
+      },
+      {
+        "candidate": {
+          "name": "weather-depth6-rmse",
+          "feature_set": "weather-scada",
+          "iterations": 300,
+          "depth": 6,
+          "learning_rate": 0.05,
+          "loss_function": "RMSE",
+          "l2_leaf_reg": 3,
+          "origin_step_hours": 24
+        },
+        "folds": [
+          {
+            "name": "november",
+            "model_id": "model-weather-experiment-a956081b18e825a8bec96b6d",
+            "comparison": {
+              "catboost": {
+                "pooled": {
+                  "samples": 2688,
+                  "mae": 0.1727754898313492,
+                  "rmse": 0.21858848417182336
+                },
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 672,
+                    "mae": 0.16507680555555554,
+                    "rmse": 0.21429539939125836
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 672,
+                    "mae": 0.1732945808531746,
+                    "rmse": 0.2161950347713492
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 672,
+                    "mae": 0.17215375744047617,
+                    "rmse": 0.21984129423931625
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 672,
+                    "mae": 0.18057681547619048,
+                    "rmse": 0.22389885157651082
+                  }
+                ],
+                "scored_points": 2688,
+                "unscored_points": 0,
+                "scored_pairs_sha256": "3dbd830b56e6e941f7d200e3844d88d120484dd2663d094fbeda7f4b19259d1a"
+              },
+              "persistence": {
+                "pooled": {
+                  "samples": 2688,
+                  "mae": 0.4062915426587302,
+                  "rmse": 0.5149435783147052
+                },
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 672,
+                    "mae": 0.3692956349206349,
+                    "rmse": 0.47620827595700926
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 672,
+                    "mae": 0.44000248015873017,
+                    "rmse": 0.5479080322513583
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 672,
+                    "mae": 0.3735813492063492,
+                    "rmse": 0.48121071955408123
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 672,
+                    "mae": 0.44228670634920636,
+                    "rmse": 0.5496601357938853
+                  }
+                ],
+                "scored_points": 2688,
+                "unscored_points": 0,
+                "scored_pairs_sha256": "3dbd830b56e6e941f7d200e3844d88d120484dd2663d094fbeda7f4b19259d1a"
+              }
+            },
+            "training_summary": {
+              "turbine-1": {
+                "training_samples": 24934,
+                "missing_or_late_targets": 3338,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 39.77209574293274,
+                  "wind_direction_sin": 5.824182331920775,
+                  "wind_direction_cos": 3.26747818645942,
+                  "temperature_c": 4.072860361270268,
+                  "hour_sin": 2.4376144823431285,
+                  "hour_cos": 1.7798346870647548,
+                  "day_sin": 4.1563496838265035,
+                  "day_cos": 5.518270275516146,
+                  "lead_hours": 2.7954400952606067,
+                  "last_power": 1.1455427890114236,
+                  "last_wind": 1.334180499318768,
+                  "last_temperature": 3.6864676971261585,
+                  "observation_age_hours": 0.0,
+                  "power_mean_3h": 0.8040131118400546,
+                  "power_std_3h": 0.8750994810373761,
+                  "power_count_3h": 0.055889833209565,
+                  "wind_mean_3h": 1.279163148051009,
+                  "wind_std_3h": 0.6838280756599852,
+                  "wind_count_3h": 0.0,
+                  "temperature_mean_3h": 1.9278823712333604,
+                  "temperature_std_3h": 1.5824985052945006,
+                  "temperature_count_3h": 0.025912540937823553,
+                  "power_mean_6h": 0.5183208500342755,
+                  "power_std_6h": 0.8168591539722255,
+                  "power_count_6h": 0.029344193326053813,
+                  "wind_mean_6h": 0.558984176750728,
+                  "wind_std_6h": 1.4418297547211647,
+                  "wind_count_6h": 0.0,
+                  "temperature_mean_6h": 1.4993014760728396,
+                  "temperature_std_6h": 1.8558307419851263,
+                  "temperature_count_6h": 0.11020018292710292,
+                  "power_mean_24h": 0.9915589001063841,
+                  "power_std_24h": 0.8851283963262987,
+                  "power_count_24h": 0.12252011582647955,
+                  "wind_mean_24h": 0.916094286077545,
+                  "wind_std_24h": 1.7745188870444528,
+                  "wind_count_24h": 0.0705674415108121,
+                  "temperature_mean_24h": 2.1448411511254584,
+                  "temperature_std_24h": 3.1074920168903355,
+                  "temperature_count_24h": 0.132004375988425
+                },
+                "weather_origins": 589,
+                "weather_lineage_sha256": "523d85664b742eb30e8924911d7535efeba8466e98490e1d88a995f2e62a432a"
+              },
+              "turbine-2": {
+                "training_samples": 27538,
+                "missing_or_late_targets": 734,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 38.55638490969643,
+                  "wind_direction_sin": 5.773935172507951,
+                  "wind_direction_cos": 2.574055044831831,
+                  "temperature_c": 2.8599643334108475,
+                  "hour_sin": 1.622038442345978,
+                  "hour_cos": 2.3921899272888076,
+                  "day_sin": 3.9774980714311394,
+                  "day_cos": 4.871059472643772,
+                  "lead_hours": 3.2623206499159374,
+                  "last_power": 1.9225275606512422,
+                  "last_wind": 1.924142978019992,
+                  "last_temperature": 3.180964496996261,
+                  "observation_age_hours": 0.0439373434540611,
+                  "power_mean_3h": 1.371856190161255,
+                  "power_std_3h": 1.3982776775992993,
+                  "power_count_3h": 0.0701056807298041,
+                  "wind_mean_3h": 1.1043479679022332,
+                  "wind_std_3h": 1.0372291663780282,
+                  "wind_count_3h": 0.02506584173041234,
+                  "temperature_mean_3h": 1.9044290864278641,
+                  "temperature_std_3h": 1.977063461189698,
+                  "temperature_count_3h": 0.0,
+                  "power_mean_6h": 0.5686273252518816,
+                  "power_std_6h": 1.1471176787117967,
+                  "power_count_6h": 0.017158124806542403,
+                  "wind_mean_6h": 1.0408861909344613,
+                  "wind_std_6h": 1.8841360919868662,
+                  "wind_count_6h": 0.014087874309766293,
+                  "temperature_mean_6h": 1.2396338852709539,
+                  "temperature_std_6h": 1.4805948651706817,
+                  "temperature_count_6h": 0.02590564915616203,
+                  "power_mean_24h": 1.0854164882308728,
+                  "power_std_24h": 1.4581730771277204,
+                  "power_count_24h": 0.0,
+                  "wind_mean_24h": 0.9619884014795071,
+                  "wind_std_24h": 1.3304280173755945,
+                  "wind_count_24h": 0.06736368106307239,
+                  "temperature_mean_24h": 2.64888279229902,
+                  "temperature_std_24h": 3.049932983621416,
+                  "temperature_count_24h": 0.1302733978908367
+                },
+                "weather_origins": 589,
+                "weather_lineage_sha256": "59ad2424e9eb0e078c935227a12ade17d0dc41604ef98253ac296b1d1c43ec35"
+              }
+            }
+          },
+          {
+            "name": "december",
+            "model_id": "model-weather-experiment-f42146a176d222e81b7598af",
+            "comparison": {
+              "catboost": {
+                "pooled": {
+                  "samples": 2756,
+                  "mae": 0.20572508901790035,
+                  "rmse": 0.2737262096304031
+                },
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 692,
+                    "mae": 0.19510564354527937,
+                    "rmse": 0.2617209301878002
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 692,
+                    "mae": 0.21627824325626205,
+                    "rmse": 0.28810191874261576
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 686,
+                    "mae": 0.19821753352769678,
+                    "rmse": 0.2638199323018588
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 686,
+                    "mae": 0.21329951554907678,
+                    "rmse": 0.2803358977285458
+                  }
+                ],
+                "scored_points": 2756,
+                "unscored_points": 28,
+                "scored_pairs_sha256": "4a804b991c6d71d12f88febc1dc40e6b82127c396a789ed974aa1f0bf1d1ef8a"
+              },
+              "persistence": {
+                "pooled": {
+                  "samples": 2756,
+                  "mae": 0.3649455732946299,
+                  "rmse": 0.4865603925125904
+                },
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 692,
+                    "mae": 0.32758429672447015,
+                    "rmse": 0.45367140803401507
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 692,
+                    "mae": 0.3809947013487476,
+                    "rmse": 0.49990665875690493
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 686,
+                    "mae": 0.35825801749271136,
+                    "rmse": 0.4800700762406639
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 686,
+                    "mae": 0.3931316812439261,
+                    "rmse": 0.5108108110105801
+                  }
+                ],
+                "scored_points": 2756,
+                "unscored_points": 28,
+                "scored_pairs_sha256": "4a804b991c6d71d12f88febc1dc40e6b82127c396a789ed974aa1f0bf1d1ef8a"
+              }
+            },
+            "training_summary": {
+              "turbine-1": {
+                "training_samples": 26374,
+                "missing_or_late_targets": 3338,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 38.72098663920986,
+                  "wind_direction_sin": 5.92494807453757,
+                  "wind_direction_cos": 2.8590388868284076,
+                  "temperature_c": 3.47921293165988,
+                  "hour_sin": 2.3347901167128877,
+                  "hour_cos": 1.6211765825495914,
+                  "day_sin": 4.171853496271773,
+                  "day_cos": 5.026876445503757,
+                  "lead_hours": 3.583291002620049,
+                  "last_power": 1.0426110361870093,
+                  "last_wind": 1.4575759229676992,
+                  "last_temperature": 3.3346349463954894,
+                  "observation_age_hours": 0.01117380490203125,
+                  "power_mean_3h": 1.2344675820623474,
+                  "power_std_3h": 1.1091727659359905,
+                  "power_count_3h": 0.024533522582091426,
+                  "wind_mean_3h": 1.3373855809819195,
+                  "wind_std_3h": 1.2090822960631953,
+                  "wind_count_3h": 0.030844311568368397,
+                  "temperature_mean_3h": 1.743920553987705,
+                  "temperature_std_3h": 1.4473436473200127,
+                  "temperature_count_3h": 0.004861675042668933,
+                  "power_mean_6h": 0.28309453987251226,
+                  "power_std_6h": 0.996041352081393,
+                  "power_count_6h": 0.04166153958641205,
+                  "wind_mean_6h": 0.7130082060763626,
+                  "wind_std_6h": 1.4901268012413067,
+                  "wind_count_6h": 0.04659461973474049,
+                  "temperature_mean_6h": 1.5567944886419953,
+                  "temperature_std_6h": 1.6936770860980477,
+                  "temperature_count_6h": 0.11157814650439975,
+                  "power_mean_24h": 0.8432589067011623,
+                  "power_std_24h": 0.948029797212568,
+                  "power_count_24h": 0.09616586744618406,
+                  "wind_mean_24h": 1.5275910706295317,
+                  "wind_std_24h": 1.567523944041595,
+                  "wind_count_24h": 0.03964543417935044,
+                  "temperature_mean_24h": 2.7294189737746306,
+                  "temperature_std_24h": 3.5148514921824976,
+                  "temperature_count_24h": 0.09115591210499661
+                },
+                "weather_origins": 619,
+                "weather_lineage_sha256": "3b80b0bfcc4ec38a853c5d46b992deb615a0a48227c3b3428f56f2f3402c6a71"
+              },
+              "turbine-2": {
+                "training_samples": 28978,
+                "missing_or_late_targets": 734,
+                "skipped_origins_no_weather": 5,
+                "origins_without_weather": [
+                  "2025-08-05T12:00:00+00:00",
+                  "2025-08-06T12:00:00+00:00",
+                  "2025-08-07T12:00:00+00:00",
+                  "2025-08-08T12:00:00+00:00",
+                  "2025-08-09T12:00:00+00:00"
+                ],
+                "feature_importance": {
+                  "wind_speed_ms": 39.03194883985027,
+                  "wind_direction_sin": 5.859926748454084,
+                  "wind_direction_cos": 2.549948601837507,
+                  "temperature_c": 3.139296168903385,
+                  "hour_sin": 1.4945718695847827,
+                  "hour_cos": 2.4878586413701225,
+                  "day_sin": 3.3769989656556105,
+                  "day_cos": 4.660128301454582,
+                  "lead_hours": 3.0555364961099265,
+                  "last_power": 1.5623226262258447,
+                  "last_wind": 1.9374347910296983,
+                  "last_temperature": 3.0986210673738324,
+                  "observation_age_hours": 0.007759958414596934,
+                  "power_mean_3h": 1.589437091145299,
+                  "power_std_3h": 1.6284545520966087,
+                  "power_count_3h": 0.021394201429393644,
+                  "wind_mean_3h": 1.1818114371781676,
+                  "wind_std_3h": 1.0813335627993712,
+                  "wind_count_3h": 0.01787518458439922,
+                  "temperature_mean_3h": 1.5452208286003688,
+                  "temperature_std_3h": 2.1885641051921225,
+                  "temperature_count_3h": 0.018618802662752777,
+                  "power_mean_6h": 0.5933860716586697,
+                  "power_std_6h": 1.1232297597461447,
+                  "power_count_6h": 0.007028683790978957,
+                  "wind_mean_6h": 0.8902766338344176,
+                  "wind_std_6h": 1.432382488519304,
+                  "wind_count_6h": 0.10039964129597383,
+                  "temperature_mean_6h": 1.5062179042417694,
+                  "temperature_std_6h": 1.750893920259741,
+                  "temperature_count_6h": 0.0,
+                  "power_mean_24h": 1.1080117033408738,
+                  "power_std_24h": 1.1215338785487052,
+                  "power_count_24h": 0.03647110232299011,
+                  "wind_mean_24h": 0.9532037603308396,
+                  "wind_std_24h": 1.634046984354496,
+                  "wind_count_24h": 0.03542946559926466,
+                  "temperature_mean_24h": 2.4576968052299835,
+                  "temperature_std_24h": 3.71472835497314,
+                  "temperature_count_24h": 0.0
+                },
+                "weather_origins": 619,
+                "weather_lineage_sha256": "7b2b34b632a1a8f240f5e7698eafd2e5f3fe724eb469b6a2cd96dc59a71b86fc"
+              }
+            }
+          }
+        ],
+        "pooled": {
+          "samples": 5444,
+          "mae": 0.18945607310800883,
+          "rmse": 0.24803833155813657
         }
       }
     ],
     "selected": {
-      "name": "compact-mae",
-      "feature_set": "scada",
+      "name": "weather-depth6-mae",
+      "feature_set": "weather-scada",
       "iterations": 500,
-      "depth": 4,
+      "depth": 6,
       "learning_rate": 0.04,
       "loss_function": "MAE",
       "l2_leaf_reg": 10,
       "origin_step_hours": 24
     },
-    "selected_at": "2026-09-23T10:38:19.772217+00:00"
+    "selected_at": "2026-09-23T12:16:42.235471+00:00"
   },
   "preparation": {
     "provisional": true,
@@ -762,8 +1335,8 @@
     "target_policy": "complete hours only; missing intervals are never zero-filled",
     "sources": [
       {
-        "source": "dataset\\turbine1.csv",
-        "sha256": "c4c341582fb2dd348b7187f0128cff265fe055f469413871ebb5db50eef58b5b",
+        "source": "data\\raw\\turbine_1.csv",
+        "sha256": "d82def7e56c0a1eed3f2f68eb29fd66e4299999921c9703720a880a5cf7d6703",
         "turbine_id": "turbine-1",
         "source_rows": 142360,
         "accepted_rows": 142360,
@@ -772,8 +1345,8 @@
         "issues": []
       },
       {
-        "source": "dataset\\turbine2.csv",
-        "sha256": "820578cd18bb557cd30c2e102f3ae5a386dfc6c489a5a15743339c2b017305e5",
+        "source": "data\\raw\\turbine_2.csv",
+        "sha256": "16a844db949562290c96a86efa20178a71540ff6252275c003db4715edb9434a",
         "turbine_id": "turbine-2",
         "source_rows": 149499,
         "accepted_rows": 149499,
@@ -826,13 +1399,14 @@
     }
   },
   "history_sha256": "4eb1633527a46b3e61f53d2ad7aa41b76eaf42e5f29df9ad83764d11aeeb598d",
+  "weather_archive_sha256": "6539760cac042fbf39f0bead83efdd32c1f44676829d8873ca40f8d8b8db78d3",
   "january": {
     "model": {
-      "id": "model-1ce9040924c14cd583a3924c7860c2ee",
-      "algorithm": "catboost-scada-v1",
+      "id": "model-weather-experiment-3c34703576df444d90389bd6",
+      "algorithm": "catboost-weather-scada-v1",
       "trained_through": "2026-01-01T00:00:00Z",
-      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
-      "training_rows": 91720,
+      "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
+      "training_rows": 58300,
       "turbine_ids": [
         "turbine-1",
         "turbine-2"
@@ -840,13 +1414,217 @@
       "is_demo": true
     },
     "training_request": {
-      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
+      "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
+      "trained_through": "2026-01-01T00:00:00Z",
+      "algorithm": "catboost",
+      "weather_snapshot_ids": [],
+      "feature_set": "weather-scada",
+      "first_origin": "2024-03-15T12:00:00Z",
+      "last_origin": "2025-12-29T12:00:00Z",
+      "horizon_hours": 48,
+      "weather_source": "archive",
+      "iterations": 500,
+      "depth": 6,
+      "learning_rate": 0.04,
+      "random_seed": 42,
+      "loss_function": "MAE",
+      "l2_leaf_reg": 10.0,
+      "origin_step_hours": 24
+    },
+    "training_summary": {
+      "turbine-1": {
+        "training_samples": 27854,
+        "missing_or_late_targets": 3346,
+        "skipped_origins_no_weather": 5,
+        "origins_without_weather": [
+          "2025-08-05T12:00:00+00:00",
+          "2025-08-06T12:00:00+00:00",
+          "2025-08-07T12:00:00+00:00",
+          "2025-08-08T12:00:00+00:00",
+          "2025-08-09T12:00:00+00:00"
+        ],
+        "feature_importance": {
+          "wind_speed_ms": 60.85119484573815,
+          "wind_direction_sin": 2.7774268945573595,
+          "wind_direction_cos": 2.5530390475367604,
+          "temperature_c": 2.2492707345939795,
+          "hour_sin": 1.2569410265335799,
+          "hour_cos": 0.9103198021149778,
+          "day_sin": 1.916054407868673,
+          "day_cos": 3.9837010946056135,
+          "lead_hours": 1.5733867630184277,
+          "last_power": 0.8437738781641012,
+          "last_wind": 1.2102069529391766,
+          "last_temperature": 1.8522028119466698,
+          "observation_age_hours": 0.009038240600675804,
+          "power_mean_3h": 0.6725604424338147,
+          "power_std_3h": 0.4725447731605571,
+          "power_count_3h": 0.08748974152178998,
+          "wind_mean_3h": 0.7377108630832663,
+          "wind_std_3h": 0.5591719673304548,
+          "wind_count_3h": 0.045037008125064004,
+          "temperature_mean_3h": 2.819932661594874,
+          "temperature_std_3h": 0.7171961987996088,
+          "temperature_count_3h": 0.023149240834779688,
+          "power_mean_6h": 0.30832644422490535,
+          "power_std_6h": 0.49421016620604374,
+          "power_count_6h": 0.02412058896100254,
+          "wind_mean_6h": 0.3917315833801787,
+          "wind_std_6h": 0.5900755936339377,
+          "wind_count_6h": 0.09888802015658994,
+          "temperature_mean_6h": 2.12020878229055,
+          "temperature_std_6h": 1.0750681308490555,
+          "temperature_count_6h": 0.04972650646208828,
+          "power_mean_24h": 0.698561431414909,
+          "power_std_24h": 0.5556973853605305,
+          "power_count_24h": 0.03608136799585959,
+          "wind_mean_24h": 0.6271592127583037,
+          "wind_std_24h": 0.8889045236739399,
+          "wind_count_24h": 0.03370759357427841,
+          "temperature_mean_24h": 2.0330128229280144,
+          "temperature_std_24h": 1.803329915332288,
+          "temperature_count_24h": 0.04984053369514974
+        },
+        "weather_origins": 650,
+        "weather_lineage_sha256": "9e28b2e27ae4381c2c44e8298ed060983dd9340be39ddb3f417bc08ddff0fb5e"
+      },
+      "turbine-2": {
+        "training_samples": 30446,
+        "missing_or_late_targets": 754,
+        "skipped_origins_no_weather": 5,
+        "origins_without_weather": [
+          "2025-08-05T12:00:00+00:00",
+          "2025-08-06T12:00:00+00:00",
+          "2025-08-07T12:00:00+00:00",
+          "2025-08-08T12:00:00+00:00",
+          "2025-08-09T12:00:00+00:00"
+        ],
+        "feature_importance": {
+          "wind_speed_ms": 62.7179483036127,
+          "wind_direction_sin": 2.7455241971093134,
+          "wind_direction_cos": 2.830516017065463,
+          "temperature_c": 1.8564647921460324,
+          "hour_sin": 1.1211246616640356,
+          "hour_cos": 1.3276748096530382,
+          "day_sin": 1.933478056127743,
+          "day_cos": 3.5003571868705983,
+          "lead_hours": 1.3878972753528203,
+          "last_power": 1.1181685104246872,
+          "last_wind": 1.1359243101147574,
+          "last_temperature": 1.9271542588586228,
+          "observation_age_hours": 0.023022120493216905,
+          "power_mean_3h": 0.5273875715444849,
+          "power_std_3h": 0.6533689800788505,
+          "power_count_3h": 0.11927924646007917,
+          "wind_mean_3h": 0.7731230380202634,
+          "wind_std_3h": 0.5763036964229549,
+          "wind_count_3h": 0.023863927086450593,
+          "temperature_mean_3h": 1.3028924769341674,
+          "temperature_std_3h": 0.6863977396115534,
+          "temperature_count_3h": 0.015918068705630877,
+          "power_mean_6h": 0.4280485644166285,
+          "power_std_6h": 0.48526064843657246,
+          "power_count_6h": 0.06574247991919474,
+          "wind_mean_6h": 0.5472851574813119,
+          "wind_std_6h": 0.8216221071099722,
+          "wind_count_6h": 0.07008009688278483,
+          "temperature_mean_6h": 1.6998369953628383,
+          "temperature_std_6h": 1.007287232354653,
+          "temperature_count_6h": 0.04673313881274557,
+          "power_mean_24h": 0.4972716836569835,
+          "power_std_24h": 0.4712404713432343,
+          "power_count_24h": 0.04250535183053911,
+          "wind_mean_24h": 0.7089255955889202,
+          "wind_std_24h": 0.7838150051092974,
+          "wind_count_24h": 0.016457412952203737,
+          "temperature_mean_24h": 1.732445433463794,
+          "temperature_std_24h": 2.244634353387259,
+          "temperature_count_24h": 0.027019027533602608
+        },
+        "weather_origins": 650,
+        "weather_lineage_sha256": "f09432ff2c5f2ff1ede5c8592c758986324b1095a0a52a412fc69ab42f3aac7f"
+      }
+    },
+    "baseline_training": {
+      "constant": 0.22666666666666666,
+      "climatology": {
+        "turbine-1": {
+          "12": 0.265,
+          "13": 0.2725,
+          "14": 0.29333333333333333,
+          "15": 0.3016666666666667,
+          "16": 0.2816666666666667,
+          "17": 0.23,
+          "18": 0.24,
+          "19": 0.225,
+          "20": 0.20333333333333334,
+          "21": 0.20833333333333334,
+          "22": 0.18833333333333332,
+          "23": 0.2,
+          "0": 0.185,
+          "1": 0.19333333333333333,
+          "2": 0.16666666666666666,
+          "3": 0.1825,
+          "4": 0.20500000000000002,
+          "5": 0.22333333333333333,
+          "6": 0.24333333333333335,
+          "7": 0.2808333333333334,
+          "8": 0.2783333333333333,
+          "9": 0.24666666666666667,
+          "10": 0.265,
+          "11": 0.26
+        },
+        "turbine-2": {
+          "12": 0.26916666666666667,
+          "13": 0.2866666666666667,
+          "14": 0.2891666666666667,
+          "15": 0.29166666666666663,
+          "16": 0.26583333333333337,
+          "17": 0.22666666666666668,
+          "18": 0.22666666666666668,
+          "19": 0.19833333333333333,
+          "20": 0.16666666666666666,
+          "21": 0.17666666666666667,
+          "22": 0.1525,
+          "23": 0.15000000000000002,
+          "0": 0.155,
+          "1": 0.15,
+          "2": 0.14333333333333334,
+          "3": 0.17833333333333334,
+          "4": 0.19333333333333333,
+          "5": 0.21166666666666667,
+          "6": 0.24583333333333335,
+          "7": 0.2683333333333333,
+          "8": 0.26166666666666666,
+          "9": 0.2316666666666667,
+          "10": 0.26749999999999996,
+          "11": 0.27249999999999996
+        }
+      },
+      "training_rows": 29462,
+      "statistic": "median; climatology grouped by turbine and UTC target hour",
+      "cutoff": "2026-01-01T00:00:00+00:00"
+    },
+    "scada_model": {
+      "id": "model-weather-experiment-9f76a3636f867c90676bf6a1",
+      "algorithm": "catboost-scada-v1",
+      "trained_through": "2026-01-01T00:00:00Z",
+      "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
+      "training_rows": 58780,
+      "turbine_ids": [
+        "turbine-1",
+        "turbine-2"
+      ],
+      "is_demo": true
+    },
+    "scada_training_request": {
+      "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
       "trained_through": "2026-01-01T00:00:00Z",
       "algorithm": "catboost",
       "weather_snapshot_ids": [],
       "feature_set": "scada",
-      "first_origin": "2023-04-01T00:00:00Z",
-      "last_origin": "2025-12-29T00:00:00Z",
+      "first_origin": "2024-03-15T12:00:00Z",
+      "last_origin": "2025-12-29T12:00:00Z",
       "horizon_hours": 48,
       "weather_source": "archive",
       "iterations": 500,
@@ -857,130 +1635,221 @@
       "l2_leaf_reg": 10.0,
       "origin_step_hours": 24
     },
+    "selected_model": "weather_scada",
     "comparison": {
-      "previous": {
+      "constant": {
         "pooled": {
-          "samples": 2688,
-          "mae": 0.2983401903521825,
-          "rmse": 0.3406661788160405
+          "samples": 2784,
+          "mae": 0.26816511015325667,
+          "rmse": 0.3450560076676283
         },
         "metrics": [
           {
             "turbine_id": "turbine-1",
             "horizon": "1-24",
-            "samples": 672,
-            "mae": 0.2768891865079365,
-            "rmse": 0.3257653832189551
+            "samples": 696,
+            "mae": 0.2669995210727969,
+            "rmse": 0.34303941707428703
           },
           {
             "turbine_id": "turbine-1",
             "horizon": "25-48",
-            "samples": 672,
-            "mae": 0.3218737450396825,
-            "rmse": 0.36032243994085983
+            "samples": 696,
+            "mae": 0.2712045019157088,
+            "rmse": 0.34918931495965383
           },
           {
             "turbine_id": "turbine-2",
             "horizon": "1-24",
-            "samples": 672,
-            "mae": 0.2772994523809524,
-            "rmse": 0.3209580792089295
+            "samples": 696,
+            "mae": 0.26467672413793103,
+            "rmse": 0.34026703204551356
           },
           {
             "turbine_id": "turbine-2",
             "horizon": "25-48",
-            "samples": 672,
-            "mae": 0.3172983774801587,
-            "rmse": 0.3538987811765919
+            "samples": 696,
+            "mae": 0.26977969348659003,
+            "rmse": 0.34765460052236874
           }
-        ]
+        ],
+        "scored_points": 2784,
+        "unscored_points": 0,
+        "scored_pairs_sha256": "620458340613ef6ef102783786db670a96f589ae06465b54cf5cbb67afa575a4"
       },
-      "selected": {
+      "climatology": {
         "pooled": {
-          "samples": 2688,
-          "mae": 0.2800609888392857,
-          "rmse": 0.3350790235828312
+          "samples": 2784,
+          "mae": 0.2665642959770115,
+          "rmse": 0.34236973703510076
         },
         "metrics": [
           {
             "turbine_id": "turbine-1",
             "horizon": "1-24",
-            "samples": 672,
-            "mae": 0.2640697663690476,
-            "rmse": 0.32310213411476313
+            "samples": 696,
+            "mae": 0.2667157567049808,
+            "rmse": 0.3392196078194517
           },
           {
             "turbine_id": "turbine-1",
             "horizon": "25-48",
-            "samples": 672,
-            "mae": 0.3025332817460317,
-            "rmse": 0.3519553219646171
+            "samples": 696,
+            "mae": 0.27057590996168585,
+            "rmse": 0.3448851410201487
           },
           {
             "turbine_id": "turbine-2",
             "horizon": "1-24",
-            "samples": 672,
-            "mae": 0.2601404439484127,
-            "rmse": 0.31852503401920446
+            "samples": 696,
+            "mae": 0.2620198754789272,
+            "rmse": 0.33915495657672756
           },
           {
             "turbine_id": "turbine-2",
             "horizon": "25-48",
-            "samples": 672,
-            "mae": 0.2935004632936508,
-            "rmse": 0.34552289816338827
+            "samples": 696,
+            "mae": 0.2669456417624521,
+            "rmse": 0.34615944296480444
           }
-        ]
+        ],
+        "scored_points": 2784,
+        "unscored_points": 0,
+        "scored_pairs_sha256": "620458340613ef6ef102783786db670a96f589ae06465b54cf5cbb67afa575a4"
       },
       "persistence": {
         "pooled": {
-          "samples": 2688,
-          "mae": 0.3435974702380952,
-          "rmse": 0.4556732692476906
+          "samples": 2784,
+          "mae": 0.3376670258620689,
+          "rmse": 0.45933588648959
         },
         "metrics": [
           {
             "turbine_id": "turbine-1",
             "horizon": "1-24",
-            "samples": 672,
-            "mae": 0.32306299603174604,
-            "rmse": 0.4432703505431363
+            "samples": 696,
+            "mae": 0.2985177203065134,
+            "rmse": 0.42784691341861875
           },
           {
             "turbine_id": "turbine-1",
             "horizon": "25-48",
-            "samples": 672,
-            "mae": 0.3730357142857143,
-            "rmse": 0.47606827797176876
+            "samples": 696,
+            "mae": 0.37799090038314176,
+            "rmse": 0.48844932863861074
           },
           {
             "turbine_id": "turbine-2",
             "horizon": "1-24",
-            "samples": 672,
-            "mae": 0.32052579365079364,
-            "rmse": 0.43859658489973935
+            "samples": 696,
+            "mae": 0.29635775862068964,
+            "rmse": 0.42769556388904756
           },
           {
             "turbine_id": "turbine-2",
             "horizon": "25-48",
-            "samples": 672,
-            "mae": 0.35776537698412697,
-            "rmse": 0.46374124248351983
+            "samples": 696,
+            "mae": 0.377801724137931,
+            "rmse": 0.4892837654459742
           }
-        ]
+        ],
+        "scored_points": 2784,
+        "unscored_points": 0,
+        "scored_pairs_sha256": "620458340613ef6ef102783786db670a96f589ae06465b54cf5cbb67afa575a4"
+      },
+      "scada": {
+        "pooled": {
+          "samples": 2784,
+          "mae": 0.3122386500239464,
+          "rmse": 0.38932836767954043
+        },
+        "metrics": [
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "1-24",
+            "samples": 696,
+            "mae": 0.2827572677203065,
+            "rmse": 0.3581085636157219
+          },
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "25-48",
+            "samples": 696,
+            "mae": 0.33437835057471266,
+            "rmse": 0.4108416742374234
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "1-24",
+            "samples": 696,
+            "mae": 0.2850184497126437,
+            "rmse": 0.36304495934612135
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "25-48",
+            "samples": 696,
+            "mae": 0.3468005320881226,
+            "rmse": 0.4212743101451953
+          }
+        ],
+        "scored_points": 2784,
+        "unscored_points": 0,
+        "scored_pairs_sha256": "620458340613ef6ef102783786db670a96f589ae06465b54cf5cbb67afa575a4"
+      },
+      "weather_scada": {
+        "pooled": {
+          "samples": 2784,
+          "mae": 0.16180635692049808,
+          "rmse": 0.2332756597914383
+        },
+        "metrics": [
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "1-24",
+            "samples": 696,
+            "mae": 0.13730375287356322,
+            "rmse": 0.19754594620197757
+          },
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "25-48",
+            "samples": 696,
+            "mae": 0.185004502394636,
+            "rmse": 0.2615645619954919
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "1-24",
+            "samples": 696,
+            "mae": 0.13828129262452107,
+            "rmse": 0.2022604909567762
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "25-48",
+            "samples": 696,
+            "mae": 0.18663587978927204,
+            "rmse": 0.2632876879949368
+          }
+        ],
+        "scored_points": 2784,
+        "unscored_points": 0,
+        "scored_pairs_sha256": "620458340613ef6ef102783786db670a96f589ae06465b54cf5cbb67afa575a4"
       }
     },
+    "scored_pairs_sha256": "620458340613ef6ef102783786db670a96f589ae06465b54cf5cbb67afa575a4",
     "unscored_points": 0,
-    "validation_start": "2026-01-01T00:00:00+00:00",
-    "validation_end": "2026-01-28T00:00:00+00:00"
+    "validation_start": "2026-01-01T12:00:00+00:00",
+    "validation_end": "2026-01-29T12:00:00+00:00"
   },
   "refit": {
     "model": {
-      "id": "model-278bd6130ed3466ca981f75368f0df8e",
-      "algorithm": "catboost-scada-v1",
-      "trained_through": "2026-01-31T00:00:00Z",
-      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
-      "training_rows": 94600,
+      "id": "model-weather-experiment-1f60629dea49f482937c2b41",
+      "algorithm": "catboost-weather-scada-v1",
+      "trained_through": "2026-01-31T12:00:00Z",
+      "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
+      "training_rows": 61180,
       "turbine_ids": [
         "turbine-1",
         "turbine-2"
@@ -988,36 +1857,215 @@
       "is_demo": true
     },
     "request": {
-      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
-      "trained_through": "2026-01-31T00:00:00Z",
+      "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
+      "trained_through": "2026-01-31T12:00:00Z",
       "algorithm": "catboost",
       "weather_snapshot_ids": [],
-      "feature_set": "scada",
-      "first_origin": "2023-04-01T00:00:00Z",
-      "last_origin": "2026-01-28T00:00:00Z",
+      "feature_set": "weather-scada",
+      "first_origin": "2024-03-15T12:00:00Z",
+      "last_origin": "2026-01-28T12:00:00Z",
       "horizon_hours": 48,
       "weather_source": "archive",
       "iterations": 500,
-      "depth": 4,
+      "depth": 6,
       "learning_rate": 0.04,
       "random_seed": 42,
       "loss_function": "MAE",
       "l2_leaf_reg": 10.0,
       "origin_step_hours": 24
     },
+    "training_summary": {
+      "turbine-1": {
+        "training_samples": 29294,
+        "missing_or_late_targets": 3346,
+        "skipped_origins_no_weather": 5,
+        "origins_without_weather": [
+          "2025-08-05T12:00:00+00:00",
+          "2025-08-06T12:00:00+00:00",
+          "2025-08-07T12:00:00+00:00",
+          "2025-08-08T12:00:00+00:00",
+          "2025-08-09T12:00:00+00:00"
+        ],
+        "feature_importance": {
+          "wind_speed_ms": 61.84839656098206,
+          "wind_direction_sin": 2.784258967411168,
+          "wind_direction_cos": 2.289206866385811,
+          "temperature_c": 1.7910946688110605,
+          "hour_sin": 1.1421672932325717,
+          "hour_cos": 0.8774499565708243,
+          "day_sin": 2.3883912175016193,
+          "day_cos": 3.7934363079874704,
+          "lead_hours": 1.7087768662297635,
+          "last_power": 0.8702787781001292,
+          "last_wind": 1.2092258962589895,
+          "last_temperature": 1.7343844086922955,
+          "observation_age_hours": 0.0120359774552842,
+          "power_mean_3h": 0.7657838430652568,
+          "power_std_3h": 0.5727851474952552,
+          "power_count_3h": 0.06629091748073015,
+          "wind_mean_3h": 0.5609386097218604,
+          "wind_std_3h": 0.3156622647900734,
+          "wind_count_3h": 0.054652394967132055,
+          "temperature_mean_3h": 1.9056184006847012,
+          "temperature_std_3h": 0.9606071868413665,
+          "temperature_count_3h": 0.018943321563037394,
+          "power_mean_6h": 0.30915567899650603,
+          "power_std_6h": 0.6047565639234688,
+          "power_count_6h": 0.018604394506591095,
+          "wind_mean_6h": 0.6656663164518601,
+          "wind_std_6h": 0.5470236275191724,
+          "wind_count_6h": 0.08376793207369777,
+          "temperature_mean_6h": 1.6782180586803215,
+          "temperature_std_6h": 1.0170940682289369,
+          "temperature_count_6h": 0.055275374627701025,
+          "power_mean_24h": 0.7460499903738682,
+          "power_std_24h": 0.5604891517626296,
+          "power_count_24h": 0.04766331615524711,
+          "wind_mean_24h": 0.8523227700313505,
+          "wind_std_24h": 0.8786416346665199,
+          "wind_count_24h": 0.061374899484119706,
+          "temperature_mean_24h": 2.437165646329332,
+          "temperature_std_24h": 1.697720745171844,
+          "temperature_count_24h": 0.0686239787883731
+        },
+        "weather_origins": 680,
+        "weather_lineage_sha256": "3b6e09da997dbd8e24be5c4d413cfac2b174b3b57a458586e7b05d9592413962"
+      },
+      "turbine-2": {
+        "training_samples": 31886,
+        "missing_or_late_targets": 754,
+        "skipped_origins_no_weather": 5,
+        "origins_without_weather": [
+          "2025-08-05T12:00:00+00:00",
+          "2025-08-06T12:00:00+00:00",
+          "2025-08-07T12:00:00+00:00",
+          "2025-08-08T12:00:00+00:00",
+          "2025-08-09T12:00:00+00:00"
+        ],
+        "feature_importance": {
+          "wind_speed_ms": 62.112647208130305,
+          "wind_direction_sin": 2.933472196477925,
+          "wind_direction_cos": 2.677716870578966,
+          "temperature_c": 1.5216703102072064,
+          "hour_sin": 1.0457843494934533,
+          "hour_cos": 1.371931501988251,
+          "day_sin": 2.153854913526742,
+          "day_cos": 3.0579114965043996,
+          "lead_hours": 1.6203943071070892,
+          "last_power": 1.1771213912866871,
+          "last_wind": 1.0364034619892477,
+          "last_temperature": 1.3102432273324276,
+          "observation_age_hours": 0.016558567424051786,
+          "power_mean_3h": 0.694842623666063,
+          "power_std_3h": 0.96681668050166,
+          "power_count_3h": 0.07938505544341645,
+          "wind_mean_3h": 0.7494453083676736,
+          "wind_std_3h": 0.5913715987436999,
+          "wind_count_3h": 0.03751407933444127,
+          "temperature_mean_3h": 1.3925898533836167,
+          "temperature_std_3h": 0.8061540080981291,
+          "temperature_count_3h": 0.022752982701484882,
+          "power_mean_6h": 0.5698891923957499,
+          "power_std_6h": 0.5688769653285626,
+          "power_count_6h": 0.04559004119939721,
+          "wind_mean_6h": 0.6527276712908093,
+          "wind_std_6h": 1.0647533629566202,
+          "wind_count_6h": 0.04985974957974776,
+          "temperature_mean_6h": 1.9620451064558404,
+          "temperature_std_6h": 1.275075191130056,
+          "temperature_count_6h": 0.05779527389923099,
+          "power_mean_24h": 0.4799879162568786,
+          "power_std_24h": 0.6394890423936511,
+          "power_count_24h": 0.04241767543695858,
+          "wind_mean_24h": 0.635244459811859,
+          "wind_std_24h": 0.8705767591433614,
+          "wind_count_24h": 0.018924094007603618,
+          "temperature_mean_24h": 1.677368449542748,
+          "temperature_std_24h": 1.9863811506456501,
+          "temperature_count_24h": 0.02641590623835732
+        },
+        "weather_origins": 680,
+        "weather_lineage_sha256": "be6898d54ee21f5b5e27e6b0be7d28fc2b4e2d9d0cabad5baf77393f5c452091"
+      }
+    },
     "evaluation": null,
-    "selection_sha256": "78701476f44fee1f21c2fdb534b41089277ca2ab48393c9f56e68be23bb40252"
-  },
-  "smoke": {
-    "run_id": "run-d27adad83b5f4c1f8616fac8f60154fe",
-    "points": 96,
-    "is_demo": true,
-    "weather_source": "demo"
+    "selection_sha256": "61a751ec945efe5face2e9625ecf9827f34ba3eaf85adb77b7bfd67f91d0a886"
   },
   "notes": [
-    "Selection uses November and December only; January is a reused comparison period, not a pristine unseen test.",
-    "Raw SCADA, model binaries and individual predictions are not included in this summary.",
-    "Reporting latency and physical power normalization remain unconfirmed.",
-    "Refitted weights have no measured February score."
-  ]
+    "Weather candidates were fixed before fitting and selected using November/December only.",
+    "January is a reused comparison period, not an untouched test or a tuning fold.",
+    "All models score identical daily 12UTC issue/target pairs with 48 hourly leads; overlapping pairs are correlated.",
+    "Constant and turbine x UTC hour climatology use training-period medians fixed at January 1; persistence uses only SCADA available at each origin.",
+    "The SCADA comparison retains the previous compact MAE hyperparameters, refitted on the same daily origins and training start as the weather models.",
+    "ECMWF archive includes 49R1 hindcasts; schedule-derived availability is an explicit assumption, not individually observed publication evidence.",
+    "Reporting latency, source timezone semantics, normalization, rated power and hub height remain provisional.",
+    "No February actual generation is supplied; February accuracy is not measured."
+  ],
+  "weather": {
+    "protocol": "ecmwf-00utc-hindcast-schedule-10h-v1",
+    "source": "Open-Meteo Single Runs",
+    "model": "ecmwf_ifs",
+    "source_file": "ecmwf_ifs_single_runs.csv.gz",
+    "source_sha256": "7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3",
+    "run_hour_utc": 0,
+    "issue_hour_utc": 12,
+    "publication_delay_hours": 10,
+    "availability_basis": "Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof.",
+    "schedule_assumption_accepted": true,
+    "historical_operational_availability_proven": false,
+    "hindcast": true,
+    "documentation_reviewed_on": "2026-09-23",
+    "sources": [
+      "https://open-meteo.com/en/docs/single-runs-api",
+      "https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086",
+      "https://www.ecmwf.int/en/forecasts/datasets/open-data"
+    ],
+    "limitations": [
+      "Open-Meteo identifies the early ECMWF IFS archive as Cycle 49R1 hindcasts. These values are not proven to be the contemporaneous operational forecasts.",
+      "Publication time is inferred from the ECMWF dissemination/open-data schedule reviewed in September 2026, not measured for each historical run. The current schedule is not evidence of the schedule or outages in 2024-2026.",
+      "A 10-hour publication delay is a conservative reconstruction assumption, not an Open-Meteo historical service guarantee.",
+      "The compiled CSV does not retain individual API response metadata. Units are supported by the collector's explicit m/s and GMT request parameters.",
+      "Both turbines can share one NWP grid cell; 100 m forecast wind is not a measurement of the unknown turbine hub height."
+    ],
+    "wind_height_m": 100,
+    "units": {
+      "wind_speed": "m/s",
+      "wind_direction": "degrees",
+      "temperature": "C"
+    },
+    "units_evidence": "windagent/openmeteo.py fetch_single_run explicitly requests wind_speed_unit=ms and timezone=GMT; temperature default is Celsius. Individual hourly_units responses are not retained in the compiled CSV.",
+    "timestamp_semantics": "UTC source valid_time is unchanged; instantaneous weather at the hourly interval end is the feature for power averaged over the preceding hour.",
+    "counts": {
+      "selected_rows": 102672,
+      "excluded_other_cycle_rows": 13392,
+      "missing_required_weather_rows": 144,
+      "selected_run_location_groups": 1426,
+      "empty_groups_skipped": 2,
+      "snapshots": 1424,
+      "points": 102528
+    },
+    "missing_run_dates": [
+      "2025-08-05",
+      "2025-08-06",
+      "2025-08-08",
+      "2025-08-09"
+    ],
+    "empty_groups": [
+      {
+        "run_init": "2025-08-07T00:00:00+00:00",
+        "turbine_id": "turbine-1"
+      },
+      {
+        "run_init": "2025-08-07T00:00:00+00:00",
+        "turbine_id": "turbine-2"
+      }
+    ]
+  },
+  "february": {
+    "forecast": "results/february-2026/forecast.csv",
+    "manifest": "results/february-2026/manifest.json",
+    "rows": 2784,
+    "metrics": [],
+    "weather_source": "archive"
+  }
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { poolMetrics, sameCoverage } from './metrics.ts';
+import { bestSimpleBaseline, modelRole, poolMetrics, sameCoverage } from './metrics.ts';
 
 const first = { turbine_id: 'turbine-1', horizon: '1-24', samples: 3, mae: 0.1, rmse: 0.2 };
 const second = { turbine_id: 'turbine-2', horizon: '25-48', samples: 1, mae: 0.5, rmse: 0.6 };
@@ -27,4 +27,19 @@ test('equal total samples cannot hide mismatched turbine, horizon, or cell count
   assert.equal(sameCoverage([first], [{ ...first, horizon: '25-48' }]), false);
   assert.equal(sameCoverage([first, first], [first, first]), false);
   assert.equal(sameCoverage([], []), false);
+});
+
+test('selected weather model is compared with the strongest simple baseline', () => {
+  const summary = mae => ({ samples: 4, mae, rmse: mae });
+  const models = [
+    { id: 'weather_scada', summary: summary(0.28) },
+    { id: 'persistence', summary: summary(0.34) },
+    { id: 'constant', summary: summary(0.26) },
+    { id: 'climatology', summary: summary(0.27) },
+  ];
+  assert.equal(bestSimpleBaseline(models)?.id, 'constant');
+  assert.equal(bestSimpleBaseline([{ id: 'constant', summary: null }]), undefined);
+  assert.match(modelRole('constant'), /training history/);
+  assert.match(modelRole('climatology'), /turbine and UTC hour/);
+  assert.match(modelRole('weather_scada'), /archived forecast weather/);
 });

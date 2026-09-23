@@ -721,9 +721,16 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "selected" | "previous" | "persistence";
+            id: "selected" | "previous" | "constant" | "climatology" | "persistence" | "scada" | "weather_scada";
             /** Label */
             label: string;
+            /**
+             * Selected
+             * @default false
+             */
+            selected: boolean;
+            /** Scored Pairs Sha256 */
+            scored_pairs_sha256?: string | null;
             pooled: components["schemas"]["EvidenceScore"];
             /** Metrics */
             metrics: components["schemas"]["EvidenceMetric"][];
@@ -764,6 +771,7 @@ export interface components {
             benchmark: components["schemas"]["EvidenceBenchmark"];
             selection: components["schemas"]["EvidenceSelection"];
             data: components["schemas"]["EvidenceData"];
+            weather?: components["schemas"]["EvidenceWeather"] | null;
             refit: components["schemas"]["EvidenceRefit"];
             /** Checkpoints */
             checkpoints: components["schemas"]["EvidenceCheckpoint"][];
@@ -807,6 +815,25 @@ export interface components {
             incomplete_hours: number;
             /** Missing Slots */
             missing_slots: number;
+        };
+        /** EvidenceWeather */
+        EvidenceWeather: {
+            /** Source */
+            source: string;
+            /** Model */
+            model: string;
+            /** Source Sha256 */
+            source_sha256: string;
+            /** Run Hour Utc */
+            run_hour_utc: number;
+            /** Issue Hour Utc */
+            issue_hour_utc: number;
+            /** Publication Delay Hours */
+            publication_delay_hours: number;
+            /** Availability Basis */
+            availability_basis: string;
+            /** Limitations */
+            limitations: string[];
         };
         /** ForecastPoint */
         ForecastPoint: {

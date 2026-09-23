@@ -1,6 +1,25 @@
 type ScoredGroup = { turbine_id: string; horizon: string; samples: number; mae: number; rmse: number };
 type Score = { samples: number; mae: number; rmse: number };
 
+export function modelRole(id: string): string {
+  const roles: Record<string, string> = {
+    constant: 'Median power fitted on training history only',
+    climatology: 'Training median by turbine and UTC hour',
+    persistence: 'Last observation available at each issue time',
+    scada: 'CatBoost using available SCADA history',
+    weather_scada: 'CatBoost using archived forecast weather and SCADA',
+    selected: 'Chosen development candidate',
+    previous: 'Previous model configuration',
+  };
+  return roles[id] ?? 'Recorded model';
+}
+
+/** A weak persistence forecast should not conceal a stronger simple baseline. */
+export function bestSimpleBaseline<T extends { id: string; summary: Score | null }>(models: readonly T[]): T | undefined {
+  return models.filter(model => ['constant', 'climatology', 'persistence'].includes(model.id) && model.summary)
+    .reduce<T | undefined>((best, model) => !best || model.summary!.mae < best.summary!.mae ? model : best, undefined);
+}
+
 /** Pool errors over observations; averaging group RMSE values is mathematically wrong. */
 export function poolMetrics(metrics: readonly ScoredGroup[]): Score | null {
   const samples = metrics.reduce((sum, metric) => sum + metric.samples, 0);

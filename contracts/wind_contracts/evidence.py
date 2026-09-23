@@ -35,8 +35,12 @@ class EvidenceMetric(Metric):
 
 
 class EvidenceModel(Contract):
-    id: Literal["selected", "previous", "persistence"]
+    id: Literal[
+        "selected", "previous", "constant", "climatology", "persistence", "scada", "weather_scada"
+    ]
     label: str
+    selected: bool = False
+    scored_pairs_sha256: Sha256 | None = None
     pooled: EvidenceScore
     metrics: list[EvidenceMetric] = Field(min_length=1)
 
@@ -52,7 +56,7 @@ class EvidenceBenchmark(Contract):
     reused_comparison: Literal[True] = True
     scored_pairs: int = Field(gt=0)
     unscored_pairs: Count
-    models: list[EvidenceModel] = Field(min_length=3, max_length=3)
+    models: list[EvidenceModel] = Field(min_length=3, max_length=7)
 
 
 class EvidenceFold(Contract):
@@ -114,6 +118,17 @@ class EvidenceCheckpoint(Contract):
     detail: str
 
 
+class EvidenceWeather(Contract):
+    source: str
+    model: str
+    source_sha256: Sha256
+    run_hour_utc: int = Field(ge=0, le=23)
+    issue_hour_utc: int = Field(ge=0, le=23)
+    publication_delay_hours: int = Field(ge=0, le=24)
+    availability_basis: str = Field(min_length=1)
+    limitations: list[str] = Field(min_length=1)
+
+
 class EvidenceReport(Contract):
     status: Literal["provisional"] = "provisional"
     source_file: str
@@ -122,6 +137,7 @@ class EvidenceReport(Contract):
     benchmark: EvidenceBenchmark
     selection: EvidenceSelection
     data: EvidenceData
+    weather: EvidenceWeather | None = None
     refit: EvidenceRefit
     checkpoints: list[EvidenceCheckpoint]
     limitations: list[str]
