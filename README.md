@@ -1,343 +1,165 @@
 # Low Prior Energy
 
-An energy exploration and forecasting workspace. The working forecasting pipeline predicts hourly output from **two wind turbines, 24–48 hours ahead**. The explorer's shared asset contract includes wind, hydro, solar, and other energy types; hydro/solar catalogs and forecasting models are future work. `main` integrates the `frontend`, `ml-aiagent`, and `danik` branches.
+Low Prior Energy прогнозирует почасовую нормализованную мощность двух ветротурбин на 24–48 часов вперёд. React-дашборд операционного управления подключается к сервису FastAPI и детерминированному агенту прогнозирования: он отбирает подходящие снимки погоды, строит погодные/SCADA-признаки, запускает CatBoost-модели по каждой турбине, проверяет результаты, объясняет их и пересчитывает прогноз при изменении входных данных. Проводник (explorer) поддерживает разные типы энергоактивов; солнечная и гидроэнергетика — задачи на будущее.
 
-The skeleton runs end to end today with **clearly labelled synthetic weather**. It includes a real API, React dashboard, SQLite persistence, baseline model training, auditable weather snapshots, daily replay, CSV export, and tests. It does **not** claim a trained competition model or verified February weather coverage.
+## Для жюри
 
-The integrated dashboard also supports dataset import, actual-power overlays, model training (binned curve, persistence, weather ridge, and CatBoost), and weather snapshot management. The data branch contributes raw CSVs and compressed candidate weather archives for offline analysis; their presence does not establish historical publication provenance. See [data analysis](DATA.md) and [data/replay contracts](docs/data-and-replay.md).
+**Цикл агента:** получение погоды → проверка доступности и подготовка → модель → почасовой прогноз → проверка и необязательный LLM-анализ → пересчёт при обновлении входов. OpenAI/NVIDIA-аналитик получает только read-only инструменты и никогда не меняет численные прогнозы. Без ключа работает детерминированный анализ.
 
-Chronological CatBoost selection reduces January MAE from **0.29834 to 0.28006** on the same 2,688 forecast pairs. Selection uses November/December only; a separate January 31 refit is available locally. These are provisional SCADA-only results, not February competition scores. See [results and model IDs](docs/tuned-training-results.md) and [reproduction](docs/ml-training.md#chronological-model-selection).
+**Погода действительно входит в модель:** ветер и направление на 100 м, температура на 2 м, календарь, лид и SCADA, доступная на момент выпуска. Параметры выбираются только по ноябрю–декабрю 2025; январь используется для сравнения после фиксации выбора. Все пять моделей оцениваются на одинаковых парах выпуск/цель, с разрезами по турбинам и лидам 1–24 / 25–48. Январь уже использовался в предыдущих экспериментах, поэтому это не новый независимый holdout.
 
-Open **Evidence** in the navigation to inspect the recorded benchmark, compare turbines and lead windows, trace model selection, and download the evidence JSON. The selected model's January MAE is **18.49% lower than persistence** on matching forecast pairs. January was reused as a comparison window; it is not an untouched holdout. This screen describes the recorded experiment, independently of the model currently selected for forecasting.
+| Модель | Пар | MAE | RMSE |
+| --- | ---: | ---: | ---: |
+| Константа (медиана) | 2784 | 0.26817 | 0.34506 |
+| Климатология (турбина × час) | 2784 | 0.26656 | 0.34237 |
+| Persistence | 2784 | 0.33767 | 0.45934 |
+| CatBoost SCADA | 2784 | 0.31224 | 0.38933 |
+| CatBoost weather-SCADA | 2784 | 0.16181 | 0.23328 |
 
-Completed forecasts now include an **operations brief**: highest/lowest continuous three-hour output windows, the largest adjacent-hour change, and a downloadable Markdown report with input lineage. The agent also logs mean output, peak output and largest rises/drops for each turbine. Signals use normalized power and retain demo/provisional labels. Start the presentation with the [three-minute judge walkthrough](docs/judges-walkthrough.md).
+Метрики — ошибка нормализованной мощности на шкале [0,1], не проценты «точности» и не МВт. Подробные разрезы и результаты фолдов: [отчёт обучения](docs/tuned-training-results.md), [машиночитаемые результаты](docs/model-selection-results.json), экран **Evidence**.
 
-## 1. Start here
+**Главный артефакт:** [февральский CSV](results/february-2026/forecast.csv) и [манифест](results/february-2026/manifest.json): 29 выпусков с 31 января по 28 февраля, две турбины, по 48 часов — **2 784 строки**. Сохранены полные горизонты, включая пограничные цели января и марта. Февральских фактов нет, поэтому февральские MAE/RMSE не заявляются.
 
-Prerequisites: [Node.js](https://nodejs.org/) 22.12+ and [uv](https://docs.astral.sh/uv/getting-started/installation/). uv installs the Python version in `.python-version` if necessary. Run all commands from the repository root.
+**Существенное ограничение:** это реконструкция с реальными погодными модельными данными, **не доказанный архив оперативных прогнозов**. Open-Meteo описывает ранний ECMWF IFS как Cycle 49R1 hindcast. `available_at = run_init + 10h` — явно принятая предпосылка по опубликованному расписанию, а не подтверждение публикации каждого запуска. Строгая часть кейса о фактической доступности в прошлом остаётся открытой. [Источники, пропуски и правила импорта](docs/weather-archive.md).
+
+После установки зависимостей три основные команды:
+
+```sh
+npm run reproduce
+npm run dev
+npm run check
+```
+
+Первая воспроизводит подготовку, импорт, выбор модели, январскую оценку, дообучение, февральский replay и регистрацию модели для дашборда. Вторая запускает сайт/API и остаётся работать; третья выполняется в другом терминале. Время полного воспроизведения на этой машине: **485,3 с в чистом клоне (около 8 минут); повтор с готовым кешем — 4,5 с**. Seed = 42, CPU, два потока CatBoost; время зависит от CPU. CSV чистого клона совпал побайтно, повторный запуск не изменил опубликованные файлы. Веса обучаются из исходных файлов, не требуют ручного копирования с компьютера автора.
+
+## Установка и дашборд
+
+Требования: Node.js 22.12+ и [uv](https://docs.astral.sh/uv/). Из корня репозитория:
 
 ```sh
 uv sync --locked
 npm ci
-npm run dev
 ```
 
-| Service | Address |
-| --- | --- |
-| Dashboard | http://127.0.0.1:5173 |
-| API | http://127.0.0.1:8000 |
-| Interactive API documentation | http://127.0.0.1:8000/docs |
-| OpenAPI schema | http://127.0.0.1:8000/openapi.json |
-| Health check | http://127.0.0.1:8000/health |
+Затем выполните три команды выше. Дашборд: **http://127.0.0.1:5173**; API: **http://127.0.0.1:8000**; интерактивные маршруты: **http://127.0.0.1:8000/docs**. Vite проксирует `/api` и `/health` на бэкенд. При необходимости запускайте `npm run dev:api` / `npm run dev:web` отдельно.
 
-Keep `npm run dev` running. First visits open **Explore**: select Kazakhstan on the globe or in the country directory, select the configured wind site and its turbines, and choose **Open forecast**. Leave **Synthetic demo** and **Demo power curve** selected, then click **Run forecast**. The dashboard displays hourly values, the agent's decisions, and a CSV download. **Run daily replay** generates the February demonstration; accuracy remains unavailable without actual observations.
+В **Explore** выберите Казахстан, ветровую площадку и её турбины, затем нажмите **Open forecast**. После воспроизведения обновите рабочую область, выберите зарегистрированную модель **catboost-weather-scada-v1** и **Verified archive**, укажите выпуск **2026-01-31 12:00 UTC** и выберите 24 или 48 часов. Запустите прогноз, чтобы посмотреть график, погоду, происхождение данных (provenance), события агента и почасовой экспорт. **Run February replay** использует ежедневные выпуски в 12:00 UTC. Модель остаётся помеченной как предварительная (provisional), поскольку предпосылки о задержке публикации и SCADA независимо не подтверждены. Перечисление архива само по себе не доказывает историческую достоверность: смотрите доказательства по каждому снимку.
 
-Use **Profile → Appearance** for **General** (the original navy theme), **Light**, or **Black**. Appearance and the last workspace are remembered in this browser. The globe is loaded separately, pauses when hidden, respects reduced motion, and has a station-directory fallback when WebGL is unavailable. Country boundaries are bundled locally; runtime globe navigation needs no map-service key. See [Explorer and appearance](docs/explorer.md).
+**Evidence** описывает зафиксированный январский бенчмарк независимо от модели, выбранной в данный момент для прогноза. Profile → Appearance предлагает General, Light и Black. У глобуса есть доступный с клавиатуры резервный справочник стран/станций.
 
-Run separately when working in one area:
+HTTP-проверка при запущенном сайте:
 
 ```sh
-npm run dev:api
-npm run dev:web
+uv run python scripts/smoke_demo.py
+uv run python scripts/smoke_demo.py --archive
 ```
 
-The backend owns port **8000**; Vite owns **5173** and proxies `/api` and `/health`. The agent is an importable Python module inside the API process, so it needs no third HTTP service. The frontend uses relative API URLs, without credentials or browser-to-weather calls.
+Вторая команда задействует воспроизведённую погодную модель, 29 ежедневных архивных прогнозов, обновление при неизменных входах и экспорт CSV. Обе команды создают локальные записи; ни одна не оценивает точность за февраль.
 
-Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. The project owner confirmed the example turbine coordinates and normalized power from the data branch; the original map links are retained. Source timestamps are confirmed as interval starts in fixed UTC+06:00. Rated capacity and hub height were not supplied and remain null; observation latency remains unconfirmed. Copy `config/turbines.example.json` to `config/turbines.local.json` to override metadata and set `WINDFARM_TURBINES=config/turbines.local.json`.
+## Протокол воспроизведения
 
-## 2. Three people, three areas
+- Входные данные под контролем Git: `data/raw/turbine_1.csv`, `turbine_2.csv` и `data/weather/ecmwf_ifs_single_runs.csv.gz`.
+- Канонический SCADA содержит только полные почасовые интервалы. Исходные часы зафиксированы как UTC+06:00, метки времени обозначают начало интервала, доступность предполагает задержку отчётности 10 минут. Пропущенные показания не заполняются нулями; невалидные строки помещаются в карантин и подсчитываются. Эти правила исходных часов отличаются от текущего гражданского времени.
+- Во всём обучении и replay используются только запуски **ECMWF 00 UTC**. Выпуск в **12:00 UTC = 17:00 Asia/Almaty** в феврале 2026 (18:00 по зафиксированным часам SCADA) использует лиды запуска 13–60. Предполагаемая 10-часовая задержка публикации оставляет два часа до выпуска.
+- Отсчёт обучающих периодов начинается **15 марта 2024, 12:00 UTC**. Пропущенные погодные периоды пропускаются и подсчитываются при обучении. Инференс и оценка по-прежнему требуют полного подходящего снимка.
+- Три заранее заданные погодные конфигурации соревнуются на хронологических ноябрьско-декабрьских фолдах. Январское сравнение использует отсечку **1 января 2026, 00:00 UTC**, выпуски с 1 по 29 января в полдень и одинаковые цели для всех моделей. Константа/климатология — медианы за период обучения; persistence читает только наблюдения, доступные на момент каждого выпуска.
+- Финальная погодная модель использует зафиксированные победившие параметры и отсечку **31 января 2026, 12:00 UTC**. Январские метрики не оценивают эти дообученные веса. SCADA после последнего наблюдения не синтезируется в феврале.
+- Воспроизведение вызывает код `WindService.execute_backtest` / `ForecastAgent` API с `weather_source="archive"` и без февральских фактов. Загрузки API/воркера остаются **неподтверждёнными** до отдельного документированного импорта; они никогда не продвигаются автоматически.
+- Локальные кеши и файлы моделей игнорируются. Завершённые кеши проходят проверку контрольных сумм; изменённые входные данные/код создают новую ревизию эксперимента. CSV и манифест лежат в отслеживаемой папке `results/february-2026/`. `npm run reproduce -- --no-register` генерирует результаты без публикации в локальный реестр API.
 
-Optional cloud analysis: [OpenAI setup](docs/openai-agent.md) or [NVIDIA setup](docs/nvidia-agent.md).
-It explains completed forecasts using read-only tools; numerical prediction remains
-with the selected ML model. Installing dependencies does not restore trained weights
-or model registry records in a fresh clone.
+Офлайн-импорт явно принимает документированную предпосылку hindcast/расписания. Чтобы удовлетворить строгим требованиям исторического replay, предоставьте современные прогнозы с оригинальными доказательствами публикации и повторите тот же процесс. Изменения в проверках меток времени не требуются.
 
-### Person 1 — Agent / weather / orchestration (`Agent` branch)
-
-**Own:** `agent/`, `tests/test_leakage.py`, `tests/test_weather_adapter.py`, `docs/agent.md`.
-
-**Already provided:** `ForecastAgent`, weather/predictor protocols, deterministic demo weather, verified-archive selection, a Single Runs download adapter, bounded retries, input fingerprints, decision events, and an optional refresh watcher.
-
-**Your tasks, in order:**
-
-1. Confirm both coordinates and investigate original forecast coverage for January–February 2026. Record the source, original model run, publication evidence, units, and wind height.
-2. Download candidate weather through `/weather/fetch`; verify provenance before importing a separate verified snapshot. A current download timestamp is not historical publication evidence.
-3. Complete weather preparation: choose a suitable model/height, handle missing hours explicitly, cache raw provider responses, and document any correction or interpolation.
-4. Improve the agent's decisions: choose permitted fallback runs, explain failures, monitor new inputs, and recompute when the fingerprint changes.
-5. Evaluate the optional OpenAI/NVIDIA analyst reports. The forecast workflow enforces data availability deterministically; the LLM explains completed results through read-only tools and cannot change power values or verify weather archives.
-
-**Deliver to backend:** a `WeatherProvider` returning `WeatherSnapshot`; `ForecastAgent.run(request, turbines, emit)` returns `ForecastResult`. Import only `wind_contracts`, your own code, and third-party libraries. Do not import backend implementation modules.
-
-**Done when:** both turbines have evidence-backed forecast snapshots, replay cannot see future weather, failures/retries are logged, changed inputs produce a new run, and your tests pass.
-
-### Person 2 — Backend / ML / evaluation (`backend` branch)
-
-**Own:** `backend/`, `tests/test_api.py`, `tests/test_ml.py`, data adapters in `scripts/`, `docs/backend.md`.
-
-**Steward shared integration files:** `contracts/`, `config/`, `pyproject.toml`, `uv.lock`, root scripts and CI. Discuss breaking contract changes with the other two people in the PR; no separate permission process is required.
-
-**Already provided:** versioned FastAPI routes, validated schemas, SQLite storage, dataset import, a trainable binned power-curve baseline, an illustrative demo model, forecast/backtest jobs, horizon-specific MAE/RMSE, exports, and restart recovery.
-
-**Your tasks, in order:**
-
-1. Obtain the supplied March 2023–January 2026 data. Confirm source columns, timestamp semantics, timezone changes, turbine IDs, and normalization. Convert it to the canonical observation contract.
-2. Analyse missing values, curtailment/stoppages, invalid readings, and target distribution. Fit transformations on training data only.
-3. Implement a persistence baseline and a candidate ML model behind `Predictor`. The included binned curve is a starting baseline, not a validated final solution.
-4. Join archived weather to targets by **issue time + valid time + turbine**, not just timestamp. Add forecast lead, weather variables, and only those SCADA features available at issue time.
-5. Use chronological pre-February validation. Freeze model selection before scoring February. Add calibrated uncertainty only after checking coverage.
-6. Produce February CSVs and a metrics report, separately for 1–24 and 25–48 hours and each turbine. Add station-level aggregation when rated capacities and normalization are confirmed.
-
-**Deliver to agent:** a `Predictor` with `.info` and `.predict(turbine, weather, issued_at) -> list[ForecastPoint]`. **Deliver to frontend:** the API in section 4 and generated types. Keep ML independent of HTTP.
-
-**Done when:** training is reproducible, model metadata records cutoff/data/version, no feature uses future observations, replay metrics beat or honestly compare with baselines, and API tests pass.
-
-### Person 3 — Frontend / demonstration (`frontend` branch)
-
-**Own:** `frontend/` except generated contracts, `docs/frontend.md`; update the npm lockfile when dependencies change.
-
-**Already provided:** React + TypeScript + Vite, typed API client, turbine selection, 24/48-hour controls, normalized-power chart and table, asynchronous job polling, errors, provenance, decision log, history, replay, and CSV downloads.
-
-Also integrated: canonical CSV/JSON upload, source provenance, all four model-training choices, observation overlays, candidate weather download, and immutable snapshot import. Expand **Datasets & model training** or **Weather archive** below the replay panel.
-
-**Your tasks, in order:**
-
-1. Refine the dashboard and add a map once coordinates are confirmed.
-2. Build dataset upload/training controls on the existing routes; add a selector for actual observations in replay. Until then, use Swagger or the CSV helper.
-3. Display forecast versus actual power, per-horizon metrics, and missing-data coverage. Show uncertainty only when supplied by a calibrated backend model.
-4. Make archive verification status and original issue times visible. Keep demo results clearly labelled.
-5. Polish loading, empty, error, keyboard, and mobile states; prepare a short demonstration of the full workflow.
-
-**Integration rule:** all calls go through `frontend/src/api.ts`. Import generated types from `frontend/src/generated/api.ts`; do not recreate response shapes or calculate power predictions in the browser.
-
-**Done when:** users can launch and inspect a forecast/replay, errors are understandable, the UI shows real API data and correct units, and `npm run build` passes.
-
-## 3. Architecture and folder boundaries
-
-```text
-frontend/                        Person 3: React dashboard + API client
-backend/wind_backend/
-  main.py                        Person 2: application and error handling
-  routes.py                      Person 2: all public HTTP routes
-  service.py                     Person 2: integration + forecast/replay jobs
-  storage.py                     Person 2: persistent SQLite repository
-  ml.py                          Person 2: interchangeable prediction models
-  evaluation.py                  Person 2: metrics by turbine and horizon
-agent/wind_agent/
-  interfaces.py                  Person 1: weather and predictor interfaces
-  weather.py                     Person 1: demo/archive/Open-Meteo adapters
-  orchestrator.py                Person 1: validate → fetch → predict → analyse
-  worker.py                      Person 1: optional input-refresh watcher
-contracts/wind_contracts/        Shared Pydantic request/response contracts
-contracts/openapi.json          Generated API contract; committed
-frontend/src/generated/api.ts   Generated TypeScript contract; committed
-config/                         Confirmed asset configuration
-examples/                       Small artificial development inputs
-scripts/                        Import, schema generation, smoke demonstration
-tests/                          API integration + leakage + model checks
-docs/                           Detailed implementation agreements
-data/                           Local observations/weather/database; ignored
-artifacts/                      Local model/report outputs; ignored
-```
+## Архитектура
 
 ```mermaid
 flowchart LR
-  UI[React dashboard] --> API[FastAPI routes]
-  API --> DB[(SQLite records)]
+  UI[React-дашборд] --> API[FastAPI]
   API --> Agent[ForecastAgent]
-  Agent --> Weather[WeatherProvider]
-  Weather --> Archive[Verified stored snapshots]
-  Weather --> Demo[Synthetic demo weather]
-  API --> Download[Open-Meteo candidate download]
-  Download --> Review[Provenance verification]
-  Review --> Archive
-  Agent --> Model[Predictor / backend ML]
-  Model --> Agent
-  Agent --> Checks[Coverage and quality checks]
-  Checks --> DB
-  DB --> API
-  API --> UI
+  Agent --> Weather[Неизменяемые снимки погоды]
+  Weather --> Guards[Проверки доступности и покрытия]
+  Guards --> ML[Погода + SCADA / CatBoost]
+  ML --> Audit[Численный аудит + опциональный read-only LLM]
+  Audit --> DB[(SQLite / CSV)]
+  DB --> UI
+  Weather --> Refresh[Изменение отпечатка]
+  Refresh --> Agent
 ```
 
-## 4. Predefined API routes
+| Область | Расположение |
+| --- | --- |
+| Дашборд, проводник, Evidence | `frontend/` |
+| API, хранилище, обучение, оценка | `backend/wind_backend/` |
+| Погода, проверки времени, оркестрация, облачные объяснения | `agent/wind_agent/` |
+| Общие типизированные контракты | `contracts/wind_contracts/` |
+| Сгенерированные OpenAPI / TypeScript | `contracts/openapi.json`, `frontend/src/generated/api.ts` |
+| Воспроизведение одной командой | `scripts/reproduce.py` |
+| Итоговые артефакты для проверки | `results/february-2026/`, `docs/model-selection-results.json` |
 
-All business routes use `/api/v1`. Full request/response types and examples are in `/docs` and the committed OpenAPI file.
+Исходное распределение обязанностей между тремя участниками команды сохранено в [docs/team-plan.md](docs/team-plan.md).
 
-| Method | Route after `/api/v1` | Responsibility / result |
+## Маршруты API
+
+Все бизнес-маршруты используют `/api/v1`. Полные типы запросов/ответов и примеры — в `/docs` и закоммиченном файле OpenAPI.
+
+| Метод | Маршрут после `/api/v1` | Назначение / результат |
 | --- | --- | --- |
-| GET | `/assets` | Energy registry with country/site metadata and explicit forecast capability |
-| GET | `/turbines` | Configured turbine metadata |
-| GET | `/datasets` | Imported dataset metadata |
-| POST | `/datasets` | Import validated observations (201) |
-| GET | `/datasets/{id}/observations?start=...&end=...` | Observations in an inclusive, timezone-aware window for chart comparison |
-| GET | `/models` | Available demo and trained model metadata |
-| GET | `/evidence` | Recorded chronological benchmark, comparisons, provenance and limitations |
-| GET | `/evidence/export` | Download the same typed evidence report as JSON |
-| POST | `/models/train` | Fit baseline using only data available by cutoff (201) |
-| GET | `/weather/snapshots?turbine_id=...` | Stored weather and provenance |
-| POST | `/weather/fetch` | Download an **unverified** Single Runs candidate (201) |
-| POST | `/weather/snapshots` | Import an immutable snapshot/revision (201) |
-| GET | `/forecasts?limit=20` | Recent runs, including status and results |
-| POST | `/forecasts` | Queue a forecast (202) |
-| GET | `/forecasts/{id}` | Poll run status, result, errors, and events |
-| GET | `/forecasts/{id}/events` | Agent decision log |
-| POST | `/forecasts/{id}/refresh` | Reuse unchanged inputs or queue a new run |
-| GET | `/forecasts/{id}/export` | Download hourly CSV with provenance |
-| GET | `/backtests` | Replay history |
-| POST | `/backtests` | Queue daily rolling replay (202) |
-| GET | `/backtests/{id}` | Progress, child runs, metrics, missing actuals |
-| GET | `/backtests/{id}/export` | CSV restricted to evaluation target hours |
+| GET | `/assets` | Реестр энергоактивов с метаданными страны/площадки и явной возможностью прогноза |
+| GET | `/turbines` | Метаданные настроенных турбин |
+| GET | `/datasets` | Метаданные импортированных наборов данных |
+| POST | `/datasets` | Импорт валидированных наблюдений (201) |
+| GET | `/datasets/{id}/observations?start=...&end=...` | Наблюдения во включительном, учитывающем часовой пояс окне для сравнения на графике |
+| GET | `/models` | Метаданные доступных демо- и обученных моделей |
+| GET | `/evidence` | Зафиксированный хронологический бенчмарк, сравнения, происхождение данных и ограничения |
+| GET | `/evidence/export` | Скачать тот же типизированный отчёт evidence в JSON |
+| POST | `/models/train` | Обучить базовую модель, используя только данные, доступные на момент отсечки (201) |
+| GET | `/weather/snapshots?turbine_id=...` | Сохранённая погода и происхождение данных |
+| POST | `/weather/fetch` | Загрузить **неподтверждённого** кандидата Single Runs (201) |
+| POST | `/weather/snapshots` | Импорт неизменяемого снимка/ревизии (201) |
+| GET | `/forecasts?limit=20` | Последние запуски, включая статус и результаты |
+| POST | `/forecasts` | Поставить прогноз в очередь (202) |
+| GET | `/forecasts/{id}` | Опрос статуса запуска, результата, ошибок и событий |
+| GET | `/forecasts/{id}/events` | Журнал решений агента |
+| POST | `/forecasts/{id}/refresh` | Переиспользовать неизменённые входы или поставить новый запуск |
+| GET | `/forecasts/{id}/export` | Скачать почасовой CSV с происхождением данных |
+| GET | `/backtests` | История replay |
+| POST | `/backtests` | Поставить в очередь ежедневный скользящий replay (202) |
+| GET | `/backtests/{id}` | Прогресс, дочерние запуски, метрики, отсутствующие факты |
+| GET | `/backtests/{id}/export` | CSV, ограниченный целевыми часами оценки |
 
-`GET /health` is outside the versioned prefix. Job lifecycle: `queued → running → succeeded | failed`. Poll every 1–2 seconds; a 202 response means queued, not completed. HTTP errors use `{ "code": "...", "message": "..." }`; job failures use `run.error`. Main error statuses: 404 unknown resource, 409 unavailable archive/immutable record/not-ready export, 422 invalid input, 503 temporary weather transport failure.
+`GET /health` находится вне версионированного префикса. Жизненный цикл задачи: `queued → running → succeeded | failed`. Опрашивайте каждые 1–2 секунды; ответ 202 означает «в очереди», а не «завершено». Ошибки HTTP используют `{ "code": "...", "message": "..." }`; сбои задач — `run.error`. Основные статусы ошибок: 404 неизвестный ресурс, 409 недоступный архив/неизменяемая запись/экспорт не готов, 422 неверные входные данные, 503 временный сбой транспорта погодных данных.
 
-Example forecast request:
+## Целостность данных и ограничения
 
-```json
-{
-  "turbine_ids": ["turbine-1", "turbine-2"],
-  "issued_at": "2026-01-31T00:00:00Z",
-  "horizon_hours": 48,
-  "weather_source": "demo",
-  "model_id": "demo-power-curve"
-}
-```
+Каждое признаковое наблюдение подчиняется и `valid_time <= issue_time`, и `available_at <= issue_time`. Каждая обучающая метка подчиняется отсечке обучения. Модель не может прогнозировать выпуск раньше своей отсечки. Архивная погода должна иметь `run_init <= issue_time`, `available_at <= issue_time`, обязательное доказательство и каждую запрошенную почасовую цель. Полные контрольные суммы модели/истории, неизменяемые снимки, отпечатки и обновление по-прежнему обеспечиваются принудительно. Будущие валидные времена погоды ожидаемы; будущая публикация отклоняется.
 
-## 5. Shared data rules — agree before implementing
+Мощность нормализована в диапазоне [0,1]. Номинальные мощности и высоты ступиц неизвестны: агрегация по станциям в МВт, коррекция по высоте ступицы или калиброванная неопределённость не заявляются. Ветер на 100 м — ковариата модели, а не измерение турбины. Пропуски августовской погоды пропускаются только при обучении и фиксируются. Hindcast-данные и доступность, выведенная из расписания, не позволяют безусловно утверждать соответствие исторической доступности требованиям соревнования. Февральских фактических данных во входных данных нет. Прогнозы солнечной/гидроэнергетики и автоматизированное планирование новых моментов выпуска остаются задачами на будущее.
 
-- **UTC internally, explicit timezone required.** Naive timestamps are rejected. Convert the source dataset with its confirmed timezone rules; do not apply a guessed constant offset across 2023–2026.
-- **Target timing:** points are timestamped hourly interval ends. A run issued at `T` predicts `T+1h … T+48h`; the point at `T+1h` represents mean power during `(T, T+1h]`. The starter uses weather at that valid timestamp as its feature. The backend owner must align organizer data and radiation/accumulation-style variables appropriately if added later.
-- **Power:** the initial contract expects a capacity fraction in `[0,1]`. Confirm the supplied normalization before conversion. Do not silently clip or call arbitrary normalized values MW. No physical capacity is assumed.
-- **Weather:** wind in **m/s**, temperature in **°C**, direction in **degrees**; each snapshot records wind height. The current external adapter requests 100 m wind, which is not automatically hub height.
-- **Availability:** `run_init` is model initialization; `available_at` is when the output was actually accessible; `retrieved_at` is today's download time. These are different fields. Valid weather times are expected to be in the future; publication time must be at or before issue time.
-- **Replay:** require `verification=verified`, nonempty evidence, `available_at <= issued_at`, and complete hourly coverage. No reanalysis/observations or synthetic fallback is permitted in archive mode.
-- **ML:** training uses only rows with both `valid_time <= trained_through` and `available_at <= trained_through`; a model cannot be used before its training cutoff. Feature/preprocessing leakage still needs checks when replacing the baseline.
-- **Immutability:** preserve previous forecasts. New input content produces a new run; identical content reuses the previous result. Imported weather IDs cannot be overwritten; verify a candidate by importing a new revision with a new ID.
-- **Evaluation:** preserve overlapping predictions as separate issue/lead pairs. February evaluation filters target timestamps, not issue timestamps. Actuals are read only after forecasts are made. Missing actuals count as unscored, never as zero production.
+Опциональные облачные объяснения: [OpenAI](docs/openai-agent.md) / [NVIDIA](docs/nvidia-agent.md). Учётные данные хранятся в локальном `.env`; никогда не коммитьте их. Настройте `WINDFARM_DB`, `WINDFARM_MODELS` и `WINDFARM_TURBINES` согласованно для воспроизведения и API. Для детерминированного офлайн-эксперимента ключ не нужен.
 
-The UI's replay dates use UTC to demonstrate the mechanism. Confirm the competition's daily issue time and definition of “February” in the station timezone before final evaluation. Configure the API request accordingly; do not assume the UI preset is the final evaluation protocol.
-
-## 6. Train a first baseline
-
-Real-data preparation, local CatBoost/persistence training, and chronological MAE/RMSE
-comparison are now available: see [ML training and validation](docs/ml-training.md).
-The existing training endpoint keeps the binned curve as its default; pass
-`algorithm="catboost"` or `algorithm="persistence"` to select a new model.
-Source timestamps are confirmed as interval starts in fixed UTC+06:00. Real-data
-experiments remain provisional until latency and normalization are confirmed.
-
-`examples/observations.demo.csv` contains **artificial development rows only**. Import it while the API is running:
-
-```sh
-uv run python scripts/import_csv.py examples/observations.demo.csv --name artificial-training-example --demo
-```
-
-The `--demo` flag keeps models trained on artificial data labelled as demo even with archived weather. Copy the returned dataset ID into `POST /api/v1/models/train` in Swagger:
-
-```json
-{
-  "dataset_id": "dataset-REPLACE_WITH_RETURNED_ID",
-  "trained_through": "2026-01-30T23:00:00Z"
-}
-```
-
-Refresh the dashboard's recent-runs list to reload the model selector, or use the returned model ID in a forecast request. Training on this small example only verifies integration. Real accuracy requires the supplied data, a proper validation split, and archived forecast features.
-
-The CSV contract is:
-
-```text
-turbine_id,valid_time,available_at,wind_speed_ms,temperature_c,power_normalized
-```
-
-Native source column names must be mapped explicitly by the backend owner. `available_at` must reflect known observation latency; the example's zero latency is artificial. Do not upload private/raw datasets to Git.
-
-The already tracked files from `danik` use `data/raw/turbine_1.csv` and `turbine_2.csv`. The ML preparation tool accepts them with `--input-dir data/raw --filename-pattern 'turbine_{number}.csv'`; pass `--output`, `--timezone`, `--timestamp-position`, and `--latency-minutes` explicitly. Use `--provisional` while timestamp position and latency remain assumptions. Fixed UTC+6 plant time was inferred from the data and accepted by the project owner; it is not official case metadata. Use `--timezone Etc/GMT-6` for that fixed offset. API timestamps remain UTC interval ends. The 07:00 UTC issue schedule (12:00 Astana) is a team choice for the 24–48-hour requirement.
-
-Use `uv run python scripts/train_evaluate.py --help` for the CatBoost chronological training/evaluation CLI. `windagent/` contains the data branch's exploratory pandas utilities; `agent/wind_agent/` owns the API's strict orchestration and canonical SCADA preparation. Exploratory tables are not automatically imported as verified weather snapshots.
-
-Additional tools from `danik`, adapted to the integrated contracts:
-
-- `uv run python scripts/data_report.py` reproduces local SCADA coverage and timezone-correlation evidence in `artifacts/data-report.json`.
-- `uv run python scripts/validate_models.py --data PATH/observations.csv` evaluates persistence before February 2026; `--snapshots PATH/snapshots.json` enables weather baselines using verified snapshots. The report records missing weather and actuals. CatBoost evaluation remains in `train_evaluate.py`.
-- `uv run python scripts/import_weather_archive.py` imports bundled ECMWF candidates into the running API as **unverified** snapshots. The local import time does not establish historical availability.
-- `scripts/convert_scada.py --latency-minutes N` preserves the earlier exploratory conversion: fixed UTC+6, assumed interval-start readings and at least four samples/hour. Prefer `prepare_dataset.py` for the strict complete-hour dataset; do not mix the two policies in a benchmark.
-
-See the [demo walkthrough](docs/demo.md). The [initial implementation brief](docs/implementation-spec.md) and [legacy data notes](docs/legacy-data-notes.md) are retained for historical context; current commands and contracts are documented here.
-
-## 7. Weather archive and agent workflow
-
-The adapter is implemented but has only been tested against mocked provider responses. Real coordinates and genuine archive coverage must be verified by the Agent owner.
-
-1. Configure real coordinates.
-2. Call `/weather/fetch` with `turbine_id`, `run_init`, and `weather_model="ecmwf_ifs"`.
-3. Inspect the source and archive lineage. A downloaded candidate remains `unverified`, with no assumed `available_at`.
-4. Once independently supported, import a **new snapshot ID** with `verification="verified"`, the historically correct `available_at`, and `availability_evidence` identifying the original source/publication record. This field records a review decision; the skeleton does not independently authenticate that claim.
-5. Run with `weather_source="archive"` and a trained model. Review warnings and export provenance.
-
-Open-Meteo's [Historical Forecast API](https://open-meteo.com/en/docs/historical-forecast-api) stitches initial hours from successive runs. Its [Single Runs API](https://open-meteo.com/en/docs/single-runs-api) exposes initialization-specific forecasts; current documentation describes early ECMWF coverage as hindcasts, and most other models start in April 2026. **Do not assume any historical-looking response satisfies the February availability rule.** Confirm original forecast provenance and publication delay. Free hosted access is for noncommercial use with rate limits; provide source attribution ([pricing](https://open-meteo.com/en/pricing)).
-
-An optional watcher checks an existing successful run for newly imported eligible weather:
-
-```sh
-uv run python -m wind_agent.worker --run-id run-REPLACE --interval 60
-```
-
-It polls input changes and follows the new run ID after recomputation. It does not advance issue time or retrain models. For one bounded check, add `--once`. To acquire a candidate weather run for every turbine before checking inputs, provide an explicit UTC initialization:
-
-```sh
-uv run python -m wind_agent.worker --run-id run-REPLACE --once --fetch-run-init 2026-01-31T00:00:00Z
-```
-
-This downloads **unverified candidates**, prints a JSON cycle report and exits with a success/error status. Acquisition failures stop before refresh; partial candidate IDs are retained in the report. A successful cycle does not mean a queued forecast has finished. Historical publication evidence is never inferred, and candidates are not automatically promoted to verified. Newly eligible verified snapshots can trigger recomputation through the existing refresh rules. Scheduled new issue times and automated verified ingestion remain follow-up work.
-
-## 8. Contracts, tests, and integration
+## Проверка
 
 ```sh
 npm run contracts
 npm run check
 ```
 
-`contracts` exports OpenAPI from the backend and regenerates TypeScript. Commit both generated files whenever the API changes. Do not hand-edit them. `check` runs Python lint/tests, frontend asset-selection and component-flow tests, TypeScript checks, and the frontend production build. CI repeats these checks and fails on generated-contract drift. Run `npm run test:flow --workspace frontend` for the component flow suite alone; browser visual testing remains a separate check.
+Коммитьте оба сгенерированных файла контрактов вместе. CI проверяет расхождение сгенерированных контрактов. Тесты покрывают поздние/будущие наблюдения, отсечки моделей, неподтверждённую и неполную погоду, выбор снимков, неизменяемые артефакты, общие пары сравнения, フронтенд-сценарии и закоммиченные февральские CSV/манифест. `scripts/run_tests.py` использует локальную для репозитория временную директорию, чтобы избежать проблем с ACL системного temp в Windows. Компонентные тесты не заменяют визуальную проверку в браузере/WebGL.
 
-With `npm run dev` running, exercise the HTTP services through the frontend proxy:
+### Работа из интегрированной ветки main
 
-```sh
-uv run python scripts/smoke_demo.py
-```
+Создайте фиче-ветку от текущей `main`, делайте коммиты сфокусированными и открывайте PR с доказательствами валидации. Проверьте настроенную идентичность автора перед коммитом; см. [CONTRIBUTING.md](CONTRIBUTING.md). Изменения контрактов включают регенерированные типы и совместимое поведение фронтенда.
 
-This creates labelled local demo records, checks a 48-hour forecast and unchanged-input refresh, and completes all 29 daily issue dates with February CSV export. It checks integration, not predictive accuracy.
+## Чек-лист приёмки
 
-Tests cover real integration boundaries: full demo flow, persistent results and CSVs, hourly coverage, invalid units/times, late or unverified weather, model cutoffs, observation latency, retries, immutable snapshots, changed-input refresh, and replay scoring. No live network is needed for tests.
+- [x] Значения погоды используются в модели прогнозирования.
+- [x] Выбор модели использует только хронологические ноябрьско-декабрьские фолды.
+- [x] Январское сравнение включает константу, климатологию, persistence и оба набора признаков CatBoost на одинаковых парах.
+- [x] Февральский CSV прогноза и манифест происхождения данных закоммичены; синтетическая погода не используется.
+- [x] Пропущенная обучающая погода подсчитывается; инференс остаётся строгим.
+- [x] Воспроизведение одной командой восстанавливает веса модели и реестр дашборда из чистого клона.
+- [x] Агент проверяет, прогнозирует, анализирует и пересчитывает при изменении подходящих входов.
+- [ ] Историческая публикация каждого точного погодного прогноза независимо доказана (ограничение hindcast).
+- [ ] Задержка наблюдений, номинальные мощности и высоты ступиц независимо подтверждены.
+- [ ] Февральская точность измерена по предоставленным фактическим данным (факты недоступны).
 
-### Work from the integrated main branch
-
-Check your author email before committing; see [Contributing](CONTRIBUTING.md) for identity setup and historical author aliases.
-
-The frontend, ML/agent, and data branches are consolidated on `main`. The merge keeps the operational dashboard and shared API contracts, adapts the data branch's management controls and ridge model to those contracts, packages both Python modules, and regenerates the shared schemas. Existing feature branches remain available with their history.
-
-Start new work from the consolidated branch:
-
-```sh
-git switch main
-git pull --ff-only origin main
-git switch -c your-next-feature
-```
-
-To continue an existing feature branch, commit local work first, fetch, switch to that branch, and merge `origin/main` before making further changes.
-
-For normal integration, open a PR to `main`, include route/contract changes and test evidence, merge after checks, then update the other branches from `main`. Integrate in small working slices: **contracts → weather/model implementation → dashboard features → complete replay**. Everyone can work immediately using the demo provider/model; no teammate has to wait for the final ML model.
-
-### Final team acceptance checklist
-
-- [ ] Source data normalization, time interval semantics, timezone, and asset metadata confirmed.
-- [ ] Archived forecast coverage and publication evidence verified for every issue date.
-- [ ] Trained model and preprocessing validated chronologically before February.
-- [ ] Agent completes acquisition, preparation, inference, analysis, and input-triggered updates.
-- [ ] February replay has correct windows, no future inputs, and no hidden demo results.
-- [ ] Metrics include baseline comparison, both horizons, missing-data coverage, and per-turbine results.
-- [ ] Fresh clone starts using the README; schemas, lockfiles, tests, and UI build pass.
-- [ ] Demo and limitations are explained honestly in the presentation.
-
-## 9. Current limits
-
-This is a local development skeleton: one API process, in-process background jobs, small SQLite JSON records, no authentication, and no production task queue. A restart marks unfinished jobs failed. Run one worker; multiple API workers would need a shared queue and coordinated job ownership. Large datasets/training jobs, paginated results, production deployment, calibrated uncertainty, scheduled ingestion, and a competitive ML model are remaining engineering work. The static frontend build needs an HTTP host/reverse proxy routing `/api` to the backend; Vite's development proxy is not a production deployment.
-
-Detailed handoffs: [Agent](docs/agent.md) · [Backend/ML](docs/backend.md) · [Frontend](docs/frontend.md) · [Data and replay](docs/data-and-replay.md).
+См. [обзор для жюри](docs/judges-walkthrough.md) и [исходный кейс](docs/task.pdf).
