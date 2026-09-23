@@ -257,6 +257,12 @@ class WindService:
     def save_backtest(self, run):
         self.repository.put("backtest", run.id, run.model_dump(mode="json"))
 
+    def execute_backtest_background(self, identifier):
+        # Starlette runs synchronous background callbacks in its worker pool.
+        # Keep local model loading/inference off the HTTP event loop while using
+        # exactly the same replay implementation as offline reproduction.
+        asyncio.run(self.execute_backtest(identifier))
+
     async def execute_backtest(self, identifier):
         run = BacktestRun.model_validate(self.required("backtest", identifier))
         run.status = "running"

@@ -69,7 +69,7 @@
         "folds": [
           {
             "name": "november",
-            "model_id": "model-weather-experiment-2433ac6cf5f5a1c795161895",
+            "model_id": "model-weather-experiment-89a827549d9b14af468ac795",
             "comparison": {
               "catboost": {
                 "pooled": {
@@ -207,7 +207,7 @@
                   "temperature_count_24h": 0.021934135904409614
                 },
                 "weather_origins": 589,
-                "weather_lineage_sha256": "523d85664b742eb30e8924911d7535efeba8466e98490e1d88a995f2e62a432a"
+                "weather_lineage_sha256": "9fbf321c594b996d0f464685691d67c08b7b7d58ebd8ac1a03a421578b8d9851"
               },
               "turbine-2": {
                 "training_samples": 27538,
@@ -263,13 +263,13 @@
                   "temperature_count_24h": 0.021035741385718884
                 },
                 "weather_origins": 589,
-                "weather_lineage_sha256": "59ad2424e9eb0e078c935227a12ade17d0dc41604ef98253ac296b1d1c43ec35"
+                "weather_lineage_sha256": "fde90b0feba386124f59a8bf69d19324c0bfbdf00409665abc1b6dd66578c379"
               }
             }
           },
           {
             "name": "december",
-            "model_id": "model-weather-experiment-e770847ac2527e22a2193a1f",
+            "model_id": "model-weather-experiment-0231617b32de2d1fb8f3e070",
             "comparison": {
               "catboost": {
                 "pooled": {
@@ -407,7 +407,7 @@
                   "temperature_count_24h": 0.0308610740079646
                 },
                 "weather_origins": 619,
-                "weather_lineage_sha256": "3b80b0bfcc4ec38a853c5d46b992deb615a0a48227c3b3428f56f2f3402c6a71"
+                "weather_lineage_sha256": "f422e9c7163df08f8af5b8066fdf3ace02639fd40a5237bc3f42558f23c6bf38"
               },
               "turbine-2": {
                 "training_samples": 28978,
@@ -463,7 +463,7 @@
                   "temperature_count_24h": 0.004163524960204559
                 },
                 "weather_origins": 619,
-                "weather_lineage_sha256": "7b2b34b632a1a8f240f5e7698eafd2e5f3fe724eb469b6a2cd96dc59a71b86fc"
+                "weather_lineage_sha256": "65ece4167c1a6e5f84a6a6799355caf2d357b56618e4c922a557356129accb76"
               }
             }
           }
@@ -488,7 +488,7 @@
         "folds": [
           {
             "name": "november",
-            "model_id": "model-weather-experiment-ba28484e6dddfb6b9da24b5d",
+            "model_id": "model-weather-experiment-04b5fe30d6b512f9c7e4421d",
             "comparison": {
               "catboost": {
                 "pooled": {
@@ -626,7 +626,7 @@
                   "temperature_count_24h": 0.0613863788701479
                 },
                 "weather_origins": 589,
-                "weather_lineage_sha256": "523d85664b742eb30e8924911d7535efeba8466e98490e1d88a995f2e62a432a"
+                "weather_lineage_sha256": "9fbf321c594b996d0f464685691d67c08b7b7d58ebd8ac1a03a421578b8d9851"
               },
               "turbine-2": {
                 "training_samples": 27538,
@@ -682,13 +682,13 @@
                   "temperature_count_24h": 0.09357771549086313
                 },
                 "weather_origins": 589,
-                "weather_lineage_sha256": "59ad2424e9eb0e078c935227a12ade17d0dc41604ef98253ac296b1d1c43ec35"
+                "weather_lineage_sha256": "fde90b0feba386124f59a8bf69d19324c0bfbdf00409665abc1b6dd66578c379"
               }
             }
           },
           {
             "name": "december",
-            "model_id": "model-weather-experiment-5c108b427c318f5e54ab33cd",
+            "model_id": "model-weather-experiment-4895a84ce22334cc4fe6df38",
             "comparison": {
               "catboost": {
                 "pooled": {
@@ -826,7 +826,7 @@
                   "temperature_count_24h": 0.08575592078184434
                 },
                 "weather_origins": 619,
-                "weather_lineage_sha256": "3b80b0bfcc4ec38a853c5d46b992deb615a0a48227c3b3428f56f2f3402c6a71"
+                "weather_lineage_sha256": "f422e9c7163df08f8af5b8066fdf3ace02639fd40a5237bc3f42558f23c6bf38"
               },
               "turbine-2": {
                 "training_samples": 28978,
@@ -882,7 +882,7 @@
                   "temperature_count_24h": 0.037747933850598006
                 },
                 "weather_origins": 619,
-                "weather_lineage_sha256": "7b2b34b632a1a8f240f5e7698eafd2e5f3fe724eb469b6a2cd96dc59a71b86fc"
+                "weather_lineage_sha256": "65ece4167c1a6e5f84a6a6799355caf2d357b56618e4c922a557356129accb76"
               }
             }
           }
@@ -907,7 +907,7 @@
         "folds": [
           {
             "name": "november",
-            "model_id": "model-weather-experiment-a956081b18e825a8bec96b6d",
+            "model_id": "model-weather-experiment-9f9d9caf85f50f21260371e1",
             "comparison": {
               "catboost": {
                 "pooled": {
@@ -1045,7 +1045,7 @@
                   "temperature_count_24h": 0.132004375988425
                 },
                 "weather_origins": 589,
-                "weather_lineage_sha256": "523d85664b742eb30e8924911d7535efeba8466e98490e1d88a995f2e62a432a"
+                "weather_lineage_sha256": "9fbf321c594b996d0f464685691d67c08b7b7d58ebd8ac1a03a421578b8d9851"
               },
               "turbine-2": {
                 "training_samples": 27538,
@@ -1101,13 +1101,13 @@
                   "temperature_count_24h": 0.1302733978908367
                 },
                 "weather_origins": 589,
-                "weather_lineage_sha256": "59ad2424e9eb0e078c935227a12ade17d0dc41604ef98253ac296b1d1c43ec35"
+                "weather_lineage_sha256": "fde90b0feba386124f59a8bf69d19324c0bfbdf00409665abc1b6dd66578c379"
               }
             }
           },
           {
             "name": "december",
-            "model_id": "model-weather-experiment-f42146a176d222e81b7598af",
+            "model_id": "model-weather-experiment-737dace0cb99e7f9e27fd2db",
             "comparison": {
               "catboost": {
                 "pooled": {
@@ -1245,7 +1245,7 @@
                   "temperature_count_24h": 0.09115591210499661
                 },
                 "weather_origins": 619,
-                "weather_lineage_sha256": "3b80b0bfcc4ec38a853c5d46b992deb615a0a48227c3b3428f56f2f3402c6a71"
+                "weather_lineage_sha256": "f422e9c7163df08f8af5b8066fdf3ace02639fd40a5237bc3f42558f23c6bf38"
               },
               "turbine-2": {
                 "training_samples": 28978,
@@ -1301,7 +1301,7 @@
                   "temperature_count_24h": 0.0
                 },
                 "weather_origins": 619,
-                "weather_lineage_sha256": "7b2b34b632a1a8f240f5e7698eafd2e5f3fe724eb469b6a2cd96dc59a71b86fc"
+                "weather_lineage_sha256": "65ece4167c1a6e5f84a6a6799355caf2d357b56618e4c922a557356129accb76"
               }
             }
           }
@@ -1323,7 +1323,7 @@
       "l2_leaf_reg": 10,
       "origin_step_hours": 24
     },
-    "selected_at": "2026-09-23T12:16:42.235471+00:00"
+    "selected_at": "2026-09-23T12:34:12.637931+00:00"
   },
   "preparation": {
     "provisional": true,
@@ -1399,10 +1399,11 @@
     }
   },
   "history_sha256": "4eb1633527a46b3e61f53d2ad7aa41b76eaf42e5f29df9ad83764d11aeeb598d",
-  "weather_archive_sha256": "6539760cac042fbf39f0bead83efdd32c1f44676829d8873ca40f8d8b8db78d3",
+  "weather_archive_sha256": "fe587d94acecd589f01b4e0d2d674c97e2f5bc541d711f97a2a113c3a34a0775",
+  "training_implementation_sha256": "ac9fe7f587d0afd0cc7c53760de7162a8d7e437fed89c40250277e7910f06e08",
   "january": {
     "model": {
-      "id": "model-weather-experiment-3c34703576df444d90389bd6",
+      "id": "model-weather-experiment-7fa121f55c956c1a4ab60860",
       "algorithm": "catboost-weather-scada-v1",
       "trained_through": "2026-01-01T00:00:00Z",
       "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
@@ -1486,7 +1487,7 @@
           "temperature_count_24h": 0.04984053369514974
         },
         "weather_origins": 650,
-        "weather_lineage_sha256": "9e28b2e27ae4381c2c44e8298ed060983dd9340be39ddb3f417bc08ddff0fb5e"
+        "weather_lineage_sha256": "65d0962f6d146d1f2d0e16f9c34562b58ce1a64a386dc00c14e769450911f63a"
       },
       "turbine-2": {
         "training_samples": 30446,
@@ -1542,7 +1543,7 @@
           "temperature_count_24h": 0.027019027533602608
         },
         "weather_origins": 650,
-        "weather_lineage_sha256": "f09432ff2c5f2ff1ede5c8592c758986324b1095a0a52a412fc69ab42f3aac7f"
+        "weather_lineage_sha256": "6a417fab6f4e380a62df53d2c213745d186122f03ac93c95292fb4ddc4f72f4a"
       }
     },
     "baseline_training": {
@@ -1606,7 +1607,7 @@
       "cutoff": "2026-01-01T00:00:00+00:00"
     },
     "scada_model": {
-      "id": "model-weather-experiment-9f76a3636f867c90676bf6a1",
+      "id": "model-weather-experiment-7f6e7347899a1377439e2d82",
       "algorithm": "catboost-scada-v1",
       "trained_through": "2026-01-01T00:00:00Z",
       "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
@@ -1845,7 +1846,7 @@
   },
   "refit": {
     "model": {
-      "id": "model-weather-experiment-1f60629dea49f482937c2b41",
+      "id": "model-weather-experiment-640618020c918c13b93a05de",
       "algorithm": "catboost-weather-scada-v1",
       "trained_through": "2026-01-31T12:00:00Z",
       "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
@@ -1929,7 +1930,7 @@
           "temperature_count_24h": 0.0686239787883731
         },
         "weather_origins": 680,
-        "weather_lineage_sha256": "3b6e09da997dbd8e24be5c4d413cfac2b174b3b57a458586e7b05d9592413962"
+        "weather_lineage_sha256": "c85214f5f51437095f5945de9aa2c52f85f10dca69cd44be906ecc76b83524da"
       },
       "turbine-2": {
         "training_samples": 31886,
@@ -1985,11 +1986,11 @@
           "temperature_count_24h": 0.02641590623835732
         },
         "weather_origins": 680,
-        "weather_lineage_sha256": "be6898d54ee21f5b5e27e6b0be7d28fc2b4e2d9d0cabad5baf77393f5c452091"
+        "weather_lineage_sha256": "05fb0fd8f46ee13cdb7e408c8d6e7a7afed11e7421fb487867dfe4343126f636"
       }
     },
     "evaluation": null,
-    "selection_sha256": "61a751ec945efe5face2e9625ecf9827f34ba3eaf85adb77b7bfd67f91d0a886"
+    "selection_sha256": "fc20d6a65ae2b6cfef82d01a3321ed812f25220854d97e908bfe72038364d2e1"
   },
   "notes": [
     "Weather candidates were fixed before fitting and selected using November/December only.",

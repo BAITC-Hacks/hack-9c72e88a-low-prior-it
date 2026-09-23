@@ -232,7 +232,7 @@ def backtests(service: Service):
 @router.post("/backtests", response_model=BacktestRun, status_code=202, tags=["Replay"])
 def start_backtest(payload: BacktestRequest, tasks: BackgroundTasks, service: Service):
     run = service.create_backtest(payload)
-    tasks.add_task(service.execute_backtest, run.id)
+    tasks.add_task(service.execute_backtest_background, run.id)
     return run
 
 
