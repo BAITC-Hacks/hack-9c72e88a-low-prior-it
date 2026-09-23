@@ -4,7 +4,7 @@ Branch: `backend`. Public routes are in `backend/wind_backend/routes.py`. The AP
 
 Local CatBoost and persistence implementations, source preparation, and a chronological
 comparison command are now available. See [ML training and validation](ml-training.md)
-for exact commands, source assumptions, model artifacts, and the two feature modes.
+for exact commands, source assumptions, model artifacts, and the feature modes.
 `/models/train` retains its default binned curve and accepts an additive algorithm selector.
 
 ## Model contract
@@ -15,7 +15,7 @@ The demo model uses an illustrative cubic curve with assumed cut-in/rated/cut-ou
 
 Model metadata contains a unique immutable ID, algorithm, training dataset, data cutoff, row count, turbine coverage, and demo flag. `WindService.predictor()` is the registry seam for new algorithms. Model artifacts are currently stored with SQLite records. Large serialized ML artifacts belong under `artifacts/` with metadata/checksums in the repository store.
 
-The merged registry supports `binned-power-curve`, `persistence`, `weather-ridge`, and `catboost` training requests. Persistence uses only observations available at the issue time. Ridge standardizes features on permitted training pairs and stores JSON coefficients. CatBoost uses shared origin-safe features and stores model files under `WINDFARM_MODELS` (default `artifacts/models`). CatBoost requests require daily `first_origin`/`last_origin` and a cutoff covering all training targets; use `feature_set=scada` or `weather-scada`. These are model candidates; integration tests do not establish real-world accuracy.
+The merged registry supports `binned-power-curve`, `persistence`, `weather-ridge`, and `catboost` training requests. Persistence uses observations available at the issue time. Ridge standardizes permitted training pairs and stores JSON coefficients. CatBoost uses shared origin-safe features and native files under `WINDFARM_MODELS`. Its `first_origin`/`last_origin` must align to `origin_step_hours` (6/12/24, default daily), with a cutoff covering all targets. Modes: `scada`, `scada-extended`, `weather-scada`; objectives: RMSE or MAE, with bounded regularization. See [selection results](tuned-training-results.md); integration tests alone do not establish accuracy.
 
 ## Training and evaluation agreement
 

@@ -204,6 +204,19 @@ Individual runs also accept `--feature-set scada-extended`, `--loss-function MAE
 `--learning-rate`, `--l2-leaf-reg`, and `--origin-step-hours 6|12|24` in
 `scripts/train_evaluate.py`; the same bounded fields are available in `TrainRequest`.
 
+After evaluation, refit the frozen winner using the registered dataset ID from
+the January report:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/refit_selected.py --selection artifacts/tuning/selection-REPLACE/selection.json --dataset-id dataset-REPLACE --trained-through 2026-01-31T00:00:00Z
+```
+
+This registers a separate model, checks the source history checksum, and writes
+`artifacts/refits/refit-*/request.json` and `report.json`. It preserves the chosen
+parameters and 72-hour training-origin gap. Earlier validation scores do not
+measure these refitted weights. Issues before the new cutoff are rejected.
+Results, local model IDs and a forecast request: [selected model](tuned-training-results.md).
+
 ## Checks
 
 ```powershell

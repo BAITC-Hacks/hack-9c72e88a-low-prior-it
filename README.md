@@ -6,6 +6,8 @@ The skeleton runs end to end today with **clearly labelled synthetic weather**. 
 
 The integrated dashboard also supports dataset import, actual-power overlays, model training (binned curve, persistence, weather ridge, and CatBoost), and weather snapshot management. The data branch contributes raw CSVs and compressed candidate weather archives for offline analysis; their presence does not establish historical publication provenance. See [data analysis](DATA.md) and [data/replay contracts](docs/data-and-replay.md).
 
+Chronological CatBoost selection reduces January MAE from **0.29834 to 0.28006** on the same 2,688 forecast pairs. Selection uses November/December only; a separate January 31 refit is available locally. These are provisional SCADA-only results, not February competition scores. See [results and model IDs](docs/tuned-training-results.md) and [reproduction](docs/ml-training.md#chronological-model-selection).
+
 ## 1. Start here
 
 Prerequisites: [Node.js](https://nodejs.org/) 22.12+ and [uv](https://docs.astral.sh/uv/getting-started/installation/). uv installs the Python version in `.python-version` if necessary. Run all commands from the repository root.

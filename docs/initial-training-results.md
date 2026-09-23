@@ -1,5 +1,8 @@
 # CatBoost experiment with corrected source timing (provisional)
 
+Preserved initial baseline. See [selected model and refit](tuned-training-results.md)
+for the newer January comparison: MAE 0.28006 versus this baseline's 0.29834.
+
 Experiment: `experiment-cf8d190e16ad47d9a67e3a4bd627dc27`.
 Model: `model-27c6f4072b7a441d80ede55745eb4f60` (`catboost-scada-v1`).
 Dataset: `dataset-11d73cf8339541d7aaa58f626f0a5dda`.
