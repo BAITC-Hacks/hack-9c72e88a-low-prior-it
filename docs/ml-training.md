@@ -113,7 +113,10 @@ requires complete, verified historical forecasts published by each origin. Missi
 archives are skipped and counted during fitting; inference and evaluation still fail explicitly. Future measured wind is never substituted.
 The training routine records which snapshot was used at each origin. For offline
 experiments supply `--feature-set weather-scada --weather path/to/snapshots.json`
-where the JSON is an array of existing `WeatherSnapshot` objects.
+where the JSON is an array of `WeatherSnapshot` objects or the importer's
+`{"metadata": ..., "snapshots": [...]}` export. Default unverified exports still
+cannot be used for archive training; the documented reconstruction requires the
+explicit `--accept-schedule-assumption` import option.
 
 The SCADA-only model is a baseline for 24–48 hours, not a substitute for the task's
 required weather integration. Pressure/humidity/precipitation are not yet in the

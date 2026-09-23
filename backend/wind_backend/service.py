@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
@@ -279,6 +280,9 @@ class WindService:
                     if run.request.evaluation_start <= point.valid_time < run.request.evaluation_end
                 )
                 issue += timedelta(days=1)
+                # Archive providers and local inference can complete without any
+                # asynchronous I/O. Give status requests a turn between daily runs.
+                await asyncio.sleep(0)
             actuals = []
             if run.request.actuals_dataset_id:
                 dataset = self.required("dataset", run.request.actuals_dataset_id)

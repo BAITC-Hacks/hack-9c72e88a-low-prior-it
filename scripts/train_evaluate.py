@@ -72,10 +72,11 @@ def main():
     if args.feature_set == "weather-scada":
         if args.weather is None:
             parser.error("weather-scada requires --weather with verified historical snapshots")
-        snapshots = [
-            WeatherSnapshot.model_validate(row)
-            for row in json.loads(args.weather.read_text(encoding="utf-8"))
-        ]
+        archive = json.loads(args.weather.read_text(encoding="utf-8"))
+        # Accept the documented importer's metadata + snapshots export, as well
+        # as the original bare snapshot array used by existing experiments.
+        records = archive["snapshots"] if isinstance(archive, dict) else archive
+        snapshots = [WeatherSnapshot.model_validate(row) for row in records]
     run_id = f"experiment-{uuid4().hex}"
     output = args.output_root / run_id
     output.mkdir(parents=True, exist_ok=False)
