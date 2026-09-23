@@ -1,11 +1,11 @@
-import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { api, type EnergyAsset } from '../api';
 import Icon from '../components/Icon';
 import { energyTypes, forecastIds, groupSites, type AssetSite, type Country, type EnergyFilter } from './catalog';
 import './explore.css';
 
 const GlobeCanvas = lazy(() => import('./GlobeCanvas'));
-type Props = { active: boolean; forecastingDisabled: boolean; onOpenForecast: (ids: string[]) => void };
+type Props = { active: boolean; refreshRevision: number; forecastingDisabled: boolean; onOpenForecast: (ids: string[]) => void };
 
 function GlobeFallback() {
   return <div className="globe-fallback"><Icon name="globe" size={60} /><strong>Explore from the station directory</strong><p>The 3D view is unavailable on this device. Country search and station selection are still available.</p></div>;
@@ -18,7 +18,7 @@ class GlobeBoundary extends Component<{ children: ReactNode; onError: () => void
   render() { return this.state.failed ? <GlobeFallback /> : this.props.children; }
 }
 
-export default function ExploreView({ active, forecastingDisabled, onOpenForecast }: Props) {
+export default function ExploreView({ active, refreshRevision, forecastingDisabled, onOpenForecast }: Props) {
   const [assets, setAssets] = useState<EnergyAsset[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [country, setCountry] = useState<Country | null>(null);
@@ -35,6 +35,13 @@ export default function ExploreView({ active, forecastingDisabled, onOpenForecas
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [globeReady, setGlobeReady] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const [directoryFocusRevision, setDirectoryFocusRevision] = useState(0);
+  const directoryHeading = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (!directoryFocusRevision || !active) return;
+    directoryHeading.current?.focus({ preventScroll: true });
+  }, [directoryFocusRevision, active]);
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -66,7 +73,7 @@ export default function ExploreView({ active, forecastingDisabled, onOpenForecas
       .catch(error => { if (!cancelled) setAssetError(error.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [active, revision]);
+  }, [active, revision, refreshRevision]);
 
   const sites = useMemo(() => groupSites(assets), [assets]);
   const countryOptions = useMemo(() => {
@@ -89,8 +96,9 @@ export default function ExploreView({ active, forecastingDisabled, onOpenForecas
   const onReady = useCallback(() => setGlobeReady(true), []);
   const onUnavailable = useCallback(() => setWebgl(false), []);
 
-  const chooseCountry = useCallback((next: Country) => {
+  const chooseCountry = useCallback((next: Country, focusDirectory = false) => {
     setCountry(next); setSiteId(null); setSelected([]); setSearch(''); setRotating(false); setResetKey(value => value + 1);
+    if (focusDirectory) setDirectoryFocusRevision(value => value + 1);
   }, []);
   const chooseSite = useCallback((site: AssetSite) => {
     const parent = countryOptions.find(c => c.properties.code === site.countryCode);
@@ -100,7 +108,7 @@ export default function ExploreView({ active, forecastingDisabled, onOpenForecas
   }, [countryOptions]);
   function world() { setCountry(null); setSiteId(null); setSelected([]); setSearch(''); setResetKey(value => value + 1); }
 
-  return <section className="explore-workspace" id="explore" aria-labelledby="explore-heading">
+  return <section className="explore-workspace" aria-labelledby="explore-heading">
     <div className="explore-heading"><div><div className="section-context"><span className="context-mark" /><h2 id="explore-heading">Energy explorer</h2><span className="badge">Asset network</span></div><p>Find a location. Select your assets. See what comes next.</p></div><div className="explore-summary"><span><strong>{assets.length}</strong> connected assets</span><span><strong>{availableCountries.length}</strong> countries</span></div></div>
     <div className="explore-typebar" aria-label="Filter by energy source"><button className={filter === 'all' ? 'energy-filter active' : 'energy-filter'} aria-pressed={filter === 'all'} onClick={() => { setFilter('all'); setSiteId(null); }}><Icon name="layers" />All energy<span>{countryAssets.length}</span></button>{energyTypes.map(type => {
       const count = countryAssets.filter(a => a.energy_type === type.id).length;
@@ -122,10 +130,10 @@ export default function ExploreView({ active, forecastingDisabled, onOpenForecas
         <div className="directory-heading"><span className="section-label">STATION DIRECTORY</span><span className="badge">{country ? country.properties.code : 'Global'}</span></div>
         <label className="country-search"><Icon name="search" size={16} /><span className="sr-only">Search countries</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search countries" aria-label="Search countries" /></label>
         <label className="control-field country-select"><span>Country</span><select aria-label="Select country" value={country?.properties.code || ''} onChange={event => { const next = countryOptions.find(c => c.properties.code === event.target.value); if (next) chooseCountry(next); else world(); }}><option value="">All countries</option>{countryOptions.map(c => <option key={c.properties.code} value={c.properties.code}>{c.properties.name}</option>)}</select></label>
-        {search.trim() && <div className="country-results" aria-label="Matching countries">{searchedCountries.length ? searchedCountries.map(c => <button key={c.properties.code} onClick={() => chooseCountry(c)}><span>{c.properties.name}</span><span className="subtle-label">{assets.filter(a => a.country_code === c.properties.code).length} assets</span></button>) : <p>No matching countries.</p>}</div>}
+        {search.trim() && <div className="country-results" aria-label="Matching countries">{searchedCountries.length ? searchedCountries.map(c => <button key={c.properties.code} onClick={() => chooseCountry(c, true)}><span>{c.properties.name}</span><span className="subtle-label">{assets.filter(a => a.country_code === c.properties.code).length} assets</span></button>) : <p>No matching countries.</p>}</div>}
         {mapError && <p className="directory-message">Country boundaries could not load. Connected locations remain available. <button onClick={() => setRevision(v => v + 1)}>Retry</button></p>}
-        <div className="directory-location"><h3>{country?.properties.name || 'Connected locations'}</h3><p>{country ? 'Explore the energy assets in this country.' : 'Select a country on Earth or start with a connected site.'}</p></div>
-        {!country && availableCountries.length > 0 && <div className="connected-countries">{availableCountries.map(c => <button key={c.properties.code} onClick={() => chooseCountry(c)}><span className="country-code">{c.properties.code}</span><span>{c.properties.name}<small>{assets.filter(a => a.country_code === c.properties.code).length} connected assets</small></span><Icon name="chevron" size={13} /></button>)}</div>}
+        <div className="directory-location"><h3 ref={directoryHeading} tabIndex={-1}>{country?.properties.name || 'Connected locations'}</h3><p>{country ? 'Explore the energy assets in this country.' : 'Select a country on Earth or start with a connected site.'}</p></div>
+        {!country && availableCountries.length > 0 && <div className="connected-countries">{availableCountries.map(c => <button key={c.properties.code} onClick={() => chooseCountry(c, true)}><span className="country-code">{c.properties.code}</span><span>{c.properties.name}<small>{assets.filter(a => a.country_code === c.properties.code).length} connected assets</small></span><Icon name="chevron" size={13} /></button>)}</div>}
         {loading && <p className="directory-message" role="status">Loading asset registry…</p>}
         {assetError && <div className="directory-message danger" role="alert"><span>Asset registry unavailable. {assetError}</span><button onClick={() => setRevision(v => v + 1)}>Reconnect</button></div>}
         <div className="site-list-heading"><span>{filter === 'all' ? 'All energy sites' : `${energyTypes.find(t => t.id === filter)?.name} sites`}</span><span>{visibleSites.length}</span></div>

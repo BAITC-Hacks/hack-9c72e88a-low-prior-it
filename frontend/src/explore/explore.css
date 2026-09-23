@@ -1,5 +1,3 @@
-[hidden] { display: none !important; }
-.workspace-loading { padding: 40px 24px; color: var(--text-muted); }
 .explore-workspace { padding: 0 24px 16px; max-width: 1720px; margin: auto; }
 .explore-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0 20px; }
 .explore-heading p { font-size: 11px; color: var(--text-muted); margin-top: 9px; }

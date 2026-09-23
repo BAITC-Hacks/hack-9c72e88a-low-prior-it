@@ -17,7 +17,8 @@ export default function DataWorkspace({ datasets, turbines, disabled, onChanged 
   const [firstOrigin, setFirstOrigin] = useState('2025-12-01T00:00');
   const [lastOrigin, setLastOrigin] = useState('2026-01-28T00:00');
   const [featureSet, setFeatureSet] = useState<TrainRequest['feature_set']>('scada');
-  const [turbine, setTurbine] = useState('turbine-1');
+  const [turbineSelection, setTurbine] = useState('');
+  const turbine = turbines.some(item => item.id === turbineSelection) ? turbineSelection : turbines[0]?.id || '';
   const [weatherRun, setWeatherRun] = useState('2026-01-31T00:00');
   const [weatherJson, setWeatherJson] = useState('');
   const [snapshots, setSnapshots] = useState<WeatherSnapshot[]>([]);
@@ -102,6 +103,7 @@ export default function DataWorkspace({ datasets, turbines, disabled, onChanged 
       <summary><span><Icon name="wind" />Weather archive</span><Icon name="chevron" size={14} /></summary>
       <div className="management-content">
         <form className="management-form" onSubmit={event => { event.preventDefault(); void act(async () => {
+          if (!turbine) throw new Error('No configured turbine is available for weather retrieval.');
           const result = await api.fetchWeather({ turbine_id: turbine, run_init: iso(weatherRun), weather_model: 'ecmwf_ifs' });
           setWeatherJson(JSON.stringify(result, null, 2)); setSnapshots(await api.weather());
           setNotice('Candidate downloaded. Historical availability remains unverified.');

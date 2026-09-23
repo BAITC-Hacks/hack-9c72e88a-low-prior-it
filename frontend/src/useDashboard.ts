@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api, type BacktestRun, type DatasetInfo, type ForecastRequest, type ForecastRun, type ModelInfo, type Turbine } from './api';
 import { isActive } from './format';
+
+const HISTORY_LIMIT = 100;
 
 export default function useDashboard() {
   const [turbines, setTurbines] = useState<Turbine[]>([]);
@@ -20,6 +22,7 @@ export default function useDashboard() {
   const [notice, setNotice] = useState('');
   const [connected, setConnected] = useState(false);
   const [activeLead, setActiveLead] = useState(1);
+  const replayToRefresh = useRef<string | null>(null);
 
   function selectRun(next: ForecastRun) {
     setRun(next); setIssue(new Date(next.request.issued_at).toISOString().slice(0, 16));
@@ -29,7 +32,7 @@ export default function useDashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([api.turbines(), api.models(), api.forecasts(), api.backtests(), api.datasets()])
+    Promise.all([api.turbines(), api.models(), api.forecasts(HISTORY_LIMIT), api.backtests(), api.datasets()])
       .then(([t, m, f, b, d]) => {
         if (cancelled) return;
         setTurbines(t); setSelected(t.map(item => item.id)); setModels(m); setHistory(f);
@@ -47,7 +50,7 @@ export default function useDashboard() {
       api.forecast(run.id).then(next => {
         if (cancelled) return;
         setRun(next);
-        setHistory(items => [next, ...items.filter(item => item.id !== next.id)].slice(0, 20));
+        setHistory(items => [next, ...items.filter(item => item.id !== next.id)].slice(0, HISTORY_LIMIT));
       }).catch(err => { if (!cancelled) { setError(err.message); setConnected(false); window.clearInterval(id); } });
     }, 1000);
     return () => { cancelled = true; window.clearInterval(id); };
@@ -56,12 +59,36 @@ export default function useDashboard() {
   useEffect(() => {
     if (!connected || !backtest || !isActive(backtest.status)) return;
     let cancelled = false;
+    let inFlight = false;
     const id = window.setInterval(() => {
+      if (inFlight) return;
+      inFlight = true;
       api.backtest(backtest.id).then(next => { if (!cancelled) setBacktest(next); })
-        .catch(err => { if (!cancelled) { setError(err.message); setConnected(false); window.clearInterval(id); } });
+        .catch(err => { if (!cancelled) { setError(err.message); setConnected(false); window.clearInterval(id); } })
+        .finally(() => { inFlight = false; });
     }, 1500);
     return () => { cancelled = true; window.clearInterval(id); };
   }, [backtest?.id, backtest?.status, connected]);
+
+  useEffect(() => {
+    if (!backtest) return;
+    if (isActive(backtest.status)) {
+      replayToRefresh.current = backtest.id;
+      return;
+    }
+    if (replayToRefresh.current !== backtest.id) return;
+    replayToRefresh.current = null;
+    let cancelled = false;
+    api.forecasts(HISTORY_LIMIT)
+      .then(items => { if (!cancelled) setHistory(items); })
+      .catch(err => {
+        if (!cancelled) {
+          setError(`Replay finished, but forecast history could not be refreshed. ${err.message}`);
+          setConnected(false);
+        }
+      });
+    return () => { cancelled = true; };
+  }, [backtest?.id, backtest?.status]);
 
   async function act(task: () => Promise<void>) {
     setBusy(true); setError(''); setNotice('');
@@ -69,34 +96,35 @@ export default function useDashboard() {
     finally { setBusy(false); }
   }
 
-  function request(): ForecastRequest {
-    if (!issue || !Number.isFinite(new Date(`${issue}Z`).getTime())) throw new Error('Choose a valid forecast issue time.');
+  function request(issueTime = issue): ForecastRequest {
+    if (!issueTime || !Number.isFinite(new Date(`${issueTime}Z`).getTime())) throw new Error('Choose a valid forecast issue time.');
     if (!selected.length) throw new Error('Select at least one turbine.');
-    return { turbine_ids: selected, issued_at: new Date(`${issue}Z`).toISOString(), horizon_hours: horizon, weather_source: source, model_id: model };
+    return { turbine_ids: selected, issued_at: new Date(`${issueTime}Z`).toISOString(), horizon_hours: horizon, weather_source: source, model_id: model };
   }
 
   function submitForecast() {
-    return act(async () => { const next = await api.createForecast(request()); setRun(next); setActiveLead(1); setHistory(items => [next, ...items].slice(0, 20)); });
+    return act(async () => { const next = await api.createForecast(request()); setRun(next); setActiveLead(1); setHistory(items => [next, ...items].slice(0, HISTORY_LIMIT)); });
   }
 
   function refreshForecast() {
     if (!run) return;
     return act(async () => {
       const response = await api.refresh(run.id); setRun(response.run);
-      if (response.changed) setHistory(items => [response.run, ...items].slice(0, 20));
+      if (response.changed) setHistory(items => [response.run, ...items].slice(0, HISTORY_LIMIT));
       setNotice(response.changed ? 'New inputs detected. Recalculating the forecast.' : 'Inputs are unchanged. This forecast is up to date for its issue time.');
     });
   }
 
   function startReplay(dataset: string | null) {
     return act(async () => {
-      setBacktest(await api.createBacktest({ ...request(), issued_at: '2026-01-31T00:00:00Z', last_issued_at: '2026-02-28T00:00:00Z', evaluation_start: '2026-02-01T00:00:00Z', evaluation_end: '2026-03-01T00:00:00Z', actuals_dataset_id: dataset }));
+      setBacktest(await api.createBacktest({ ...request('2026-01-31T00:00'), last_issued_at: '2026-02-28T00:00:00Z', evaluation_start: '2026-02-01T00:00:00Z', evaluation_end: '2026-03-01T00:00:00Z', actuals_dataset_id: dataset }));
     });
   }
 
   function reloadWorkspace() {
     return act(async () => {
-      const [t, m, f, b, d] = await Promise.all([api.turbines(), api.models(), api.forecasts(), api.backtests(), api.datasets()]);
+      const [t, m, f, b, d] = await Promise.all([api.turbines(), api.models(), api.forecasts(HISTORY_LIMIT), api.backtests(), api.datasets()])
+        .catch(err => { setConnected(false); throw err; });
       setTurbines(t); setModels(m); setDatasets(d); setHistory(f); setBacktest(b[0] || null); setConnected(true);
       const current = f.find(item => item.id === run?.id);
       if (current) setRun(current);

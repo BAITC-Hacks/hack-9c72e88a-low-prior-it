@@ -41,7 +41,7 @@ export const api = {
   assets: () => request<EnergyAsset[]>(routes.assets.slice(7)),
   turbines: () => request<Turbine[]>(routes.turbines.slice(7)),
   models: () => request<ModelInfo[]>(routes.models.slice(7)),
-  forecasts: () => request<ForecastRun[]>(routes.forecasts.slice(7)),
+  forecasts: (limit = 20) => request<ForecastRun[]>(`${routes.forecasts.slice(7)}?${new URLSearchParams({ limit: String(limit) })}`),
   forecast: (id: string) => request<ForecastRun>(`/forecasts/${encodeURIComponent(id)}`),
   createForecast: (body: ForecastRequest) => request<ForecastRun>('/forecasts', body),
   refresh: (id: string) => request<Schemas['RefreshResponse']>(`/forecasts/${encodeURIComponent(id)}/refresh`, {}),

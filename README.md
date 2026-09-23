@@ -278,7 +278,7 @@ npm run contracts
 npm run check
 ```
 
-`contracts` exports OpenAPI from the backend and regenerates TypeScript. Commit both generated files whenever the API changes. Do not hand-edit them. `check` runs Python lint/tests, frontend asset-selection tests, TypeScript checks, and the frontend production build. CI repeats these checks and fails on generated-contract drift.
+`contracts` exports OpenAPI from the backend and regenerates TypeScript. Commit both generated files whenever the API changes. Do not hand-edit them. `check` runs Python lint/tests, frontend asset-selection and component-flow tests, TypeScript checks, and the frontend production build. CI repeats these checks and fails on generated-contract drift. Run `npm run test:flow --workspace frontend` for the component flow suite alone; browser visual testing remains a separate check.
 
 With `npm run dev` running, exercise the HTTP services through the frontend proxy:
 

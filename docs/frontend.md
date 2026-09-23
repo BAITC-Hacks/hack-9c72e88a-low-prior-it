@@ -45,7 +45,12 @@ Keep normalization visible: percentages represent the agreed `[0,1]` target cont
 npm run dev:web
 npm run typecheck
 npm run test --workspace frontend
+npm run test:flow --workspace frontend
 npm run build
 ```
 
 The generated contract is committed, so frontend build/typechecking works without a running backend. Interactive development requires the API, which already provides a complete demo path.
+
+`test` runs the station/catalog checks plus the component flow suite. `test:flow` runs the Vitest/jsdom tests in `tests/flow/`: country/turbine selection through forecast results, Back navigation, invalid URLs, refresh/reconnect, keyboard focus, replay history, configured weather turbine IDs, and profile appearance. These tests mock HTTP and disable WebGL; they do not verify globe rendering, mobile layout, or real browser behavior. API integration tests and `scripts/smoke_demo.py` exercise the backend separately.
+
+Workspace feedback stays visible in both Explore and Forecast. Header refresh reloads the registry and forecast workspace, while completed/failed replays automatically refresh the saved forecast list (up to 100 recent runs) without replacing the selected run or edited controls. February replay uses its fixed January 31 origin independently of the single-forecast issue-time input.
