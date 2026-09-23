@@ -6,9 +6,9 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import httpx
+from wind_contracts.models import ForecastRequest, Turbine, WeatherPoint, WeatherSnapshot
 
 from wind_agent.interfaces import TransientWeatherError, WeatherUnavailable
-from wind_contracts.models import ForecastRequest, Turbine, WeatherPoint, WeatherSnapshot
 
 
 def target_hours(request: ForecastRequest) -> list[datetime]:

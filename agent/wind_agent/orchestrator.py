@@ -4,8 +4,6 @@ import json
 from collections.abc import Callable
 from datetime import UTC, datetime
 
-from wind_agent.interfaces import Predictor, TransientWeatherError, WeatherProvider
-from wind_agent.weather import target_hours
 from wind_contracts.models import (
     AgentEvent,
     ForecastRequest,
@@ -13,6 +11,9 @@ from wind_contracts.models import (
     Turbine,
     WeatherSnapshot,
 )
+
+from wind_agent.interfaces import Predictor, TransientWeatherError, WeatherProvider
+from wind_agent.weather import target_hours
 
 
 class ForecastAgent:
@@ -70,12 +71,18 @@ class ForecastAgent:
         points = []
         targets = set(target_hours(request))
         for turbine, snapshot in zip(turbines, snapshots, strict=True):
-            emit(AgentEvent(at=datetime.now(UTC), stage="predict", message=f"Predicting {turbine.id}"))
+            emit(
+                AgentEvent(
+                    at=datetime.now(UTC), stage="predict", message=f"Predicting {turbine.id}"
+                )
+            )
             weather = [point for point in snapshot.points if point.valid_time in targets]
             predicted = self.predictor.predict(turbine, weather, request.issued_at)
             # Enforce the plug-in contract even when a replacement model returns malformed rows.
             if [p.valid_time for p in predicted] != sorted(targets):
-                raise ValueError("Predictor must return exactly one sorted point per requested hour")
+                raise ValueError(
+                    "Predictor must return exactly one sorted point per requested hour"
+                )
             for point in predicted:
                 expected_lead = int((point.valid_time - request.issued_at).total_seconds() / 3600)
                 if point.turbine_id != turbine.id or point.lead_hours != expected_lead:
@@ -86,13 +93,28 @@ class ForecastAgent:
         warnings = []
         is_demo = request.weather_source == "demo" or self.predictor.info.is_demo
         if is_demo:
-            warnings.append("DEMO: synthetic weather and/or illustrative model; not competition results.")
+            warnings.append(
+                "DEMO: synthetic weather and/or illustrative model; not competition results."
+            )
         if self.predictor.info.algorithm == "binned-power-curve-v1":
-            warnings.append("Measured-wind baseline: forecast bias and height correction are not implemented.")
-        if any(t.hub_height_m is None or t.hub_height_m != s.wind_height_m for t, s in zip(turbines, snapshots, strict=True)):
-            warnings.append("Hub-height matching is unverified; weather wind height is recorded per snapshot.")
+            warnings.append(
+                "Measured-wind baseline: forecast bias and height correction are not implemented."
+            )
+        if any(
+            t.hub_height_m is None or t.hub_height_m != s.wind_height_m
+            for t, s in zip(turbines, snapshots, strict=True)
+        ):
+            warnings.append(
+                "Hub-height matching is unverified; weather wind height is recorded per snapshot."
+            )
         warnings.append("Output is normalized power. Uncertainty intervals are not calibrated yet.")
-        emit(AgentEvent(at=datetime.now(UTC), stage="analyse", message="Checked hourly coverage, bounds, and provenance"))
+        emit(
+            AgentEvent(
+                at=datetime.now(UTC),
+                stage="analyse",
+                message="Checked hourly coverage, bounds, and provenance",
+            )
+        )
         result = ForecastResult(
             model_id=self.predictor.info.id,
             input_fingerprint=token,
@@ -101,13 +123,21 @@ class ForecastAgent:
             points=points,
             warnings=warnings,
         )
-        emit(AgentEvent(at=datetime.now(UTC), stage="complete", message=f"Produced {len(points)} hourly predictions"))
+        emit(
+            AgentEvent(
+                at=datetime.now(UTC),
+                stage="complete",
+                message=f"Produced {len(points)} hourly predictions",
+            )
+        )
         return result
 
 
 def fingerprint(request: ForecastRequest, snapshots: list[WeatherSnapshot], model: dict) -> str:
     # Retrieval time and record IDs do not change the physical/model input.
-    weather = [snapshot.model_dump(mode="json", exclude={"id", "retrieved_at"}) for snapshot in snapshots]
+    weather = [
+        snapshot.model_dump(mode="json", exclude={"id", "retrieved_at"}) for snapshot in snapshots
+    ]
     raw = json.dumps(
         {"request": request.model_dump(mode="json"), "model": model, "weather": weather},
         sort_keys=True,

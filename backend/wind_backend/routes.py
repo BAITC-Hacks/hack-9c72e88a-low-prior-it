@@ -3,9 +3,7 @@ import io
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
-
 from wind_agent.weather import download_single_run
-from wind_backend.service import DomainError, WindService
 from wind_contracts.models import (
     AgentEvent,
     BacktestRequest,
@@ -21,6 +19,8 @@ from wind_contracts.models import (
     WeatherFetchRequest,
     WeatherSnapshot,
 )
+
+from wind_backend.service import DomainError, WindService
 
 router = APIRouter(prefix="/api/v1")
 
@@ -62,14 +62,18 @@ def snapshots(service: Service, turbine_id: str | None = None):
     return [s for s in service.snapshots() if turbine_id is None or s.turbine_id == turbine_id]
 
 
-@router.post("/weather/snapshots", response_model=WeatherSnapshot, status_code=201, tags=["Weather"])
+@router.post(
+    "/weather/snapshots", response_model=WeatherSnapshot, status_code=201, tags=["Weather"]
+)
 def import_snapshot(payload: WeatherSnapshot, service: Service):
     return service.store_snapshot(payload)
 
 
 @router.post("/weather/fetch", response_model=WeatherSnapshot, status_code=201, tags=["Weather"])
 async def fetch_weather(payload: WeatherFetchRequest, service: Service):
-    snapshot = await download_single_run(service.turbine(payload.turbine_id), payload.run_init, payload.weather_model)
+    snapshot = await download_single_run(
+        service.turbine(payload.turbine_id), payload.run_init, payload.weather_model
+    )
     return service.store_snapshot(snapshot)
 
 
@@ -106,10 +110,21 @@ async def refresh_forecast(run_id: str, tasks: BackgroundTasks, service: Service
 def forecast_csv(runs: list[ForecastRun], start=None, end=None):
     buffer = io.StringIO(newline="")
     writer = csv.writer(buffer)
-    writer.writerow([
-        "run_id", "issued_at", "turbine_id", "valid_time", "lead_hours", "power_normalized",
-        "model_id", "weather_snapshot_id", "weather_run_init", "weather_available_at", "is_demo",
-    ])
+    writer.writerow(
+        [
+            "run_id",
+            "issued_at",
+            "turbine_id",
+            "valid_time",
+            "lead_hours",
+            "power_normalized",
+            "model_id",
+            "weather_snapshot_id",
+            "weather_run_init",
+            "weather_available_at",
+            "is_demo",
+        ]
+    )
     for run in runs:
         if run.result is None:
             continue
@@ -118,15 +133,34 @@ def forecast_csv(runs: list[ForecastRun], start=None, end=None):
             if start is not None and not start <= point.valid_time < end:
                 continue
             source = provenance[point.turbine_id]
-            writer.writerow([
-                run.id, run.request.issued_at.isoformat(), point.turbine_id, point.valid_time.isoformat(),
-                point.lead_hours, point.power_normalized, run.result.model_id, source.id,
-                source.run_init.isoformat(), source.available_at.isoformat(), run.result.is_demo,
-            ])
-    return Response(buffer.getvalue(), media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="forecast.csv"'})
+            writer.writerow(
+                [
+                    run.id,
+                    run.request.issued_at.isoformat(),
+                    point.turbine_id,
+                    point.valid_time.isoformat(),
+                    point.lead_hours,
+                    point.power_normalized,
+                    run.result.model_id,
+                    source.id,
+                    source.run_init.isoformat(),
+                    source.available_at.isoformat(),
+                    run.result.is_demo,
+                ]
+            )
+    return Response(
+        buffer.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="forecast.csv"'},
+    )
 
 
-@router.get("/forecasts/{run_id}/export", response_class=Response, tags=["Forecasts"], responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}})
+@router.get(
+    "/forecasts/{run_id}/export",
+    response_class=Response,
+    tags=["Forecasts"],
+    responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}},
+)
 def export_forecast(run_id: str, service: Service):
     run = ForecastRun.model_validate(service.required("forecast", run_id))
     if run.status != "succeeded":
@@ -151,10 +185,18 @@ def backtest(run_id: str, service: Service):
     return service.required("backtest", run_id)
 
 
-@router.get("/backtests/{run_id}/export", response_class=Response, tags=["Replay"], responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}})
+@router.get(
+    "/backtests/{run_id}/export",
+    response_class=Response,
+    tags=["Replay"],
+    responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}},
+)
 def export_backtest(run_id: str, service: Service):
     run = BacktestRun.model_validate(service.required("backtest", run_id))
     if run.status != "succeeded":
         raise DomainError(409, "run_not_ready", "Backtest is not successful yet")
-    children = [ForecastRun.model_validate(service.required("forecast", identifier)) for identifier in run.forecast_ids]
+    children = [
+        ForecastRun.model_validate(service.required("forecast", identifier))
+        for identifier in run.forecast_ids
+    ]
     return forecast_csv(children, run.request.evaluation_start, run.request.evaluation_end)

@@ -7,7 +7,9 @@ import httpx
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Recompute a forecast when its stored inputs change")
+    parser = argparse.ArgumentParser(
+        description="Recompute a forecast when its stored inputs change"
+    )
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--api", default="http://127.0.0.1:8000")
     parser.add_argument("--interval", type=float, default=60)

@@ -64,6 +64,7 @@ class Observation(Contract):
 
 class DatasetUpload(Contract):
     name: str = Field(min_length=1, max_length=120)
+    is_demo: bool = False
     observations: list[Observation] = Field(min_length=1, max_length=100_000)
 
     @model_validator(mode="after")
@@ -77,6 +78,7 @@ class DatasetUpload(Contract):
 class DatasetInfo(Contract):
     id: Identifier
     name: str
+    is_demo: bool = False
     rows: int
     first_time: Timestamp
     last_time: Timestamp
@@ -220,6 +222,7 @@ class Metric(Contract):
 class BacktestRun(Contract):
     id: Identifier
     created_at: Timestamp
+    is_demo: bool = False
     status: Literal["queued", "running", "succeeded", "failed"]
     request: BacktestRequest
     forecast_ids: list[str] = Field(default_factory=list)

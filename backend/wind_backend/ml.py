@@ -29,7 +29,14 @@ class BinnedPowerCurve:
         self.curves = curves
 
     @classmethod
-    def fit(cls, identifier: str, dataset_id: str, rows: list[Observation], cutoff: datetime):
+    def fit(
+        cls,
+        identifier: str,
+        dataset_id: str,
+        rows: list[Observation],
+        cutoff: datetime,
+        is_demo: bool = False,
+    ):
         usable = [r for r in rows if r.valid_time <= cutoff and r.available_at <= cutoff]
         if not usable:
             raise ValueError("No observations were available by the training cutoff")
@@ -47,6 +54,7 @@ class BinnedPowerCurve:
             dataset_id=dataset_id,
             training_rows=len(usable),
             turbine_ids=sorted(curves),
+            is_demo=is_demo,
         )
         return cls(info, curves)
 

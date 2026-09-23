@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-
 from wind_backend.config import Settings
 from wind_backend.main import create_app
 from wind_contracts.models import WeatherPoint, WeatherSnapshot
@@ -46,7 +45,15 @@ def snapshot(identifier="archive-a", **updates):
         "verification": "verified",
         "availability_evidence": "Unit-test fixture only; not a real forecast archive.",
         "wind_height_m": 100,
-        "points": [WeatherPoint(valid_time=ISSUE + timedelta(hours=i), wind_speed_ms=8, wind_direction_deg=90, temperature_c=-5) for i in range(1, 73)],
+        "points": [
+            WeatherPoint(
+                valid_time=ISSUE + timedelta(hours=i),
+                wind_speed_ms=8,
+                wind_direction_deg=90,
+                temperature_c=-5,
+            )
+            for i in range(1, 73)
+        ],
     }
     payload.update(updates)
     return WeatherSnapshot.model_validate(payload)

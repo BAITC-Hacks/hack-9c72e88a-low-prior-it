@@ -3,9 +3,6 @@ from uuid import uuid4
 
 from wind_agent.orchestrator import ForecastAgent
 from wind_agent.weather import ArchiveWeatherProvider, DemoWeatherProvider
-from wind_backend.evaluation import evaluate
-from wind_backend.ml import BinnedPowerCurve, DemoPowerCurve
-from wind_backend.storage import Repository
 from wind_contracts.models import (
     AgentEvent,
     BacktestRequest,
@@ -19,6 +16,10 @@ from wind_contracts.models import (
     Turbine,
     WeatherSnapshot,
 )
+
+from wind_backend.evaluation import evaluate
+from wind_backend.ml import BinnedPowerCurve, DemoPowerCurve
+from wind_backend.storage import Repository
 
 
 class DomainError(Exception):
@@ -61,17 +62,34 @@ class WindService:
         identifier = f"dataset-{uuid4().hex}"
         times = [row.valid_time for row in payload.observations]
         info = DatasetInfo(
-            id=identifier, name=payload.name, rows=len(times), first_time=min(times), last_time=max(times)
+            id=identifier,
+            name=payload.name,
+            is_demo=payload.is_demo,
+            rows=len(times),
+            first_time=min(times),
+            last_time=max(times),
         )
-        self.repository.put("dataset", identifier, {"info": info.model_dump(mode="json"), "data": payload.model_dump(mode="json")})
+        self.repository.put(
+            "dataset",
+            identifier,
+            {"info": info.model_dump(mode="json"), "data": payload.model_dump(mode="json")},
+        )
         return info
 
     def train(self, payload: TrainRequest):
         dataset = DatasetUpload.model_validate(self.required("dataset", payload.dataset_id)["data"])
         model = BinnedPowerCurve.fit(
-            f"model-{uuid4().hex}", payload.dataset_id, dataset.observations, payload.trained_through
+            f"model-{uuid4().hex}",
+            payload.dataset_id,
+            dataset.observations,
+            payload.trained_through,
+            is_demo=dataset.is_demo,
         )
-        self.repository.put("model", model.info.id, {"info": model.info.model_dump(mode="json"), "curves": model.curves})
+        self.repository.put(
+            "model",
+            model.info.id,
+            {"info": model.info.model_dump(mode="json"), "curves": model.curves},
+        )
         return model.info
 
     def snapshots(self):
@@ -85,7 +103,11 @@ class WindService:
         return snapshot
 
     def agent(self, request: ForecastRequest):
-        provider = DemoWeatherProvider() if request.weather_source == "demo" else ArchiveWeatherProvider(self.snapshots)
+        provider = (
+            DemoWeatherProvider()
+            if request.weather_source == "demo"
+            else ArchiveWeatherProvider(self.snapshots)
+        )
         return ForecastAgent(provider, self.predictor(request.model_id))
 
     def validate_request(self, request: ForecastRequest):
@@ -94,12 +116,16 @@ class WindService:
         model = self.predictor(request.model_id)
         if model.info.trained_through and model.info.trained_through > request.issued_at:
             raise ValueError("Model training cutoff is later than forecast issue time")
-        if not model.info.is_demo and not set(request.turbine_ids).issubset(model.info.turbine_ids):
+        if model.info.id != "demo-power-curve" and not set(request.turbine_ids).issubset(
+            model.info.turbine_ids
+        ):
             raise ValueError("Model is missing training data for a requested turbine")
 
     def create_forecast(self, request: ForecastRequest):
         self.validate_request(request)
-        run = ForecastRun(id=f"run-{uuid4().hex}", created_at=datetime.now(UTC), status="queued", request=request)
+        run = ForecastRun(
+            id=f"run-{uuid4().hex}", created_at=datetime.now(UTC), status="queued", request=request
+        )
         self.save_forecast(run)
         return run
 
@@ -132,7 +158,9 @@ class WindService:
         if previous.status != "succeeded" or previous.result is None:
             raise DomainError(409, "run_not_ready", "Only successful forecasts can be refreshed")
         _, token = await self.agent(previous.request).prepare(
-            previous.request, [self.turbine(t) for t in previous.request.turbine_ids], lambda _: None
+            previous.request,
+            [self.turbine(t) for t in previous.request.turbine_ids],
+            lambda _: None,
         )
         if token == previous.result.input_fingerprint:
             return False, previous
@@ -140,9 +168,17 @@ class WindService:
 
     def create_backtest(self, request: BacktestRequest):
         self.validate_request(request)
+        is_demo = request.weather_source == "demo" or self.predictor(request.model_id).info.is_demo
         if request.actuals_dataset_id:
-            self.required("dataset", request.actuals_dataset_id)
-        run = BacktestRun(id=f"backtest-{uuid4().hex}", created_at=datetime.now(UTC), status="queued", request=request)
+            dataset = self.required("dataset", request.actuals_dataset_id)
+            is_demo = is_demo or dataset["info"].get("is_demo", False)
+        run = BacktestRun(
+            id=f"backtest-{uuid4().hex}",
+            created_at=datetime.now(UTC),
+            is_demo=is_demo,
+            status="queued",
+            request=request,
+        )
         self.save_backtest(run)
         return run
 
@@ -166,7 +202,8 @@ class WindService:
                 if child.status != "succeeded":
                     raise ValueError(f"{child.id}: {child.error}")
                 points.extend(
-                    point for point in child.result.points
+                    point
+                    for point in child.result.points
                     if run.request.evaluation_start <= point.valid_time < run.request.evaluation_end
                 )
                 issue += timedelta(days=1)
