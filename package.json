@@ -1,0 +1,22 @@
+{
+  "name": "low-prior-wind",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["frontend"],
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "uv run uvicorn wind_backend.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:web": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "typecheck": "npm run typecheck --workspace frontend",
+    "test": "uv run pytest",
+    "lint": "uv run ruff check .",
+    "contracts": "uv run python scripts/export_openapi.py && openapi-typescript contracts/openapi.json -o frontend/src/generated/api.ts",
+    "check": "npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "openapi-typescript": "^7.10.0"
+  }
+}
