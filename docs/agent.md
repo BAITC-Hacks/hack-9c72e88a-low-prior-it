@@ -2,6 +2,12 @@
 
 Branch: `Agent`. Primary entry point: `agent/wind_agent/orchestrator.py`.
 
+Optional cloud analysis supports [OpenAI](openai-agent.md) and [NVIDIA NIM](nvidia-agent.md)
+via `agent/wind_agent/openai.py` and `nvidia.py`. Shared read-only tools and deadline/error
+handling live in `analysis.py`; each adapter owns its bounded API conversation.
+It runs after deterministic prediction and cannot alter power values or verify
+weather. Disabled by default; no credentials are required for the numerical workflow.
+
 The `analyse` stage now records descriptive mean/peak output and the largest adjacent-hour rises/drops for each turbine, with UTC timestamps and percentage-point units. Flat forecasts are identified explicitly. This analysis neither changes predictions nor adds probabilistic confidence or operational safety claims; demo/provisional status is included.
 
 The watcher supports `--once` for a bounded refresh and `--once --fetch-run-init <UTC hour>` for a candidate-acquisition cycle. It downloads each selected turbine through the existing weather API, requires unverified provenance, then checks refresh eligibility. Failed acquisition stops before refresh and reports any partial candidates; JSON distinguishes unchanged/queued from completed forecasts. Downloading never grants historical verification. The normal polling mode still follows updated run IDs. See the [judge walkthrough](judges-walkthrough.md) for commands and remaining automation gaps.
@@ -41,7 +47,8 @@ Downloaded candidates deliberately have `verification=unverified` and `available
 3. Station-specific hub-height conversion/bias correction agreed with the ML owner.
 4. Automatic new-run detection, verified ingestion, and a scheduler that advances issue time.
 5. Better diagnostics for missing, stale, or inconsistent weather; bounded repair/fallback policies.
-6. Optional LLM planning/reporting using these tools; retain deterministic enforcement of all temporal rules.
+6. Evaluate the optional OpenAI/NVIDIA reports with real credentials and domain review;
+   retain deterministic enforcement of all temporal rules.
 
 The watcher only refreshes an existing issue time when stored input content changes. It never rewrites previous forecasts. Retraining produces a new model ID; submit a new forecast to use it.
 

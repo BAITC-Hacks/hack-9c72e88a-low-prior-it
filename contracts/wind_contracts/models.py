@@ -239,6 +239,32 @@ class AgentEvent(Contract):
     message: str
 
 
+class AgentAnalysis(Contract):
+    provider: Literal["nvidia-nim", "openai"] = "nvidia-nim"
+    model: str
+    status: Literal["succeeded", "unavailable"]
+    summary: str = Field(default="", max_length=4000)
+    tools_used: list[Literal["forecast_summary", "quality_audit"]] = Field(default_factory=list)
+    error_code: (
+        Literal[
+            "missing_api_key",
+            "timeout",
+            "authentication",
+            "rate_limit",
+            "provider_error",
+            "invalid_response",
+        ]
+        | None
+    ) = None
+
+
+class AgentStatus(Contract):
+    provider: Literal["nvidia-nim", "openai"] = "nvidia-nim"
+    enabled: bool
+    configured: bool
+    model: str
+
+
 class ForecastResult(Contract):
     model_id: Identifier
     input_fingerprint: str
@@ -246,6 +272,7 @@ class ForecastResult(Contract):
     snapshots: list[WeatherSnapshot]
     points: list[ForecastPoint]
     warnings: list[str]
+    analysis: AgentAnalysis | None = None
 
 
 class ForecastRun(Contract):
