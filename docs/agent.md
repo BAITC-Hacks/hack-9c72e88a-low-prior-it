@@ -2,6 +2,12 @@
 
 Branch: `Agent`. Primary entry point: `agent/wind_agent/orchestrator.py`.
 
+Optional cloud analysis supports [OpenAI](openai-agent.md) and [NVIDIA NIM](nvidia-agent.md)
+via `agent/wind_agent/openai.py` and `nvidia.py`. Shared read-only tools and deadline/error
+handling live in `analysis.py`; each adapter owns its bounded API conversation.
+It runs after deterministic prediction and cannot alter power values or verify
+weather. Disabled by default; no credentials are required for the numerical workflow.
+
 ## Public boundaries
 
 ```python
@@ -37,7 +43,8 @@ Downloaded candidates deliberately have `verification=unverified` and `available
 3. Station-specific hub-height conversion/bias correction agreed with the ML owner.
 4. Automatic new-run detection, verified ingestion, and a scheduler that advances issue time.
 5. Better diagnostics for missing, stale, or inconsistent weather; bounded repair/fallback policies.
-6. Optional LLM planning/reporting using these tools; retain deterministic enforcement of all temporal rules.
+6. Evaluate the optional OpenAI/NVIDIA reports with real credentials and domain review;
+   retain deterministic enforcement of all temporal rules.
 
 The watcher only refreshes an existing issue time when stored input content changes. It never rewrites previous forecasts. Retraining produces a new model ID; submit a new forecast to use it.
 

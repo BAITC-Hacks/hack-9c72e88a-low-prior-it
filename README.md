@@ -43,6 +43,11 @@ Configuration is optional for the demo. Copy `.env.example` to `.env` to change 
 
 ## 2. Three people, three areas
 
+Optional cloud analysis: [OpenAI setup](docs/openai-agent.md) or [NVIDIA setup](docs/nvidia-agent.md).
+It explains completed forecasts using read-only tools; numerical prediction remains
+with the selected ML model. Installing dependencies does not restore trained weights
+or model registry records in a fresh clone.
+
 ### Person 1 — Agent / weather / orchestration (`Agent` branch)
 
 **Own:** `agent/`, `tests/test_leakage.py`, `tests/test_weather_adapter.py`, `docs/agent.md`.

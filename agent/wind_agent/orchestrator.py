@@ -17,11 +17,12 @@ from wind_agent.weather import target_hours
 
 
 class ForecastAgent:
-    """Bounded policy-driven agent; no LLM or credentials required by the skeleton."""
+    """Deterministic forecast workflow with optional read-only LLM analysis."""
 
-    def __init__(self, weather: WeatherProvider, predictor: Predictor):
+    def __init__(self, weather: WeatherProvider, predictor: Predictor, *, analyst=None):
         self.weather = weather
         self.predictor = predictor
+        self.analyst = analyst
 
     async def prepare(self, request: ForecastRequest, turbines: list[Turbine], emit: Callable):
         def event(stage, message):
@@ -130,6 +131,26 @@ class ForecastAgent:
             points=points,
             warnings=warnings,
         )
+        if self.analyst is not None:
+            emit(
+                AgentEvent(
+                    at=datetime.now(UTC),
+                    stage="analyse",
+                    message=f"{self.analyst.label}: requesting advisory analysis with read-only tools",
+                )
+            )
+            result.analysis = await self.analyst.analyse(request, result, self.predictor.info, emit)
+            if result.analysis.status == "unavailable":
+                result.warnings.append(
+                    f"{self.analyst.label} analysis unavailable ({result.analysis.error_code}); numerical forecast retained."
+                )
+            emit(
+                AgentEvent(
+                    at=datetime.now(UTC),
+                    stage="analyse",
+                    message=f"{self.analyst.label} analysis: {result.analysis.status}",
+                )
+            )
         emit(
             AgentEvent(
                 at=datetime.now(UTC),
