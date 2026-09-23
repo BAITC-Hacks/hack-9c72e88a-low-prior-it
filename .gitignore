@@ -12,3 +12,14 @@ outputs/single/
 *.tmp
 
 models/wind_model_asof_*
+node_modules/
+frontend/dist/
+.uv-cache/
+.ruff_cache/
+*.egg-info/
+data/*.sqlite*
+data/weather/candidates/
+data/canonical/
+artifacts/
+config/turbines.local.json
+.npm-cache/
