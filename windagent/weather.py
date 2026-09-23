@@ -80,19 +80,19 @@ def load_single_run(run_utc: datetime, model: str = S.NWP_MODEL, offline: bool =
 def load_archive(model: str = S.NWP_MODEL) -> pd.DataFrame:
     """Все запуски модели (для обучения): собранный CSV из репозитория + JSON-кэш."""
     cache = S.CACHE_DIR / "single_runs" / model
-    n_json = len(list(cache.glob("*.json"))) if cache.exists() else 0
     arch = _compiled_archive(model)
-    if arch is not None and arch["run_utc"].nunique() >= n_json:
+    files = sorted(cache.glob("*.json"))
+    if arch is not None and not files:
         return arch.copy()
-    frames = []
-    for p in sorted(cache.glob("*.json")):
+    frames = [arch.copy()] if arch is not None else []
+    for p in files:
         run = datetime.strptime(p.stem, "%Y%m%d%H").replace(tzinfo=timezone.utc)
         locs = om._as_list(json.loads(p.read_text(encoding="utf-8")))
         frames.append(run_to_frame(locs, run))
     if not frames:
         raise FileNotFoundError(
             f"Нет архива прогнозов в {cache}. Запустите: python scripts/fetch_weather.py")
-    return pd.concat(frames, ignore_index=True)
+    return pd.concat(frames, ignore_index=True).drop_duplicates(["run_utc", "loc", "valid_utc"], keep="last").sort_values(["run_utc", "loc", "valid_utc"]).reset_index(drop=True)
 
 
 def load_previous_runs(model: str) -> pd.DataFrame:
@@ -120,7 +120,8 @@ def load_previous_runs(model: str) -> pd.DataFrame:
 
 
 def second_model_as_of(prev: pd.DataFrame, issue_utc: pd.Timestamp,
-                       valid_utc: pd.Series, delay_h: float = S.NWP_PUBLISH_DELAY_H) -> pd.DataFrame:
+                       valid_utc: pd.Series, delay_h: float = S.NWP_PUBLISH_DELAY_H,
+                       loc: int = 1) -> pd.DataFrame:
     """Значения второй модели, доступные на момент выпуска, без заглядывания в будущее.
 
     Для целевого часа T значение _previous_dayK получено запуском не позже T-24K ч.
@@ -140,7 +141,7 @@ def second_model_as_of(prev: pd.DataFrame, issue_utc: pd.Timestamp,
                 continue
             sel = (lead_days.to_numpy() == k)
             if sel.any():
-                vals[sel] = rows[col].reindex(list(zip([1] * sel.sum(), valid_utc[sel]))).to_numpy()
+                vals[sel] = rows[col].reindex(list(zip([loc] * sel.sum(), valid_utc[sel]))).to_numpy()
         out[v] = vals
     return pd.DataFrame(out, index=valid_utc.index)
 

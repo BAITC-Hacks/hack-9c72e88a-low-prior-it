@@ -84,6 +84,8 @@ class PowerCurve:
                 centers.append(edges[i] + self.bin_width / 2)
                 values.append(np.median(p[sel]))
         c, v = np.array(centers), np.array(values)
+        if not len(v):
+            raise ValueError("not enough observations: need at least 30 valid samples in a wind bin")
         v = np.maximum.accumulate(v)  # кривая мощности не убывает до отключения
         # выше последнего надёжного бина держим номинал
         self.centers = np.concatenate([[0.0], c, [self.max_ws]])

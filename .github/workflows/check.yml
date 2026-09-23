@@ -1,0 +1,28 @@
+name: checks
+on: [push, pull_request]
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: uv sync --locked
+      - run: npm ci
+      - run: npm run contracts
+      - run: git diff --exit-code -- contracts/openapi.json frontend/src/generated/api.ts
+      - run: npm run check
+      - name: HTTP smoke through Vite proxy
+        shell: bash
+        run: |
+          npm run dev > /tmp/low-prior-dev.log 2>&1 &
+          DEV_PID=$!
+          trap 'kill "$DEV_PID" || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5173/health; then break; fi
+            sleep 1
+          done
+          uv run python scripts/smoke_demo.py

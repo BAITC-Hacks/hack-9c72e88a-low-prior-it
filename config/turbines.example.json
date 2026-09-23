@@ -1,4 +1,4 @@
 [
-  {"id":"turbine-1","name":"Turbine 1","latitude":43.645139,"longitude":78.535611,"capacity_kw":null,"hub_height_m":null,"metadata_note":"Coordinates from existing case settings; capacity and hub height unconfirmed. SCADA UTC+6 is a correlation-based hypothesis."},
-  {"id":"turbine-2","name":"Turbine 2","latitude":43.643198,"longitude":78.538828,"capacity_kw":null,"hub_height_m":null,"metadata_note":"Coordinates from existing case settings; capacity and hub height unconfirmed. SCADA UTC+6 is a correlation-based hypothesis."}
+  {"id":"turbine-1","name":"Turbine 1","latitude":43.645139,"longitude":78.535611,"capacity_kw":null,"hub_height_m":null,"metadata_note":"Coordinates confirmed by project owner. Capacity and hub height not supplied by case. SCADA UTC+6 inferred from data and accepted by project owner."},
+  {"id":"turbine-2","name":"Turbine 2","latitude":43.643198,"longitude":78.538828,"capacity_kw":null,"hub_height_m":null,"metadata_note":"Coordinates confirmed by project owner. Capacity and hub height not supplied by case. SCADA UTC+6 inferred from data and accepted by project owner."}
 ]

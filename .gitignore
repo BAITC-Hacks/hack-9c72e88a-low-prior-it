@@ -15,6 +15,7 @@ models/wind_model_asof_*
 node_modules/
 frontend/dist/
 .uv-cache/
+.npm-cache/
 .ruff_cache/
 *.egg-info/
 data/*.sqlite*

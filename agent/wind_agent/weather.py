@@ -1,6 +1,7 @@
 """Explicit demo weather, strict archive selection and unverified downloads."""
 import hashlib
 import json
+import logging
 import math
 import time
 from datetime import datetime, timedelta, timezone
@@ -91,6 +92,7 @@ class SingleRunsAdapter:
                     payload = response.json()
                     break
                 except httpx.TransportError as exc:
+                    logging.getLogger(__name__).warning("Weather attempt %s failed: %s", attempt + 1, exc)
                     emit_event(emit, "retry", f"Weather attempt {attempt + 1} failed: {exc}")
                     if attempt == 2:
                         raise ForecastError("weather_transport", "Weather service unavailable after 3 attempts", 503) from exc

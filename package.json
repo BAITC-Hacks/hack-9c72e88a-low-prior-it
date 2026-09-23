@@ -10,7 +10,7 @@
     "contracts": "node scripts/python.mjs scripts/export_contracts.py && openapi-typescript contracts/openapi.json -o frontend/src/generated/api.ts",
     "typecheck": "tsc --noEmit -p frontend/tsconfig.json",
     "build": "npm run typecheck && vite build --config frontend/vite.config.ts",
-    "check": "node scripts/python.mjs -m ruff check . && node scripts/python.mjs -m pytest -q -p no:cacheprovider && npm run build"
+    "check": "node scripts/python.mjs -m ruff check . && node scripts/python.mjs scripts/run_tests.py && npm run build"
   },
   "dependencies": {"react": "^19.0.0", "react-dom": "^19.0.0", "papaparse": "^5.5.0"},
   "devDependencies": {"@types/react": "^19.0.0", "@types/react-dom": "^19.0.0", "@types/papaparse": "^5.3.0", "@types/node": "^24.0.0", "@vitejs/plugin-react": "^5.0.0", "concurrently": "^9.0.0", "openapi-typescript": "^7.0.0", "typescript": "^5.7.0", "vite": "^7.0.0"}
