@@ -9,6 +9,8 @@ for exact commands, source assumptions, model artifacts, and the feature modes.
 
 ## Model contract
 
+`GET /api/v1/evidence` exposes a read-only typed projection of the committed `docs/model-selection-results.json`; `/evidence/export` downloads the same JSON. It does not retrain or require locally registered weights. The adapter checks weighted aggregates, coverage, selection and chronological boundaries before publishing results; missing or inconsistent evidence returns `503`. Deployments must retain the repository's `docs` report (a standalone wheel currently does not bundle it). Source hashes are included, while local artifact IDs and absolute paths are omitted. January remains a reused provisional comparison and no February/refit score is inferred.
+
 `predict(turbine, weather, issued_at)` must return exactly one `ForecastPoint` for each requested weather hour, sorted by valid time. IDs and lead times must match the request, and output must be finite normalized power in `[0,1]`. A different target scale requires an explicit schema update after understanding organizer normalization.
 
 The demo model uses an illustrative cubic curve with assumed cut-in/rated/cut-out speeds of 3/12/25 m/s. These are not turbine specifications. The trainable baseline groups observed wind speed into 1 m/s bins for each turbine and averages normalized power. Prediction chooses the nearest populated bin; it does not extrapolate a physical cut-out curve. It is intentionally simple and may perform poorly outside observed wind regimes or when NWP wind is biased.

@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
 from wind_agent.weather import download_single_run
+from wind_contracts.evidence import EvidenceReport
 from wind_contracts.models import (
     AgentEvent,
     AgentStatus,
@@ -24,6 +25,7 @@ from wind_contracts.models import (
     WeatherSnapshot,
 )
 
+from wind_backend.evidence import load_evidence
 from wind_backend.service import DomainError, WindService
 
 router = APIRouter(prefix="/api/v1")
@@ -39,6 +41,17 @@ Service = Annotated[WindService, Depends(get_service)]
 @router.get("/agent/status", response_model=AgentStatus, tags=["Agent"])
 def agent_status(service: Service):
     return service.agent_status()
+
+
+@router.get("/evidence", response_model=EvidenceReport, tags=["Model evidence"])
+def evidence():
+    return load_evidence()
+
+
+@router.get("/evidence/export", response_model=EvidenceReport, tags=["Model evidence"])
+def export_evidence(response: Response):
+    response.headers["Content-Disposition"] = 'attachment; filename="wind-model-evidence.json"'
+    return load_evidence()
 
 
 @router.get("/assets", response_model=list[EnergyAsset], tags=["Energy assets"])

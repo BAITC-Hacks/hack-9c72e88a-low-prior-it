@@ -77,6 +77,7 @@ def test_responses_tool_continuation_preserves_numeric_forecast(sequential):
     assert set(result.analysis.tools_used) == {"forecast_summary", "quality_audit"}
     assert len(sent) == (3 if sequential else 2)
     assert any(e.message.startswith("OpenAI tool:") for e in events)
+    assert any("hourly means" in e.message for e in events if e.stage == "analyse")
 
 
 @pytest.mark.parametrize(
@@ -193,6 +194,8 @@ def test_api_uses_selected_provider_persists_report_and_skips_replay(
     monkeypatch.setattr("wind_backend.service.NvidiaAnalyst", forbidden)
     with TestClient(create_app(enabled)) as client:
         assert client.get("/api/v1/agent/status").json()["provider"] == "openai"
+        assert client.get("/api/v1/evidence").status_code == 200
+        assert client.get("/api/v1/evidence/export").status_code == 200
         created = client.post("/api/v1/forecasts", json=forecast_request).json()
         run = client.get(f"/api/v1/forecasts/{created['id']}").json()
         assert run["status"] == "succeeded" and run["result"]["analysis"]["provider"] == "openai"

@@ -28,7 +28,9 @@ unavailable. Historical backtests skip cloud analysis.
   the LLM. Analyst configuration changes require a new forecast for a new report.
 - Add provider setup guides and configuration/live-check commands. Correct the
   outdated README statement that the project has no LLM integration.
-- Integrate `origin/main` at `d0cffe7` without conflicts, preserving author setup docs.
+- Integrate `origin/main` at `bd0a78f`, preserving the evidence workspace, deterministic
+  forecast summaries, worker acquisition flow and author setup docs. Resolve shared
+  analysis/routes/documentation conflicts and regenerate the combined API contracts.
 - Existing trained CatBoost results and reproduction instructions remain in
   [ML training](ml-training.md) and [tuning results](tuned-training-results.md).
 
@@ -36,11 +38,11 @@ unavailable. Historical backtests skip cloud analysis.
 
 Checked locally on Windows on 2026-09-23:
 
-- `python scripts/run_tests.py`: **158 passed**. Offline provider fixtures cover
+- `python scripts/run_tests.py`: **195 passed**. Offline provider fixtures cover
   both tool-call patterns, incomplete/malformed replies, timeouts, credential
   redaction, unchanged power values, persistence and omission during backtests.
 - `ruff check .` and offline `uv lock --check`: passed.
-- `npm run test --workspace frontend`: **7 passed**.
+- `npm run test --workspace frontend`: **19 passed**.
 - `npm run build`: passed, including TypeScript checks.
 - Regenerated OpenAPI and TypeScript match committed contracts; `git diff --check`
   passes and tracked sources contain no unresolved merge markers or local API keys.
@@ -51,6 +53,10 @@ Checked locally on Windows on 2026-09-23:
   `analysis.status=succeeded`; no additional paid requests were needed for review.
 
 ## Limitations and handoff
+
+The GitHub Actions check on the previous PR head did not start because GitHub
+reported an account billing lock. The account owner must resolve that issue and
+rerun CI on the updated head; local passes are not a successful remote CI result.
 
 NVIDIA has offline coverage only; live access was unavailable for this account.
 OpenAI smoke testing establishes connectivity, not numerical forecast accuracy.

@@ -37,6 +37,17 @@ def main():
             raise TimeoutError(f"Job did not finish: {path}")
 
         assert get("/health")["status"] == "ok"
+        evidence = get("/api/v1/evidence")
+        assert evidence["status"] == "provisional"
+        assert {model["id"] for model in evidence["benchmark"]["models"]} == {
+            "selected",
+            "previous",
+            "persistence",
+        }
+        evidence_export = client.get("/api/v1/evidence/export")
+        evidence_export.raise_for_status()
+        assert evidence_export.json() == evidence
+        assert "attachment" in evidence_export.headers["content-disposition"]
         turbines = get("/api/v1/turbines")
         payload = {
             "turbine_ids": [t["id"] for t in turbines],
@@ -49,6 +60,10 @@ def main():
         run = wait(f"/api/v1/forecasts/{created['id']}")
         assert run["result"]["is_demo"]
         assert len(run["result"]["points"]) == 48 * len(turbines)
+        analysis = [event["message"] for event in run["events"] if event["stage"] == "analyse"]
+        assert all(
+            any(t["id"] in message and "peak" in message for message in analysis) for t in turbines
+        )
         assert post(f"/api/v1/forecasts/{run['id']}/refresh", {})["changed"] is False
 
         replay_request = payload | {
@@ -66,6 +81,7 @@ def main():
         assert len(rows) == 1343 * len(turbines)
         assert all(row["is_demo"] == "True" for row in rows)
         print(f"PASS: health, {len(turbines)} turbines, 48-hour forecast, unchanged-input refresh")
+        print("PASS: recorded model evidence, JSON download, per-turbine forecast analysis")
         print(f"PASS: 29 daily demo forecasts, {len(rows)} February issue/target pairs, CSV export")
 
 

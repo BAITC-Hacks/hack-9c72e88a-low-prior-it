@@ -1,0 +1,37 @@
+.operations-panel { border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; background: var(--card); overflow: hidden; }
+.operations-intro { display: flex; justify-content: space-between; align-items: start; gap: 24px; margin-bottom: 25px; }
+.operations-intro .section-label { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 9px; letter-spacing: 1.5px; }
+.operations-intro h2 { font-size: clamp(19px, 2vw, 25px); letter-spacing: -.7px; line-height: 1.25; margin-top: 11px; }
+.operations-intro p { margin-top: 8px; color: var(--text-muted); line-height: 1.6; font-size: 11px; }
+.operations-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: end; }
+.operations-actions .button { white-space: nowrap; font-size: 10px; }
+.operations-signal-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.signal-card { display: flex; flex-direction: column; align-items: stretch; text-align: left; padding: 20px; border: 0; background: var(--elevated); min-width: 0; }
+.signal-card + .signal-card { border-left: 1px solid var(--border); }
+.signal-card:hover:not(:disabled), .signal-card:focus-visible { background: var(--selected-surface); }
+.signal-card:focus-visible { outline-offset: -3px; }
+.signal-card:disabled { opacity: .65; }
+.signal-label { display: flex; gap: 9px; align-items: center; color: var(--text-label); font-size: 10px; }
+.signal-label > svg:first-child { color: var(--accent); }
+.signal-label > svg:last-child { margin-left: auto; opacity: .65; }
+.signal-number { display: flex; gap: 8px; align-items: baseline; font-size: clamp(26px, 3vw, 36px); font-weight: 500; letter-spacing: -1.2px; font-variant-numeric: tabular-nums; margin: 23px 0 14px; }
+.signal-number small { color: var(--text-muted); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+.signal-number small span { font-size: 9px; margin-left: 3px; }
+.signal-time { color: var(--text-soft); font-size: 10px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+.signal-hint { font-size: 10px; color: var(--text-muted); line-height: 1.65; margin-top: 7px; max-width: 270px; }
+.output-strip { margin: 25px 0 17px; }
+.output-strip-heading, .output-strip-axis { display: flex; justify-content: space-between; gap: 12px; color: var(--text-muted); font-size: 8px; line-height: 1.5; }
+.output-strip-heading > span:first-child { letter-spacing: 1px; }
+.output-strip-heading > span:last-child { font-variant-numeric: tabular-nums; font-size: 9px; }
+.output-strip-divider { color: var(--border-strong); margin: 0 5px; }
+.output-strip svg { display: block; height: 56px; width: 100%; margin-top: 13px; }
+.output-strip-axis { margin-top: 7px; font-variant-numeric: tabular-nums; }
+.operations-method, .operations-gap { display: flex; gap: 8px; align-items: start; color: var(--text-muted); line-height: 1.7; font-size: 9px; }
+.operations-method svg, .operations-gap svg { margin-top: 2px; }
+.operations-gap { color: var(--warning); margin-bottom: 8px; }
+.operations-empty { display: flex; align-items: center; gap: 20px; min-height: 100px; border-top: 1px solid var(--border); padding-top: 22px; }
+.operations-empty-icon { display: grid; place-items: center; width: 65px; height: 65px; flex-shrink: 0; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 12px; color: var(--accent); }
+.operations-empty strong { font-weight: 500; font-size: 12px; }
+.operations-empty p { color: var(--text-muted); font-size: 11px; line-height: 1.7; margin-top: 7px; max-width: 550px; }
+@media (max-width: 1000px) { .operations-intro { flex-direction: column; gap: 15px; }.operations-actions { justify-content: start; }.signal-card { padding: 15px; }.signal-number small span { display: none; } }
+@media (max-width: 680px) { .operations-panel { padding: 18px; }.operations-signal-row { grid-template-columns: 1fr; }.signal-card + .signal-card { border-left: 0; border-top: 1px solid var(--border); }.signal-card { padding: 18px; }.signal-number { margin: 15px 0 10px; }.signal-number small span { display: inline; }.signal-hint { max-width: none; }.output-strip-heading { flex-direction: column; gap: 5px; }.operations-empty-icon { display: none; } }

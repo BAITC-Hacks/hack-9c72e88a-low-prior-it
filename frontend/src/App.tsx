@@ -3,6 +3,7 @@ import ForecastChart from './ForecastChart';
 import AgentPanel from './components/AgentPanel';
 import DataWorkspace from './components/DataWorkspace';
 import ForecastTable from './components/ForecastTable';
+import ForecastInsights from './components/ForecastInsights';
 import Icon, { type IconName } from './components/Icon';
 import ProfileMenu from './components/ProfileMenu';
 import ReplayPanel from './components/ReplayPanel';
@@ -12,20 +13,22 @@ import { isActive, utcTime } from './format';
 import useDashboard from './useDashboard';
 
 const ExploreView = lazy(() => import('./explore/ExploreView'));
-class ExploreBoundary extends Component<{ children: ReactNode; onForecast: () => void }, { failed: boolean }> {
+const EvidenceView = lazy(() => import('./evidence/EvidenceView'));
+class WorkspaceBoundary extends Component<{ children: ReactNode; onForecast: () => void; label: string }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    return this.state.failed ? <section className="dashboard"><div className="panel"><h2>Energy explorer could not load</h2><p className="muted">Reload this page to try again, or continue to the forecast workspace.</p><div className="panel-actions"><button className="button" onClick={() => window.location.reload()}>Reload page</button><button className="button primary" onClick={this.props.onForecast}>Open forecast</button></div></div></section> : this.props.children;
+    return this.state.failed ? <section className="dashboard"><div className="panel"><h2>{this.props.label} could not load</h2><p className="muted">Reload this page to try again, or continue to the forecast workspace.</p><div className="panel-actions"><button className="button" onClick={() => window.location.reload()}>Reload page</button><button className="button primary" onClick={this.props.onForecast}>Open forecast</button></div></div></section> : this.props.children;
   }
 }
-type WorkspaceView = 'explore' | 'forecast';
-const forecastSections = ['forecast', 'stations', 'activity', 'hourly', 'replay', 'data'];
+type WorkspaceView = 'explore' | 'forecast' | 'evidence';
+const forecastSections = ['forecast', 'stations', 'activity', 'hourly', 'replay', 'data', 'insights'];
 function initialView(): WorkspaceView {
   const hash = window.location.hash.slice(1);
   if (hash === 'explore') return 'explore';
+  if (hash === 'evidence') return 'evidence';
   if (forecastSections.includes(hash)) return 'forecast';
-  try { return localStorage.getItem('low-prior-view') === 'forecast' ? 'forecast' : 'explore'; }
+  try { const saved = localStorage.getItem('low-prior-view'); return saved === 'forecast' || saved === 'evidence' ? saved : 'explore'; }
   catch { return 'explore'; }
 }
 
@@ -35,6 +38,7 @@ const navigation: { id: string; title: string; icon: IconName }[] = [
   { id: 'stations', title: 'Assets', icon: 'map' },
   { id: 'activity', title: 'Agent', icon: 'activity' },
   { id: 'replay', title: 'Backtesting', icon: 'bars' },
+  { id: 'evidence', title: 'Evidence', icon: 'shield' },
   { id: 'data', title: 'Data & models', icon: 'grid' },
 ];
 
@@ -42,16 +46,18 @@ export default function App() {
   const d = useDashboard();
   const [view, setView] = useState<WorkspaceView>(initialView);
   const [exploreVisited, setExploreVisited] = useState(() => initialView() === 'explore');
+  const [evidenceVisited, setEvidenceVisited] = useState(() => initialView() === 'evidence');
   const [section, setSection] = useState(() => window.location.hash.slice(1) || initialView());
   function navigate(id: string) {
-    const next = id === 'explore' ? 'explore' : 'forecast';
+    const next = id === 'explore' ? 'explore' : id === 'evidence' ? 'evidence' : 'forecast';
     setView(next); setSection(id);
     if (next === 'explore') setExploreVisited(true);
+    if (next === 'evidence') setEvidenceVisited(true);
     try { localStorage.setItem('low-prior-view', next); } catch { /* Session-only when storage is unavailable. */ }
     if (window.location.hash !== `#${id}`) window.location.hash = id;
     window.requestAnimationFrame(() => {
       const target = document.getElementById(id === 'forecast' ? 'forecast-workspace' : id);
-      if (id === 'forecast' || id === 'explore') window.scrollTo({ top: 0 });
+      if (id === 'forecast' || id === 'explore' || id === 'evidence') window.scrollTo({ top: 0 });
       else target?.scrollIntoView();
       if (target) {
         target.setAttribute('tabindex', '-1');
@@ -62,7 +68,7 @@ export default function App() {
   useEffect(() => {
     const update = () => {
       const id = window.location.hash.slice(1);
-      if (id === 'explore' || forecastSections.includes(id)) navigate(id);
+      if (id === 'explore' || id === 'evidence' || forecastSections.includes(id)) navigate(id);
     };
     window.addEventListener('hashchange', update);
     return () => window.removeEventListener('hashchange', update);
@@ -99,7 +105,8 @@ export default function App() {
       <header className="topbar"><div className="topbar-title"><span className="wordmark">LOW PRIOR<span className="wordmark-divider" /></span><div><h1>Energy operations</h1><span className="topbar-subtitle">Generation forecasting & monitoring</span></div></div><div className="topbar-tools"><span className="timezone"><Icon name="clock" size={13} />UTC</span><span className={`connection ${d.connected ? 'connected' : d.loading ? '' : 'disconnected'}`}><span className="status-dot" />{d.loading ? 'Connecting' : d.connected ? 'Connected' : 'Disconnected'}</span><button className="icon-button" onClick={() => void d.reloadWorkspace()} disabled={d.busy || d.loading} aria-label="Refresh workspace data" title="Refresh workspace data"><Icon name="refresh" className={d.busy ? 'spinning' : ''} /></button><ProfileMenu /></div></header>
 
       <main id="main">
-        {exploreVisited && <div hidden={view !== 'explore'}><ExploreBoundary onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading energy explorer…</div>}><ExploreView active={view === 'explore'} forecastingDisabled={d.disabled} onOpenForecast={openForecast} /></Suspense></ExploreBoundary></div>}
+        {exploreVisited && <div hidden={view !== 'explore'}><WorkspaceBoundary label="Energy explorer" onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading energy explorer…</div>}><ExploreView active={view === 'explore'} forecastingDisabled={d.disabled} onOpenForecast={openForecast} /></Suspense></WorkspaceBoundary></div>}
+        {evidenceVisited && <div hidden={view !== 'evidence'}><WorkspaceBoundary label="Model evidence" onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading model evidence…</div>}><EvidenceView active={view === 'evidence'} /></Suspense></WorkspaceBoundary></div>}
         <div id="forecast-workspace" className="dashboard" aria-label="Forecast workspace" hidden={view !== 'forecast'}>
         <div className="workspace-heading"><div className="section-context"><span className="context-mark" /><h2>Forecast workspace</h2><span className="badge">Wind energy</span></div><label className="history-control"><Icon name="clock" size={13} /><span className="sr-only">Saved forecast</span><select aria-label="Saved forecast" value={d.run?.id || ''} disabled={!history.length || d.busy || isActive(d.run?.status)} onChange={event => { const next = history.find(r => r.id === event.target.value); if (next) d.selectRun(next); }}>
           {!history.length && <option value="">No saved forecasts</option>}{history.map(run => <option key={run.id} value={run.id}>{utcTime(run.request.issued_at)} UTC · {run.request.horizon_hours}h · {run.status} · {run.id.slice(-5)}</option>)}
@@ -136,6 +143,8 @@ export default function App() {
           </section>
           <WeatherPanel run={d.run} turbines={d.turbines} activeLead={d.activeLead} />
         </div>
+
+        <ForecastInsights run={d.run} activeLead={d.activeLead} onInspect={lead => { d.setActiveLead(lead); navigate('forecast'); }} />
 
         <div className="context-grid"><StationMap turbines={d.turbines} selected={d.selected} onToggle={d.toggleTurbine} disabled={d.disabled} /><AgentPanel run={d.run} /></div>
 

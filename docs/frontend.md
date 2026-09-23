@@ -6,6 +6,10 @@ The dashboard uses the [operations theme](frontend-theme.md): navy surfaces, Int
 
 ## Integration contract
 
+The **Evidence** workspace is lazy-loaded at `#evidence`, independently of forecast polling. It displays the recorded chronological benchmark from `/evidence`, filters comparable turbine/horizon cells, pools squared errors for RMSE, and exposes the report's assumptions and JSON export. Its scores are never attributed to the current forecast or an unevaluated refit. The globally defined `[hidden]` rule keeps inactive workspaces hidden even when Explore has never loaded.
+
+`ForecastInsights` derives descriptive signals from a completed run: equal-weight normalized turbine output, contiguous three-hour high/low windows and the largest adjacent-hour change. Incomplete, duplicate, invalid or misaligned hours are excluded. Window clicks inspect the corresponding forecast lead; Export brief retains issue/model/input identifiers, weather lineage and demo warnings. Unknown capacity prevents MW/MWh or financial claims. Pure calculations are covered by the Node test suite.
+
 `src/generated/api.ts` is generated from the backend OpenAPI schema. Do not edit it manually. `src/api.ts` owns request handling and exports typed API functions. Components use those functions and display the backend's error message.
 
 Development runs on `127.0.0.1:5173`, with `/api` and `/health` proxied to `127.0.0.1:8000`. `BACKEND_URL` in the root `.env` changes the proxy target. There is no CORS requirement for this arrangement. Production needs an equivalent reverse proxy.
