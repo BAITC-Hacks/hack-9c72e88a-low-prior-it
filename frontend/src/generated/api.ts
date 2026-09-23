@@ -56,6 +56,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/datasets/{dataset_id}/observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Observations */
+        get: operations["observations_api_v1_datasets__dataset_id__observations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/models": {
         parameters: {
             query?: never;
@@ -381,6 +398,11 @@ export interface components {
              * @default false
              */
             is_demo: boolean;
+            /**
+             * Provenance
+             * @default
+             */
+            provenance: string;
             /** Rows */
             rows: number;
             /**
@@ -403,6 +425,11 @@ export interface components {
              * @default false
              */
             is_demo: boolean;
+            /**
+             * Provenance
+             * @default
+             */
+            provenance: string;
             /** Observations */
             observations: components["schemas"]["Observation"][];
         };
@@ -577,7 +604,9 @@ export interface components {
              * @default binned-power-curve
              * @enum {string}
              */
-            algorithm: "binned-power-curve" | "persistence" | "catboost";
+            algorithm: "binned-power-curve" | "persistence" | "catboost" | "weather-ridge";
+            /** Weather Snapshot Ids */
+            weather_snapshot_ids?: string[];
             /**
              * Feature Set
              * @default scada
@@ -919,6 +948,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DatasetInfo"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    observations_api_v1_datasets__dataset_id__observations_get: {
+        parameters: {
+            query: {
+                start: string;
+                end: string;
+            };
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Observation"][];
                 };
             };
             /** @description Not Found */

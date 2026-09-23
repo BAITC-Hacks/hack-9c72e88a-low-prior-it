@@ -65,6 +65,7 @@ class Observation(Contract):
 class DatasetUpload(Contract):
     name: str = Field(min_length=1, max_length=120)
     is_demo: bool = False
+    provenance: str = ""
     observations: list[Observation] = Field(min_length=1, max_length=100_000)
 
     @model_validator(mode="after")
@@ -79,6 +80,7 @@ class DatasetInfo(Contract):
     id: Identifier
     name: str
     is_demo: bool = False
+    provenance: str = ""
     rows: int
     first_time: Timestamp
     last_time: Timestamp
@@ -87,7 +89,10 @@ class DatasetInfo(Contract):
 class TrainRequest(Contract):
     dataset_id: Identifier
     trained_through: Hour
-    algorithm: Literal["binned-power-curve", "persistence", "catboost"] = "binned-power-curve"
+    algorithm: Literal["binned-power-curve", "persistence", "catboost", "weather-ridge"] = (
+        "binned-power-curve"
+    )
+    weather_snapshot_ids: list[Identifier] = Field(default_factory=list)
     feature_set: Literal["scada", "scada-extended", "weather-scada"] = "scada"
     first_origin: Hour | None = None
     last_origin: Hour | None = None
@@ -106,7 +111,7 @@ class TrainRequest(Contract):
         if self.algorithm == "catboost":
             if self.first_origin is None or self.last_origin is None:
                 raise ValueError(
-                    "CatBoost requires first_origin and last_origin for daily forecast samples"
+                    "CatBoost requires first_origin and last_origin for forecast samples"
                 )
             hours = (self.last_origin - self.first_origin).total_seconds() / 3600
             if not 0 <= hours <= 1096 * 24 or hours % self.origin_step_hours:

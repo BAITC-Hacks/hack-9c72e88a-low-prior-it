@@ -15,6 +15,8 @@ The demo model uses an illustrative cubic curve with assumed cut-in/rated/cut-ou
 
 Model metadata contains a unique immutable ID, algorithm, training dataset, data cutoff, row count, turbine coverage, and demo flag. `WindService.predictor()` is the registry seam for new algorithms. Model artifacts are currently stored with SQLite records. Large serialized ML artifacts belong under `artifacts/` with metadata/checksums in the repository store.
 
+The merged registry supports `binned-power-curve`, `persistence`, `weather-ridge`, and `catboost` training requests. Persistence uses only observations available at the issue time. Ridge standardizes features on permitted training pairs and stores JSON coefficients. CatBoost uses shared origin-safe features and stores model files under `WINDFARM_MODELS` (default `artifacts/models`). CatBoost requests require daily `first_origin`/`last_origin` and a cutoff covering all training targets; use `feature_set=scada` or `weather-scada`. These are model candidates; integration tests do not establish real-world accuracy.
+
 ## Training and evaluation agreement
 
 1. Import original data with source-to-canonical mappings documented.
@@ -25,7 +27,7 @@ Model metadata contains a unique immutable ID, algorithm, training dataset, data
 6. Match training NWP inputs to operational lead times; measured-wind regression alone has a training/inference mismatch.
 7. Freeze final model selection before scoring February. Refit during February only if organizers explicitly allow delayed actuals to enter the workflow.
 
-`evaluation.py` computes MAE/RMSE by turbine and 1–24/25–48-hour horizon, counts missing actuals, and retains all issue/lead pairs. MAPE is not provided because zero-generation hours make it unsuitable. The present dashboard does not display actuals; add those routes/fields with the frontend owner when implementing comparisons.
+`evaluation.py` computes MAE/RMSE by turbine and 1–24/25–48-hour horizon, counts missing actuals, and retains all issue/lead pairs. MAPE is not provided because zero-generation hours make it unsuitable. The dashboard displays actuals through `GET /datasets/{id}/observations?start=...&end=...` with inclusive bounds and timezone-aware inputs. This read endpoint is for comparison; model features still filter observation availability independently.
 
 Station aggregation must use physical power or confirmed capacity weights. The UI's mean of normalized turbine predictions is **not** station MW or energy.
 

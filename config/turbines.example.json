@@ -2,8 +2,8 @@
   {
     "id": "turbine-1",
     "name": "Turbine 1",
-    "latitude": null,
-    "longitude": null,
+    "latitude": 43.645139,
+    "longitude": 78.535611,
     "hub_height_m": null,
     "rated_power_kw": null,
     "maps_url": "https://maps.app.goo.gl/iN6svMt69D5qRpFU9"
@@ -11,8 +11,8 @@
   {
     "id": "turbine-2",
     "name": "Turbine 2",
-    "latitude": null,
-    "longitude": null,
+    "latitude": 43.643198,
+    "longitude": 78.538828,
     "hub_height_m": null,
     "rated_power_kw": null,
     "maps_url": "https://maps.app.goo.gl/8UQMwsYavY6nLvFY8"

@@ -13,6 +13,11 @@ from wind_contracts.models import Observation
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", type=Path, default=Path("dataset"))
+    parser.add_argument(
+        "--filename-pattern",
+        default="turbine{number}.csv",
+        help="Input file pattern, e.g. turbine_{number}.csv for data/raw",
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--timezone", required=True, help="IANA zone or fixed offset, e.g. UTC+06:00"
@@ -35,7 +40,7 @@ def main():
     for number in (1, 2):
         turbine = f"turbine-{number}"
         rows, source = read_organizer_csv(
-            args.input_dir / f"turbine{number}.csv",
+            args.input_dir / args.filename_pattern.format(number=number),
             turbine_id=turbine,
             timezone=args.timezone,
             timestamp_position=args.timestamp_position,

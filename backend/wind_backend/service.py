@@ -62,6 +62,10 @@ class WindService:
         dataset = DatasetUpload.model_validate(self.required("dataset", info.dataset_id)["data"])
         if info.algorithm == "persistence-v1":
             return PersistencePredictor(info, dataset.observations)
+        if info.algorithm == "weather-ridge-v1":
+            from wind_backend.ridge_model import WeatherRidge
+
+            return WeatherRidge(info, artifact["parameters"], dataset.observations)
         if info.algorithm in {
             "catboost-scada-v1",
             "catboost-scada-extended-v1",
@@ -86,6 +90,7 @@ class WindService:
             id=identifier,
             name=payload.name,
             is_demo=payload.is_demo,
+            provenance=payload.provenance,
             rows=len(times),
             first_time=min(times),
             last_time=max(times),
@@ -107,6 +112,21 @@ class WindService:
                 identifier, dataset.observations, payload, self.snapshots(), is_demo=dataset.is_demo
             )
             artifact = model.save(self.models_path)
+        elif payload.algorithm == "weather-ridge":
+            from wind_backend.ridge_model import WeatherRidge
+
+            snapshots = (
+                [
+                    WeatherSnapshot.model_validate(self.required("weather", key))
+                    for key in payload.weather_snapshot_ids
+                ]
+                if payload.weather_snapshot_ids
+                else self.snapshots()
+            )
+            model = WeatherRidge.fit(
+                identifier, dataset.observations, payload, snapshots, dataset.is_demo
+            )
+            artifact = {"info": model.info.model_dump(mode="json"), "parameters": model.parameters}
         else:
             model_class = (
                 PersistencePredictor if payload.algorithm == "persistence" else BinnedPowerCurve

@@ -1,0 +1,3 @@
+# Compatibility installation; pyproject.toml is the dependency source of truth.
+# Use `uv sync --locked` for the reproducible development environment.
+-e .

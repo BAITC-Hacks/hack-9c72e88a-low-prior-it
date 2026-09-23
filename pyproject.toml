@@ -14,14 +14,17 @@ dependencies = [
   "pydantic>=2.10,<3",
   "python-dotenv>=1,<2",
   "catboost>=1.2.8,<2",
+  "numpy>=2,<3",
+  "pandas>=2.2,<3",
+  "tzdata>=2025.1",
 ]
 
 [dependency-groups]
 dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
 
-[tool.setuptools.packages.find]
-where = ["backend", "agent", "contracts"]
-include = ["wind_backend*", "wind_agent*", "wind_contracts*"]
+[tool.setuptools]
+packages = ["wind_backend", "wind_agent", "wind_contracts", "windagent"]
+package-dir = {wind_backend = "backend/wind_backend", wind_agent = "agent/wind_agent", wind_contracts = "contracts/wind_contracts", windagent = "windagent"}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

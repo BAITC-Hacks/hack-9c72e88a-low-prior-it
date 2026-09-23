@@ -266,6 +266,102 @@
         }
       }
     },
+    "/api/v1/datasets/{dataset_id}/observations": {
+      "get": {
+        "tags": [
+          "Data and ML"
+        ],
+        "summary": "Observations",
+        "operationId": "observations_api_v1_datasets__dataset_id__observations_get",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Observation"
+                  },
+                  "title": "Response Observations Api V1 Datasets  Dataset Id  Observations Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/v1/models": {
       "get": {
         "tags": [
@@ -1571,6 +1667,11 @@
             "title": "Is Demo",
             "default": false
           },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance",
+            "default": ""
+          },
           "rows": {
             "type": "integer",
             "title": "Rows"
@@ -1609,6 +1710,11 @@
             "type": "boolean",
             "title": "Is Demo",
             "default": false
+          },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance",
+            "default": ""
           },
           "observations": {
             "items": {
@@ -2025,10 +2131,19 @@
             "enum": [
               "binned-power-curve",
               "persistence",
-              "catboost"
+              "catboost",
+              "weather-ridge"
             ],
             "title": "Algorithm",
             "default": "binned-power-curve"
+          },
+          "weather_snapshot_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+            },
+            "type": "array",
+            "title": "Weather Snapshot Ids"
           },
           "feature_set": {
             "type": "string",

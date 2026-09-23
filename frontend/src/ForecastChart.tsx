@@ -1,18 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ForecastRun, Turbine } from './api';
+import { api, type DatasetInfo, type ForecastRun, type Observation, type Turbine } from './api';
 import { leadTime, seriesColors, utcClock, utcDate, utcTime } from './format';
 import Icon from './components/Icon';
 
 type Props = {
   run: ForecastRun | null;
   turbines: Turbine[];
+  datasets: DatasetInfo[];
   horizon: 24 | 48;
   activeLead: number;
   onLeadChange: (lead: number) => void;
 };
 
-export default function ForecastChart({ run, turbines, horizon: requestedHorizon, activeLead, onLeadChange }: Props) {
+export default function ForecastChart({ run, turbines, datasets, horizon: requestedHorizon, activeLead, onLeadChange }: Props) {
   const [hidden, setHidden] = useState<string[]>([]);
+  const [actualId, setActualId] = useState('');
+  const [actuals, setActuals] = useState<Observation[]>([]);
+  const [actualError, setActualError] = useState('');
+  const [loadingActuals, setLoadingActuals] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    setActuals([]); setActualError(''); setLoadingActuals(false);
+    if (!actualId || !run?.result?.points.length) return;
+    setLoadingActuals(true);
+    api.observations(actualId, leadTime(run.request.issued_at, 1), leadTime(run.request.issued_at, run.request.horizon_hours))
+      .then(rows => { if (!cancelled) setActuals(rows); })
+      .catch(err => { if (!cancelled) setActualError(err.message); })
+      .finally(() => { if (!cancelled) setLoadingActuals(false); });
+    return () => { cancelled = true; };
+  }, [actualId, run?.id, run?.status]);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(900);
   useEffect(() => {
@@ -43,6 +59,7 @@ export default function ForecastChart({ run, turbines, horizon: requestedHorizon
         </button>)}
         {!ids.length && <span className="muted">Turbine output</span>}
       </div>
+      <label className="chart-actuals"><span>Actuals</span><select aria-label="Actual observations for chart" value={actualId} onChange={event => setActualId(event.target.value)}><option value="">None</option>{datasets.map(d => <option key={d.id} value={d.id}>{d.name}{d.is_demo ? ' · DEMO' : ''}</option>)}</select></label>
       <span className="chart-unit">Normalized power <span>%</span></span>
     </div>
     <div className="chart-canvas" ref={canvasRef}>
@@ -72,6 +89,10 @@ export default function ForecastChart({ run, turbines, horizon: requestedHorizon
           return <g key={id}>
             {i === 0 && <polygon points={`${x(series[0].lead_hours)},${baseline} ${path} ${x(series[series.length - 1].lead_hours)},${baseline}`} fill={color} fillOpacity=".045" />}
             <polyline fill="none" stroke={color} strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" points={path} />
+            {actuals.filter(row => row.turbine_id === id).map(row => {
+              const lead = (new Date(row.valid_time).getTime() - new Date(run!.request.issued_at).getTime()) / 3600000;
+              return <circle key={row.valid_time} cx={x(lead)} cy={y(row.power_normalized)} r="3" fill="var(--card)" stroke={color} strokeWidth="1.5"><title>{turbines.find(t => t.id === id)?.name || id} actual: {(row.power_normalized * 100).toFixed(1)}%</title></circle>;
+            })}
           </g>;
         })}
         {points.length > 0 && <g>
@@ -84,6 +105,7 @@ export default function ForecastChart({ run, turbines, horizon: requestedHorizon
       </svg>
       {!points.length && <div className="chart-empty"><Icon name="chart" size={25} /><strong>{run?.status === 'failed' ? 'Forecast unavailable' : run && ['queued', 'running'].includes(run.status) ? 'Preparing hourly forecast' : 'Ready for your first forecast'}</strong><span>{run?.status === 'failed' ? 'Review the agent log and update the inputs.' : 'Choose an issue time and run a 24- or 48-hour forecast.'}</span></div>}
     </div>
+    {actualId && <p className="actuals-status" role={actualError ? 'alert' : 'status'}>{actualError || (loadingActuals ? 'Loading actual observations…' : `${actuals.filter(row => ids.includes(row.turbine_id)).length} observations in this window · hollow circles show actual output`)}</p>}
     <div className="chart-inspector">
       <div className="inspection-time"><Icon name="clock" /><span>{run && points.length ? utcTime(leadTime(run.request.issued_at, cursor)) : 'Forecast hour'} <small>UTC</small></span><span className="lead-badge">H+{String(cursor).padStart(2, '0')}</span></div>
       <div className="inspection-values">{ids.map((id, i) => {

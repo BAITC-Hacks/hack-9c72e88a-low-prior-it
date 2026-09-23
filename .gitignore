@@ -1,4 +1,5 @@
 node_modules/
+.vite/
 frontend/dist/
 .venv/
 .uv-cache/
@@ -17,3 +18,8 @@ artifacts/*
 config/turbines.local.json
 *.tsbuildinfo
 .DS_Store
+venv/
+.streamlit/secrets.toml
+outputs/
+models/wind_model_asof_*
+*.tmp
