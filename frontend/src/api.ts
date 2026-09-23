@@ -6,6 +6,8 @@ export type ForecastRun = Schemas['ForecastRun'];
 export type BacktestRun = Schemas['BacktestRun'];
 export type ForecastRequest = Schemas['ForecastRequest'];
 export type ModelInfo = Schemas['ModelInfo'];
+export type DatasetInfo = Schemas['DatasetInfo'];
+export type WeatherPoint = Schemas['WeatherPoint'];
 
 async function request<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -26,6 +28,7 @@ const routes = {
   models: '/api/v1/models',
   forecasts: '/api/v1/forecasts',
   backtests: '/api/v1/backtests',
+  datasets: '/api/v1/datasets',
 } satisfies Record<string, keyof paths>;
 
 export const api = {
@@ -37,4 +40,6 @@ export const api = {
   refresh: (id: string) => request<Schemas['RefreshResponse']>(`/forecasts/${encodeURIComponent(id)}/refresh`, {}),
   createBacktest: (body: Schemas['BacktestRequest']) => request<BacktestRun>('/backtests', body),
   backtest: (id: string) => request<BacktestRun>(`/backtests/${encodeURIComponent(id)}`),
+  backtests: () => request<BacktestRun[]>(routes.backtests.slice(7)),
+  datasets: () => request<DatasetInfo[]>(routes.datasets.slice(7)),
 };
