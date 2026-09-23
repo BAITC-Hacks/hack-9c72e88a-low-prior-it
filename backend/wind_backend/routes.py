@@ -10,6 +10,7 @@ from wind_contracts.models import (
     BacktestRun,
     DatasetInfo,
     DatasetUpload,
+    EnergyAsset,
     ForecastRequest,
     ForecastRun,
     ModelInfo,
@@ -32,6 +33,27 @@ def get_service(request: Request) -> WindService:
 
 
 Service = Annotated[WindService, Depends(get_service)]
+
+
+@router.get("/assets", response_model=list[EnergyAsset], tags=["Energy assets"])
+def assets(service: Service):
+    return [
+        EnergyAsset(
+            id=turbine.id,
+            name=turbine.name,
+            energy_type="wind",
+            country_code=turbine.country_code,
+            country_name=turbine.country_name,
+            site_id=turbine.site_id,
+            site_name=turbine.site_name,
+            latitude=turbine.latitude,
+            longitude=turbine.longitude,
+            rated_power_kw=turbine.rated_power_kw,
+            forecast_supported=True,
+            forecast_turbine_id=turbine.id,
+        )
+        for turbine in service.turbines.values()
+    ]
 
 
 @router.get("/turbines", response_model=list[Turbine], tags=["Turbines"])

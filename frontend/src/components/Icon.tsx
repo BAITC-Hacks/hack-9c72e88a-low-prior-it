@@ -1,6 +1,11 @@
 import type { SVGProps } from 'react';
 
 const shapes = {
+  globe: <><circle cx="12" cy="12" r="9" /><ellipse cx="12" cy="12" rx="4" ry="9" /><path d="M3 12h18M5 6h14M5 18h14" /></>,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5" /></>,
+  water: <><path d="M12 2S6 9 6 12a6 6 0 0 0 12 0c0-3-6-10-6-10ZM3 21c2-2 4 2 6 0s4 2 6 0 4 2 6 0" /></>,
+  search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>,
+  pause: <><path d="M8 5v14M16 5v14" /></>,
   wind: <><path d="M3 8h12a3 3 0 1 0-3-3M3 12h16a2 2 0 1 1-2 2M3 16h7a3 3 0 1 1-3 3" /></>,
   turbine: <><circle cx="12" cy="9" r="2" /><path d="M12 7V2l-2 2v3M13.7 10l4.4 2.5 1-2.5-4.5-2.2M10.4 10.2 6 12.8l1.5 2 4-3.7M12 12v10M8 22h8" /></>,
   chart: <path d="M4 3v17h17M7 15l4-5 4 2 5-7" />,

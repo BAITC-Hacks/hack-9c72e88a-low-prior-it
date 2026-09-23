@@ -10,7 +10,7 @@
     "dev:web": "npm run dev --workspace frontend",
     "build": "npm run build --workspace frontend",
     "typecheck": "npm run typecheck --workspace frontend",
-    "test": "uv run python scripts/run_tests.py",
+    "test": "uv run python scripts/run_tests.py && npm run test --workspace frontend",
     "lint": "uv run ruff check .",
     "contracts": "uv run python scripts/export_openapi.py && openapi-typescript contracts/openapi.json -o frontend/src/generated/api.ts",
     "check": "npm run lint && npm test && npm run build"

@@ -2,6 +2,10 @@
   {
     "id": "turbine-1",
     "name": "Turbine 1",
+    "country_code": "KZ",
+    "country_name": "Kazakhstan",
+    "site_id": "kazakhstan-wind-site",
+    "site_name": "Kazakhstan wind site",
     "latitude": 43.645139,
     "longitude": 78.535611,
     "hub_height_m": null,
@@ -11,6 +15,10 @@
   {
     "id": "turbine-2",
     "name": "Turbine 2",
+    "country_code": "KZ",
+    "country_name": "Kazakhstan",
+    "site_id": "kazakhstan-wind-site",
+    "site_name": "Kazakhstan wind site",
     "latitude": 43.643198,
     "longitude": 78.538828,
     "hub_height_m": null,

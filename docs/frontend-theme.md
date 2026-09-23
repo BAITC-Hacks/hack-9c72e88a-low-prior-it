@@ -2,9 +2,11 @@
 
 The main screen is a dense operational workspace. Forecast data has priority over branding and navigation. Design references: [Tomorrow.io](https://www.tomorrow.io/) for operational weather intelligence, [Linear](https://linear.app/) for restrained dark UI, and [Windy](https://www.windy.com/) for wind and weather interpretation. The composition and components are original to this project.
 
+The application has two workspaces: **Explore** for geographic asset selection and **Forecast** for operational analysis. First visits open Explore; subsequent visits restore the last workspace. The information hierarchy below applies to Forecast.
+
 ## Tokens
 
-The shared CSS variables in `frontend/src/styles.css` are the design system for this dashboard and the future globe screen.
+The shared CSS variables in `frontend/src/styles.css` and `frontend/src/themes.css` are the design system for both workspaces. **General** preserves the original palette below. **Light** uses pale surfaces and a darker teal accent for legibility; **Black** uses neutral charcoal surfaces. Profile preferences set `data-theme` on the document and persist locally, with a prepaint initializer. Chart series, globe materials, tables, warnings, and forms all follow the chosen appearance.
 
 | Token | Value | Purpose |
 | --- | --- | --- |
@@ -31,7 +33,7 @@ Use Inter Variable, bundled through `@fontsource-variable/inter`. It is served b
 
 The chart uses turquoise and blue for turbine series. Amber is never used as an ordinary chart series. There is no uncertainty band until the backend supplies calibrated intervals. Chart coordinates resize to the card so axis labels remain readable on mobile. Pointer inspection and an accessible hour slider update the adjacent weather panel; hourly table timestamps can select the same hour.
 
-The map uses confirmed coordinates only. While none are configured, it shows an honest empty state and the asset registry. With coordinates, it displays a labelled coordinate schematic, with independent latitude/longitude scaling, not a geographic basemap. The globe and country-navigation experience are a later integration.
+The forecast's small map remains a labelled coordinate schematic. Explore uses the geographic globe with locally bundled Natural Earth boundaries and configured asset coordinates. World/country/site transitions are short, globe rotation stops on interaction, and manual camera input cancels an active flight. Site groups come from explicit registry metadata. The station directory provides equivalent country/site/turbine selection without WebGL.
 
 ## State and accessibility
 

@@ -4,8 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07111F" />
-    <meta name="description" content="Wind turbine forecasting workspace for Low Prior-IT" />
-    <title>Low Prior · Wind forecasting</title>
+    <script>
+      // Apply only known appearances before first paint; storage can be unavailable.
+      try {
+        const theme = localStorage.getItem('low-prior-theme');
+        document.documentElement.dataset.theme = ['general', 'light', 'black'].includes(theme) ? theme : 'general';
+      } catch { document.documentElement.dataset.theme = 'general'; }
+    </script>
+    <meta name="description" content="Explore energy infrastructure and forecast wind generation with Low Prior-IT." />
+    <title>Low Prior · Energy operations</title>
   </head>
   <body>
     <div id="root"></div>

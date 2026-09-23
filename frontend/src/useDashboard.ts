@@ -112,5 +112,6 @@ export default function useDashboard() {
   return { turbines, models, datasets, selected, issue, horizon, source, model, run, backtest, history, busy, loading, error, notice, connected, activeLead, disabled, dirty,
     setIssue, setHorizon, setSource, setModel, setActiveLead, setError, setNotice, selectRun, submitForecast, refreshForecast, startReplay, reloadWorkspace,
     toggleTurbine: (id: string) => setSelected(ids => ids.includes(id) ? ids.filter(item => item !== id) : [...ids, id]),
+    chooseTurbines: (ids: string[]) => setSelected([...new Set(ids)].filter(id => turbines.some(t => t.id === id))),
   };
 }

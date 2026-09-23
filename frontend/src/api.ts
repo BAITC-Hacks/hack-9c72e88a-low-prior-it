@@ -2,6 +2,7 @@ import type { components, paths } from './generated/api';
 
 type Schemas = components['schemas'];
 export type Turbine = Schemas['Turbine'];
+export type EnergyAsset = Schemas['EnergyAsset'];
 export type ForecastRun = Schemas['ForecastRun'];
 export type BacktestRun = Schemas['BacktestRun'];
 export type ForecastRequest = Schemas['ForecastRequest'];
@@ -28,6 +29,7 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
 
 // Paths and payload types are checked against generated OpenAPI contracts.
 const routes = {
+  assets: '/api/v1/assets',
   turbines: '/api/v1/turbines',
   models: '/api/v1/models',
   forecasts: '/api/v1/forecasts',
@@ -36,6 +38,7 @@ const routes = {
 } satisfies Record<string, keyof paths>;
 
 export const api = {
+  assets: () => request<EnergyAsset[]>(routes.assets.slice(7)),
   turbines: () => request<Turbine[]>(routes.turbines.slice(7)),
   models: () => request<ModelInfo[]>(routes.models.slice(7)),
   forecasts: () => request<ForecastRun[]>(routes.forecasts.slice(7)),
