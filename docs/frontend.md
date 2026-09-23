@@ -20,7 +20,7 @@ The starter refresh endpoint returns `{changed, run}`. If unchanged, keep the cu
 - Issue time in UTC, 24/48-hour horizon, demo/archive source, model selector.
 - Chart, accessible hourly table, CSV export, provenance/limitations.
 - Agent events, run errors, recent-run selection.
-- UTC February replay without actuals attached; clearly unavailable accuracy metrics.
+- UTC February replay, with clearly unavailable accuracy metrics when actuals are not attached.
 - An observations selector for replay, with per-turbine and per-horizon MAE/RMSE when actuals match.
 - A weather panel synchronized to the selected forecast hour, a persistent hourly table, and a station-coordinate schematic with an empty state for unconfigured locations.
 
