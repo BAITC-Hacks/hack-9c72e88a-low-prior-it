@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Assets */
+        get: operations["assets_api_v1_assets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/turbines": {
         parameters: {
             query?: never;
@@ -433,6 +450,42 @@ export interface components {
             /** Observations */
             observations: components["schemas"]["Observation"][];
         };
+        /**
+         * EnergyAsset
+         * @description Explorable infrastructure; forecast support is an explicit capability.
+         */
+        EnergyAsset: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Energy Type
+             * @enum {string}
+             */
+            energy_type: "wind" | "hydro" | "solar" | "other";
+            /** Country Code */
+            country_code?: string | null;
+            /** Country Name */
+            country_name?: string | null;
+            /** Site Id */
+            site_id?: string | null;
+            /** Site Name */
+            site_name?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /** Rated Power Kw */
+            rated_power_kw?: number | null;
+            /**
+             * Forecast Supported
+             * @default false
+             */
+            forecast_supported: boolean;
+            /** Forecast Turbine Id */
+            forecast_turbine_id?: string | null;
+        };
         /** ForecastPoint */
         ForecastPoint: {
             /** Turbine Id */
@@ -673,6 +726,14 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Country Code */
+            country_code?: string | null;
+            /** Country Name */
+            country_name?: string | null;
+            /** Site Id */
+            site_id?: string | null;
+            /** Site Name */
+            site_name?: string | null;
             /** Latitude */
             latitude?: number | null;
             /** Longitude */
@@ -776,6 +837,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    assets_api_v1_assets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnergyAsset"][];
                 };
             };
             /** @description Not Found */

@@ -34,6 +34,10 @@ class Contract(BaseModel):
 class Turbine(Contract):
     id: Identifier
     name: str
+    country_code: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    country_name: str | None = None
+    site_id: Identifier | None = None
+    site_name: str | None = None
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     hub_height_m: float | None = Field(default=None, gt=0)
@@ -44,6 +48,34 @@ class Turbine(Contract):
     def paired_coordinates(self):
         if (self.latitude is None) != (self.longitude is None):
             raise ValueError("Set both latitude and longitude, or neither")
+        return self
+
+
+class EnergyAsset(Contract):
+    """Explorable infrastructure; forecast support is an explicit capability."""
+
+    id: Identifier
+    name: str
+    energy_type: Literal["wind", "hydro", "solar", "other"]
+    country_code: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    country_name: str | None = None
+    site_id: Identifier | None = None
+    site_name: str | None = None
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    rated_power_kw: float | None = Field(default=None, gt=0)
+    forecast_supported: bool = False
+    forecast_turbine_id: Identifier | None = None
+
+    @model_validator(mode="after")
+    def capabilities(self):
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("Set both latitude and longitude, or neither")
+        if self.forecast_supported:
+            if self.energy_type != "wind" or self.forecast_turbine_id is None:
+                raise ValueError("Forecast support currently requires a mapped wind turbine")
+        elif self.forecast_turbine_id is not None:
+            raise ValueError("A forecast turbine mapping requires forecast support")
         return self
 
 

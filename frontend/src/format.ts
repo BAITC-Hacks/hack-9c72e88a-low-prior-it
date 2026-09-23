@@ -1,4 +1,4 @@
-export const seriesColors = ['#2DE2C5', '#6C9FFF', '#BAC9DA', '#8BCDDC'];
+export const seriesColors = ['var(--series-1)', 'var(--series-2)', 'var(--series-3)', 'var(--series-4)'];
 export const isActive = (status?: string) => status === 'queued' || status === 'running';
 export const utcDate = (value: string) => new Date(value).toLocaleDateString('en-GB', {
   timeZone: 'UTC', day: '2-digit', month: 'short',

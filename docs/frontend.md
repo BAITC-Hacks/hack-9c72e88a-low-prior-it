@@ -2,7 +2,7 @@
 
 Branch: `frontend`. Stack: React, TypeScript, Vite, plain CSS; no hosted UI or map service is required for the starter.
 
-The dashboard uses the [wind operations theme](frontend-theme.md): navy surfaces, Inter typography, cyan accents, and a chart-first operational layout. Reuse its tokens for the future globe screen.
+The dashboard uses the [operations theme](frontend-theme.md): navy surfaces, Inter typography, cyan accents, and a chart-first forecast layout. Explore shares the same tokens. Profile appearance settings offer General, Light, and Black, remembered locally.
 
 ## Integration contract
 
@@ -16,6 +16,8 @@ The starter refresh endpoint returns `{changed, run}`. If unchanged, keep the cu
 
 ## Existing screens
 
+- Globe Explore: country search/picking, energy-type filters, explicit site grouping, turbine selection, and forecast handoff. See [Explorer](explorer.md).
+- Profile appearance menu, with persistent General / Light / Black themes.
 - Turbine selection and missing-coordinate/capacity status.
 - Issue time in UTC, 24/48-hour horizon, demo/archive source, model selector.
 - Chart, accessible hourly table, CSV export, provenance/limitations.
@@ -31,7 +33,7 @@ The starter refresh endpoint returns `{changed, run}`. If unchanged, keep the cu
 1. Keep feature components and API state separate as screens grow (`components/` and `useDashboard.ts`).
 2. Refine dataset upload/training feedback; these controls and the replay actuals selector are implemented.
 3. Expand forecasts-versus-actuals inspection and metrics using the agreed contract.
-4. Integrate the globe and geographic basemap after coordinates are confirmed; include map attribution.
+4. Extend the explorer with additional registered sites and a detailed local basemap if needed. The current world/country layer includes Natural Earth attribution.
 5. Add calibrated uncertainty when the backend provides it; avoid invented shaded confidence bands.
 6. Add browser tests for forecast creation, failure display, export, history, and mobile navigation.
 
@@ -42,6 +44,7 @@ Keep normalization visible: percentages represent the agreed `[0,1]` target cont
 ```sh
 npm run dev:web
 npm run typecheck
+npm run test --workspace frontend
 npm run build
 ```
 

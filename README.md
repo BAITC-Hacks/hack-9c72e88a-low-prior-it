@@ -1,6 +1,6 @@
-# Low Prior Wind
+# Low Prior Energy
 
-An agent-driven workspace for forecasting hourly output from **two wind turbines, 24–48 hours ahead**. `main` integrates the `frontend`, `ml-aiagent`, and `danik` branches. The local `Agent` and `backend` branches contain no additional work. Solar and hydro are outside the current scope.
+An energy exploration and forecasting workspace. The working forecasting pipeline predicts hourly output from **two wind turbines, 24–48 hours ahead**. The explorer's shared asset contract includes wind, hydro, solar, and other energy types; hydro/solar catalogs and forecasting models are future work. `main` integrates the `frontend`, `ml-aiagent`, and `danik` branches.
 
 The skeleton runs end to end today with **clearly labelled synthetic weather**. It includes a real API, React dashboard, SQLite persistence, baseline model training, auditable weather snapshots, daily replay, CSV export, and tests. It does **not** claim a trained competition model or verified February weather coverage.
 
@@ -26,7 +26,9 @@ npm run dev
 | OpenAPI schema | http://127.0.0.1:8000/openapi.json |
 | Health check | http://127.0.0.1:8000/health |
 
-Keep `npm run dev` running. Select the turbines, leave **Synthetic demo** and **Demo power curve** selected, and click **Run forecast**. The dashboard displays hourly values, the agent's decisions, and a CSV download. **Run daily replay** generates the February demonstration; accuracy remains unavailable without actual observations.
+Keep `npm run dev` running. First visits open **Explore**: select Kazakhstan on the globe or in the country directory, select the configured wind site and its turbines, and choose **Open forecast**. Leave **Synthetic demo** and **Demo power curve** selected, then click **Run forecast**. The dashboard displays hourly values, the agent's decisions, and a CSV download. **Run daily replay** generates the February demonstration; accuracy remains unavailable without actual observations.
+
+Use **Profile → Appearance** for **General** (the original navy theme), **Light**, or **Black**. Appearance and the last workspace are remembered in this browser. The globe is loaded separately, pauses when hidden, respects reduced motion, and has a station-directory fallback when WebGL is unavailable. Country boundaries are bundled locally; runtime globe navigation needs no map-service key. See [Explorer and appearance](docs/explorer.md).
 
 Run separately when working in one area:
 
@@ -153,6 +155,7 @@ All business routes use `/api/v1`. Full request/response types and examples are 
 
 | Method | Route after `/api/v1` | Responsibility / result |
 | --- | --- | --- |
+| GET | `/assets` | Energy registry with country/site metadata and explicit forecast capability |
 | GET | `/turbines` | Configured turbine metadata |
 | GET | `/datasets` | Imported dataset metadata |
 | POST | `/datasets` | Import validated observations (201) |
@@ -275,7 +278,7 @@ npm run contracts
 npm run check
 ```
 
-`contracts` exports OpenAPI from the backend and regenerates TypeScript. Commit both generated files whenever the API changes. Do not hand-edit them. `check` runs Python lint, tests, TypeScript checks, and the frontend production build. CI repeats these checks and fails on generated-contract drift.
+`contracts` exports OpenAPI from the backend and regenerates TypeScript. Commit both generated files whenever the API changes. Do not hand-edit them. `check` runs Python lint/tests, frontend asset-selection tests, TypeScript checks, and the frontend production build. CI repeats these checks and fails on generated-contract drift.
 
 With `npm run dev` running, exercise the HTTP services through the frontend proxy:
 

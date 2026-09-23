@@ -1,27 +1,80 @@
-import { useState } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import ForecastChart from './ForecastChart';
 import AgentPanel from './components/AgentPanel';
 import DataWorkspace from './components/DataWorkspace';
 import ForecastTable from './components/ForecastTable';
 import Icon, { type IconName } from './components/Icon';
+import ProfileMenu from './components/ProfileMenu';
 import ReplayPanel from './components/ReplayPanel';
 import StationMap from './components/StationMap';
 import WeatherPanel from './components/WeatherPanel';
 import { isActive, utcTime } from './format';
 import useDashboard from './useDashboard';
 
+const ExploreView = lazy(() => import('./explore/ExploreView'));
+class ExploreBoundary extends Component<{ children: ReactNode; onForecast: () => void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    return this.state.failed ? <section className="dashboard"><div className="panel"><h2>Energy explorer could not load</h2><p className="muted">Reload this page to try again, or continue to the forecast workspace.</p><div className="panel-actions"><button className="button" onClick={() => window.location.reload()}>Reload page</button><button className="button primary" onClick={this.props.onForecast}>Open forecast</button></div></div></section> : this.props.children;
+  }
+}
+type WorkspaceView = 'explore' | 'forecast';
+const forecastSections = ['forecast', 'stations', 'activity', 'hourly', 'replay', 'data'];
+function initialView(): WorkspaceView {
+  const hash = window.location.hash.slice(1);
+  if (hash === 'explore') return 'explore';
+  if (forecastSections.includes(hash)) return 'forecast';
+  try { return localStorage.getItem('low-prior-view') === 'forecast' ? 'forecast' : 'explore'; }
+  catch { return 'explore'; }
+}
+
 const navigation: { id: string; title: string; icon: IconName }[] = [
+  { id: 'explore', title: 'Explore', icon: 'globe' },
   { id: 'forecast', title: 'Forecast', icon: 'chart' },
-  { id: 'stations', title: 'Turbines', icon: 'map' },
+  { id: 'stations', title: 'Assets', icon: 'map' },
   { id: 'activity', title: 'Agent', icon: 'activity' },
-  { id: 'hourly', title: 'Hourly data', icon: 'grid' },
   { id: 'replay', title: 'Backtesting', icon: 'bars' },
   { id: 'data', title: 'Data & models', icon: 'grid' },
 ];
 
 export default function App() {
   const d = useDashboard();
-  const [section, setSection] = useState('forecast');
+  const [view, setView] = useState<WorkspaceView>(initialView);
+  const [exploreVisited, setExploreVisited] = useState(() => initialView() === 'explore');
+  const [section, setSection] = useState(() => window.location.hash.slice(1) || initialView());
+  function navigate(id: string) {
+    const next = id === 'explore' ? 'explore' : 'forecast';
+    setView(next); setSection(id);
+    if (next === 'explore') setExploreVisited(true);
+    try { localStorage.setItem('low-prior-view', next); } catch { /* Session-only when storage is unavailable. */ }
+    if (window.location.hash !== `#${id}`) window.location.hash = id;
+    window.requestAnimationFrame(() => {
+      const target = document.getElementById(id === 'forecast' ? 'forecast-workspace' : id);
+      if (id === 'forecast' || id === 'explore') window.scrollTo({ top: 0 });
+      else target?.scrollIntoView();
+      if (target) {
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
+    });
+  }
+  useEffect(() => {
+    const update = () => {
+      const id = window.location.hash.slice(1);
+      if (id === 'explore' || forecastSections.includes(id)) navigate(id);
+    };
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, []);
+  useEffect(() => {
+    if (view === 'forecast' && section !== 'forecast') document.getElementById(section)?.scrollIntoView();
+    else window.scrollTo({ top: 0 });
+  }, [view, section]);
+  function openForecast(ids: string[]) {
+    d.chooseTurbines(ids);
+    navigate('forecast');
+  }
   const points = d.run?.result?.points || [];
   const pointKeys = new Set(points.map(p => `${p.turbine_id}:${new Date(p.valid_time).getTime()}`));
   const wind = (d.run?.result?.snapshots || []).flatMap(s => s.points.filter(p => pointKeys.has(`${s.turbine_id}:${new Date(p.valid_time).getTime()}`)));
@@ -37,15 +90,17 @@ export default function App() {
   return <div className="app-shell">
     <a className="skip-link" href="#main">Skip to dashboard</a>
     <aside className="navigation-rail" aria-label="Workspace navigation">
-      <a className="rail-brand" href="#main" aria-label="Low Prior wind operations"><Icon name="turbine" size={28} /></a>
-      <nav>{navigation.map(item => <a key={item.id} href={`#${item.id}`} className={section === item.id ? 'rail-link selected' : 'rail-link'} title={item.title} aria-label={item.title} aria-current={section === item.id ? 'location' : undefined} onClick={() => setSection(item.id)}><Icon name={item.icon} size={20} /><span className="rail-label">{item.title}</span></a>)}</nav>
+      <a className="rail-brand" href="#explore" onClick={event => { event.preventDefault(); navigate('explore'); }} aria-label="Low Prior energy explorer"><Icon name="globe" size={28} /></a>
+      <nav>{navigation.map(item => <a key={item.id} href={`#${item.id}`} className={section === item.id ? 'rail-link selected' : 'rail-link'} title={item.title} aria-label={item.title} aria-current={section === item.id ? 'location' : undefined} onClick={event => { event.preventDefault(); navigate(item.id); }}><Icon name={item.icon} size={20} /><span className="rail-label">{item.title}</span></a>)}</nav>
       <div className="rail-bottom"><span className="rail-monogram">LP</span><span>v0.1</span></div>
     </aside>
 
     <div className="workspace">
-      <header className="topbar"><div className="topbar-title"><span className="wordmark">LOW PRIOR<span className="wordmark-divider" /></span><div><h1>Wind operations</h1><span className="topbar-subtitle">Generation forecasting & monitoring</span></div></div><div className="topbar-tools"><span className="timezone"><Icon name="clock" size={13} />UTC</span><span className={`connection ${d.connected ? 'connected' : d.loading ? '' : 'disconnected'}`}><span className="status-dot" />{d.loading ? 'Connecting' : d.connected ? 'Connected' : 'Disconnected'}</span><button className="icon-button" onClick={() => void d.reloadWorkspace()} disabled={d.busy || d.loading} aria-label="Refresh workspace data" title="Refresh workspace data"><Icon name="refresh" className={d.busy ? 'spinning' : ''} /></button></div></header>
+      <header className="topbar"><div className="topbar-title"><span className="wordmark">LOW PRIOR<span className="wordmark-divider" /></span><div><h1>Energy operations</h1><span className="topbar-subtitle">Generation forecasting & monitoring</span></div></div><div className="topbar-tools"><span className="timezone"><Icon name="clock" size={13} />UTC</span><span className={`connection ${d.connected ? 'connected' : d.loading ? '' : 'disconnected'}`}><span className="status-dot" />{d.loading ? 'Connecting' : d.connected ? 'Connected' : 'Disconnected'}</span><button className="icon-button" onClick={() => void d.reloadWorkspace()} disabled={d.busy || d.loading} aria-label="Refresh workspace data" title="Refresh workspace data"><Icon name="refresh" className={d.busy ? 'spinning' : ''} /></button><ProfileMenu /></div></header>
 
-      <main id="main" className="dashboard">
+      <main id="main">
+        {exploreVisited && <div hidden={view !== 'explore'}><ExploreBoundary onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading energy explorer…</div>}><ExploreView active={view === 'explore'} forecastingDisabled={d.disabled} onOpenForecast={openForecast} /></Suspense></ExploreBoundary></div>}
+        <div id="forecast-workspace" className="dashboard" aria-label="Forecast workspace" hidden={view !== 'forecast'}>
         <div className="workspace-heading"><div className="section-context"><span className="context-mark" /><h2>Forecast workspace</h2><span className="badge">Wind energy</span></div><label className="history-control"><Icon name="clock" size={13} /><span className="sr-only">Saved forecast</span><select aria-label="Saved forecast" value={d.run?.id || ''} disabled={!history.length || d.busy || isActive(d.run?.status)} onChange={event => { const next = history.find(r => r.id === event.target.value); if (next) d.selectRun(next); }}>
           {!history.length && <option value="">No saved forecasts</option>}{history.map(run => <option key={run.id} value={run.id}>{utcTime(run.request.issued_at)} UTC · {run.request.horizon_hours}h · {run.status} · {run.id.slice(-5)}</option>)}
         </select></label></div>
@@ -91,7 +146,8 @@ export default function App() {
         <DataWorkspace datasets={d.datasets} turbines={d.turbines} disabled={d.disabled} onChanged={d.reloadWorkspace} />
 
         <details className="panel provenance-panel"><summary><span><Icon name="shield" />Forecast provenance & model details</span><Icon name="chevron" size={14} /></summary><div className="provenance-content"><div className="provenance-model"><span className="field-label">Prediction model</span><strong>{forecastModel?.algorithm || 'No model result'}</strong><span>Training cutoff: {forecastModel?.trained_through ? `${utcTime(forecastModel.trained_through)} UTC` : 'Not applicable / untrained demo'}</span><span>Uncertainty: not calibrated</span>{d.run && <code>{d.run.id}</code>}</div><div className="provenance-weather">{d.run?.result?.snapshots.map(snapshot => <div key={snapshot.id}><strong>{d.turbines.find(t => t.id === snapshot.turbine_id)?.name || snapshot.turbine_id}</strong><span>{snapshot.weather_model} · {snapshot.verification}</span><span>Initialized {utcTime(snapshot.run_init)} UTC</span><span>Available {snapshot.available_at ? `${utcTime(snapshot.available_at)} UTC` : 'unverified'}</span></div>)}</div>{d.run?.result?.warnings.length ? <ul>{d.run.result.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul> : <p className="muted">Model and weather lineage appear with the forecast result.</p>}</div></details>
-        <footer className="workspace-footer"><span><Icon name="turbine" size={13} />LOW PRIOR-IT <span className="footer-divider">/</span> Wind forecasting</span><span>UTC time · Normalized power · Hourly resolution</span></footer>
+        <footer className="workspace-footer"><span><Icon name="globe" size={13} />LOW PRIOR-IT <span className="footer-divider">/</span> Energy intelligence</span><span>Wind forecasting · UTC time · Normalized power</span></footer>
+        </div>
       </main>
     </div>
   </div>;
