@@ -19,13 +19,13 @@ REQUEST = ForecastRequest(turbine_ids=["turbine-1"], issued_at=ISSUE)
 TURBINES = [Turbine(id="turbine-1", name="One")]
 
 
-def response(content=None, calls=None, finish="stop"):
+def response(content=None, calls=None, finish=None):
     return httpx.Response(
         200,
         json={
             "choices": [
                 {
-                    "finish_reason": finish,
+                    "finish_reason": finish or ("tool_calls" if calls else "stop"),
                     "message": {"role": "assistant", "content": content, "tool_calls": calls},
                 }
             ]
@@ -113,6 +113,8 @@ def test_sequential_tools_are_bounded_to_three_requests():
         response(calls=[call("forecast_summary", '{"file":".env"}')]),
         response(calls=[call("forecast_summary"), call("forecast_summary", identifier="other")]),
         response(calls=[call("forecast_summary", "[]")]),
+        response(calls=[call("forecast_summary")], finish="length"),
+        response(calls=[call("forecast_summary")], finish="content_filter"),
         httpx.Response(200, json={"choices": []}),
         httpx.Response(200, text="not JSON"),
     ],
@@ -123,6 +125,19 @@ def test_malformed_or_unauthorized_actions_leave_forecast_unchanged(reply):
     assert result.points == baseline.points
     assert result.analysis.status == "unavailable"
     assert result.analysis.error_code == "invalid_response"
+    assert result.analysis.tools_used == []
+
+
+def test_malformed_final_tool_calls_are_not_accepted_as_a_report():
+    replies = iter([
+        response(calls=[call("forecast_summary"), call("quality_audit")], finish="tool_calls"),
+        response("A malformed report must not be accepted.", calls={}),
+    ])
+    baseline, _ = forecast()
+    result, _ = forecast(analyst(lambda _: next(replies)))
+    assert result.points == baseline.points
+    assert result.analysis.error_code == "invalid_response"
+    assert not result.analysis.summary
 
 
 @pytest.mark.parametrize(

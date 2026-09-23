@@ -21,7 +21,8 @@ def main():
         return
     if not config.enabled or not config.api_key:
         parser.exit(
-            2, "Set NVIDIA_AGENT_ENABLED=true and NVIDIA_API_KEY in the local .env first.\n"
+            2,
+            "Set NVIDIA_AGENT_ENABLED=true, NVIDIA_API_KEY and OPENAI_AGENT_ENABLED=false in .env.\n",
         )
     request = ForecastRequest(turbine_ids=["turbine-1"], issued_at="2026-01-31T00:00:00Z")
     agent = ForecastAgent(DemoWeatherProvider(), DemoPowerCurve(), analyst=NvidiaAnalyst(config))

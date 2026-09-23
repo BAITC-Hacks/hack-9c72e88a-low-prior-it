@@ -85,6 +85,7 @@ def test_responses_tool_continuation_preserves_numeric_forecast(sequential):
         [message()],
         [call("write_file")],
         [call("forecast_summary", '{"path":".env"}')],
+        [call("forecast_summary") | {"status": "incomplete"}],
         [call("forecast_summary"), call("forecast_summary", identifier="other")],
         [dict(type="shell_call")],
         [],

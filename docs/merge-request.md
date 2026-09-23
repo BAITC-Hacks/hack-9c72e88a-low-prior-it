@@ -1,63 +1,71 @@
 # PR title
 
-Improve CatBoost through chronological selection and confirmed SCADA timing
+Add optional OpenAI and NVIDIA forecast analysis with bounded read-only tools
 
 ## Change
 
-The initial SCADA CatBoost had January MAE 0.29834. Selection among four predefined
-configurations on November/December folds chooses a compact MAE model: January
-MAE becomes **0.28006 (6.13% lower)** and RMSE **0.33508 (1.64% lower)** on the same
-2,688 forecast pairs. Every turbine/horizon group improves. January is excluded
-from parameter selection; its prior baseline score had already been inspected.
+Completed forecasts can now include an advisory report from OpenAI or NVIDIA NIM.
+The selected numerical model still computes every power value; the cloud analyst
+receives computed summaries and provenance checks after prediction and validation.
+The dashboard displays the report, provider, model and availability status.
 
-The winner is refitted separately with a January 31 cutoff for later forecasts.
-January comparison scores belong to the January 1 model, not the refitted weights.
-Both are registered locally with immutable IDs.
+Both providers are disabled by default. Enable exactly one in the backend `.env`.
+OpenAI uses `gpt-4.1-mini` through Responses; NVIDIA remains an alternative adapter.
+The existing `httpx` dependency handles both providers, with no extra SDK or GPU.
 
-## Implementation
+The analyst must call `forecast_summary` and `quality_audit` before reporting.
+Each analysis permits at most three API requests and two read-only tool executions,
+with a total deadline. Missing keys, provider errors, timeouts, incomplete tool
+calls and malformed reports preserve the numerical forecast and mark the analysis
+unavailable. Historical backtests skip cloud analysis.
 
-- Preserve confirmed UTC+06:00 / interval-start preparation and explicit assumptions
-  for unknown reporting delay and normalization.
-- Add optional versioned weekly SCADA features, MAE loss, bounded L2 and 6/12/24-hour
-  origin steps. Existing defaults/artifacts stay compatible. Weekly lags did not win.
-- Add reproducible chronological selection, weighted scoring, coverage checks,
-  frozen plan/winner records, interrupted-fold recovery and source-checked refitting.
-- Regenerate API schemas/types and align the existing dashboard training request.
-  Preserve main's weather ridge, provenance fields and data/weather integration.
-- Merge `origin/main` at `1ac833c` into `ml-aiagent`, resolving integration conflicts.
-  Keep the architecture and Predictor/WeatherProvider interfaces.
-- Retain original artifacts and data. New weights, predictions and database remain
-  ignored; the PR includes a metric/provenance summary, not additional raw data.
+## Contracts and integration
+
+- Add `GET /api/v1/agent/status` with provider/configuration flags, never API keys.
+- Add optional `ForecastResult.analysis`; old stored forecasts remain readable.
+- Regenerate OpenAPI and frontend types; report text renders as plain React text.
+- Keep numerical fingerprints, temporal validation and weather verification outside
+  the LLM. Analyst configuration changes require a new forecast for a new report.
+- Add provider setup guides and configuration/live-check commands. Correct the
+  outdated README statement that the project has no LLM integration.
+- Integrate `origin/main` at `d0cffe7` without conflicts, preserving author setup docs.
+- Existing trained CatBoost results and reproduction instructions remain in
+  [ML training](ml-training.md) and [tuning results](tuned-training-results.md).
 
 ## Validation
 
-- **102 tests passed**; one existing Starlette/httpx deprecation warning.
-- Ruff and offline `uv lock --check` passed; `git diff --check` passed.
-- OpenAPI matches the application; generated TypeScript is current.
-- `npm ci` and `npm run build` passed, including main's CSV importer.
-- Previous and selected model reloads reproduce saved January predictions exactly
-  for 96 points each.
-- Refit completes the existing agent flow: 96 predictions, both turbines, 48 hours,
-  explicit provisional/SCADA-only labels.
-- Eight development fits, one January fit, one later refit, each with two estimators.
-  Per candidate: 2,660 scored development pairs, 28 missing; January: 2,688, no missing.
+Checked locally on Windows on 2026-09-23:
 
-Evidence: [results](tuned-training-results.md), [metric summary](model-selection-results.json),
-[commands and assumptions](ml-training.md).
+- `python scripts/run_tests.py`: **158 passed**. Offline provider fixtures cover
+  both tool-call patterns, incomplete/malformed replies, timeouts, credential
+  redaction, unchanged power values, persistence and omission during backtests.
+- `ruff check .` and offline `uv lock --check`: passed.
+- `npm run test --workspace frontend`: **7 passed**.
+- `npm run build`: passed, including TypeScript checks.
+- Regenerated OpenAPI and TypeScript match committed contracts; `git diff --check`
+  passes and tracked sources contain no unresolved merge markers or local API keys.
+- HTTP smoke test on an isolated temporary database: health, two turbines,
+  96 forecast points, unchanged-input refresh, 29 daily demo forecasts and
+  2,686 exported February issue/target pairs. Cloud providers disabled for this test.
+- The user supplied a successful OpenAI live smoke-test log with both tools and
+  `analysis.status=succeeded`; no additional paid requests were needed for review.
 
-## Limitations
+## Limitations and handoff
 
-The winner improves development MAE but slightly worsens development RMSE; January
-improves on both. Errors remain large. Limited correlated windows do not establish
-general superiority. Latency and physical normalization remain unconfirmed, so
-`is_demo=true` remains. Main's weather CSVs await publication verification. No
-verified February score exists; the full weather-based task.pdf workflow remains open.
+NVIDIA has offline coverage only; live access was unavailable for this account.
+OpenAI smoke testing establishes connectivity, not numerical forecast accuracy.
+The task.pdf requirement for verified historical weather forecasts and February
+evaluation remains open. Synthetic weather and provisional model assumptions
+retain their labels; the LLM cannot certify archive availability or supply missing
+weather. Reports are advisory English text.
 
-## Local handoff
+Existing dependency deprecation warnings (Starlette/httpx and pandas/NumPy) and
+the large globe bundle warning remain; they do not fail the checks.
 
-Evaluation: `model-1ce9040924c14cd583a3924c7860c2ee`, cutoff January 1.
-Refit: `model-278bd6130ed3466ca981f75368f0df8e`, cutoff January 31, 00:00 UTC.
-IDs are local: teammates prepare authorized data and run the documented commands.
+Secrets, local datasets, SQLite state and trained weights are excluded from this
+change. A fresh clone must reproduce training or receive matching authorized
+model artifacts and registry/data separately. See [OpenAI setup](openai-agent.md)
+and [NVIDIA setup](nvidia-agent.md) for per-machine analyst configuration.
 
-Base: `main`. Head: `ml-aiagent`. This is a prepared PR body; no PR publication,
-remote push or merge into main is implied.
+Base: `main`. Head: `ml-aiagent`. This file is the prepared PR description;
+remote push, PR publication and merge into main are left to the maintainer.

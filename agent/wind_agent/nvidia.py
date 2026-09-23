@@ -91,9 +91,15 @@ class NvidiaAnalyst(CloudAnalyst):
             message = choice["message"]
             if not isinstance(message, dict) or message.get("role") != "assistant":
                 raise ValueError("Invalid assistant message")
-            calls = message.get("tool_calls") or []
+            calls = message.get("tool_calls")
+            if calls is None:
+                calls = []
+            if not isinstance(calls, list):
+                raise ValueError("Invalid tool calls")
             if calls:
-                if not isinstance(calls, list) or not 1 <= len(calls) <= len(remaining):
+                if choice.get("finish_reason") != "tool_calls":
+                    raise ValueError("Incomplete tool response")
+                if not 1 <= len(calls) <= len(remaining):
                     raise ValueError("Invalid tool call count")
                 clean_calls = []
                 batch_names = set()

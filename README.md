@@ -60,7 +60,7 @@ or model registry records in a fresh clone.
 2. Download candidate weather through `/weather/fetch`; verify provenance before importing a separate verified snapshot. A current download timestamp is not historical publication evidence.
 3. Complete weather preparation: choose a suitable model/height, handle missing hours explicitly, cache raw provider responses, and document any correction or interpolation.
 4. Improve the agent's decisions: choose permitted fallback runs, explain failures, monitor new inputs, and recompute when the fingerprint changes.
-5. Add an optional LLM planner only if it improves decisions. The current implementation is a **policy-driven workflow**, with no LLM integration. Keep data-availability checks outside any LLM's control.
+5. Evaluate the optional OpenAI/NVIDIA analyst reports. The forecast workflow enforces data availability deterministically; the LLM explains completed results through read-only tools and cannot change power values or verify weather archives.
 
 **Deliver to backend:** a `WeatherProvider` returning `WeatherSnapshot`; `ForecastAgent.run(request, turbines, emit)` returns `ForecastResult`. Import only `wind_contracts`, your own code, and third-party libraries. Do not import backend implementation modules.
 

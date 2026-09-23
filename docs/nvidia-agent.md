@@ -32,6 +32,7 @@ Obtain an API key from the NVIDIA model's **Build** page. Add these settings to
 the local `.env` (create it from `.env.example` only if it does not already exist):
 
 ```dotenv
+OPENAI_AGENT_ENABLED=false
 NVIDIA_AGENT_ENABLED=true
 NVIDIA_API_KEY=your-key-here
 NVIDIA_MODEL=nvidia/nemotron-3-super-120b-a12b

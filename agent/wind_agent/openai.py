@@ -104,7 +104,8 @@ class OpenAIAnalyst(CloudAnalyst):
                 for call in calls:
                     name, identifier = call["name"], call["call_id"]
                     if (
-                        name not in remaining
+                        call.get("status") != "completed"
+                        or name not in remaining
                         or name in names
                         or not isinstance(identifier, str)
                         or not 1 <= len(identifier) <= 200
