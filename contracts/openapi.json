@@ -67,6 +67,67 @@
         }
       }
     },
+    "/api/v1/agent/status": {
+      "get": {
+        "tags": [
+          "Agent"
+        ],
+        "summary": "Agent Status",
+        "operationId": "agent_status_api_v1_agent_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/evidence": {
       "get": {
         "tags": [
@@ -1629,6 +1690,74 @@
   },
   "components": {
     "schemas": {
+      "AgentAnalysis": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "nvidia-nim",
+              "openai"
+            ],
+            "title": "Provider",
+            "default": "nvidia-nim"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Summary",
+            "default": ""
+          },
+          "tools_used": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "forecast_summary",
+                "quality_audit"
+              ]
+            },
+            "type": "array",
+            "title": "Tools Used"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "missing_api_key",
+                  "timeout",
+                  "authentication",
+                  "rate_limit",
+                  "provider_error",
+                  "invalid_response"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model",
+          "status"
+        ],
+        "title": "AgentAnalysis"
+      },
       "AgentEvent": {
         "properties": {
           "at": {
@@ -1662,6 +1791,39 @@
           "message"
         ],
         "title": "AgentEvent"
+      },
+      "AgentStatus": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "nvidia-nim",
+              "openai"
+            ],
+            "title": "Provider",
+            "default": "nvidia-nim"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "configured",
+          "model"
+        ],
+        "title": "AgentStatus"
       },
       "ApiError": {
         "properties": {
@@ -2715,6 +2877,16 @@
             },
             "type": "array",
             "title": "Warnings"
+          },
+          "analysis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentAnalysis"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

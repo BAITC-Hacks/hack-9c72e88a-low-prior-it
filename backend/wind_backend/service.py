@@ -2,6 +2,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
+from wind_agent.nvidia import NvidiaAnalyst, NvidiaConfig
+from wind_agent.openai import OpenAIAnalyst, OpenAIConfig
 from wind_agent.orchestrator import ForecastAgent
 from wind_agent.weather import ArchiveWeatherProvider, DemoWeatherProvider
 from wind_contracts.models import (
@@ -36,10 +38,20 @@ class WindService:
         repository: Repository,
         turbines: list[Turbine],
         models_path: Path = Path("artifacts/models"),
+        *,
+        nvidia: NvidiaConfig | None = None,
+        openai: OpenAIConfig | None = None,
     ):
         self.repository = repository
         self.turbines = {t.id: t for t in turbines}
         self.models_path = models_path
+        self.nvidia = nvidia or NvidiaConfig()
+        self.openai = openai or OpenAIConfig()
+        if self.nvidia.enabled and self.openai.enabled:
+            raise ValueError("Enable only one cloud analyst")
+
+    def agent_status(self):
+        return (self.openai if self.openai.enabled else self.nvidia).status()
 
     def required(self, kind, identifier):
         value = self.repository.get(kind, identifier)
@@ -158,13 +170,16 @@ class WindService:
         self.repository.put("weather", snapshot.id, snapshot.model_dump(mode="json"))
         return snapshot
 
-    def agent(self, request: ForecastRequest):
+    def agent(self, request: ForecastRequest, *, include_analysis=True):
         provider = (
             DemoWeatherProvider()
             if request.weather_source == "demo"
             else ArchiveWeatherProvider(self.snapshots)
         )
-        return ForecastAgent(provider, self.predictor(request.model_id))
+        analyst = NvidiaAnalyst(self.nvidia) if self.nvidia.enabled and include_analysis else None
+        if self.openai.enabled and include_analysis:
+            analyst = OpenAIAnalyst(self.openai)
+        return ForecastAgent(provider, self.predictor(request.model_id), analyst=analyst)
 
     def validate_request(self, request: ForecastRequest):
         for identifier in request.turbine_ids:
@@ -188,7 +203,7 @@ class WindService:
     def save_forecast(self, run):
         self.repository.put("forecast", run.id, run.model_dump(mode="json"))
 
-    async def execute_forecast(self, identifier):
+    async def execute_forecast(self, identifier, *, include_analysis=True):
         run = ForecastRun.model_validate(self.required("forecast", identifier))
         run.status = "running"
         self.save_forecast(run)
@@ -198,7 +213,7 @@ class WindService:
             self.save_forecast(run)
 
         try:
-            run.result = await self.agent(run.request).run(
+            run.result = await self.agent(run.request, include_analysis=include_analysis).run(
                 run.request, [self.turbine(t) for t in run.request.turbine_ids], emit
             )
             run.status = "succeeded"
@@ -254,7 +269,8 @@ class WindService:
                 child = self.create_forecast(ForecastRequest.model_validate(payload))
                 run.forecast_ids.append(child.id)
                 self.save_backtest(run)
-                child = await self.execute_forecast(child.id)
+                # Replay scores numerical predictions; do not make a cloud LLM call per day.
+                child = await self.execute_forecast(child.id, include_analysis=False)
                 if child.status != "succeeded":
                     raise ValueError(f"{child.id}: {child.error}")
                 points.extend(

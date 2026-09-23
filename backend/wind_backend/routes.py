@@ -7,6 +7,7 @@ from wind_agent.weather import download_single_run
 from wind_contracts.evidence import EvidenceReport
 from wind_contracts.models import (
     AgentEvent,
+    AgentStatus,
     BacktestRequest,
     BacktestRun,
     DatasetInfo,
@@ -35,6 +36,11 @@ def get_service(request: Request) -> WindService:
 
 
 Service = Annotated[WindService, Depends(get_service)]
+
+
+@router.get("/agent/status", response_model=AgentStatus, tags=["Agent"])
+def agent_status(service: Service):
+    return service.agent_status()
 
 
 @router.get("/evidence", response_model=EvidenceReport, tags=["Model evidence"])
@@ -84,7 +90,9 @@ def upload_dataset(payload: DatasetUpload, service: Service):
     return service.upload_dataset(payload)
 
 
-@router.get("/datasets/{dataset_id}/observations", response_model=list[Observation], tags=["Data and ML"])
+@router.get(
+    "/datasets/{dataset_id}/observations", response_model=list[Observation], tags=["Data and ML"]
+)
 def observations(dataset_id: str, start: Timestamp, end: Timestamp, service: Service):
     if end < start:
         raise ValueError("Observation window end must be at or after start")
