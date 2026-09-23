@@ -2,6 +2,8 @@
 
 Branch: `frontend`. Stack: React, TypeScript, Vite, plain CSS; no hosted UI or map service is required for the starter.
 
+The dashboard uses the [wind operations theme](frontend-theme.md): navy surfaces, Inter typography, cyan accents, and a chart-first operational layout. Reuse its tokens for the future globe screen.
+
 ## Integration contract
 
 `src/generated/api.ts` is generated from the backend OpenAPI schema. Do not edit it manually. `src/api.ts` owns request handling and exports typed API functions. Components use those functions and display the backend's error message.
@@ -19,13 +21,15 @@ The starter refresh endpoint returns `{changed, run}`. If unchanged, keep the cu
 - Chart, accessible hourly table, CSV export, provenance/limitations.
 - Agent events, run errors, recent-run selection.
 - UTC February replay without actuals attached; clearly unavailable accuracy metrics.
+- An observations selector for replay, with per-turbine and per-horizon MAE/RMSE when actuals match.
+- A weather panel synchronized to the selected forecast hour, a persistent hourly table, and a station-coordinate schematic with an empty state for unconfigured locations.
 
 ## Next tasks
 
-1. Split `App.tsx` into feature components/hooks as screens grow.
-2. Add dataset upload/training and actuals selection using the existing routes.
+1. Keep feature components and API state separate as screens grow (`components/` and `useDashboard.ts`).
+2. Add dataset upload/training using the existing routes; replay already supports selecting imported actuals.
 3. Add forecasts versus actuals and metrics from the agreed contract.
-4. Add turbine map after coordinates are confirmed; include map attribution.
+4. Integrate the globe and geographic basemap after coordinates are confirmed; include map attribution.
 5. Add calibrated uncertainty when the backend provides it; avoid invented shaded confidence bands.
 6. Add browser tests for forecast creation, failure display, export, history, and mobile navigation.
 
