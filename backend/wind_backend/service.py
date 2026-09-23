@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from uuid import uuid4
 
 from wind_agent.orchestrator import ForecastAgent
@@ -18,7 +19,7 @@ from wind_contracts.models import (
 )
 
 from wind_backend.evaluation import evaluate
-from wind_backend.ml import BinnedPowerCurve, DemoPowerCurve
+from wind_backend.ml import BinnedPowerCurve, DemoPowerCurve, PersistencePredictor
 from wind_backend.storage import Repository
 
 
@@ -30,9 +31,15 @@ class DomainError(Exception):
 
 
 class WindService:
-    def __init__(self, repository: Repository, turbines: list[Turbine]):
+    def __init__(
+        self,
+        repository: Repository,
+        turbines: list[Turbine],
+        models_path: Path = Path("artifacts/models"),
+    ):
         self.repository = repository
         self.turbines = {t.id: t for t in turbines}
+        self.models_path = models_path
 
     def required(self, kind, identifier):
         value = self.repository.get(kind, identifier)
@@ -49,7 +56,17 @@ class WindService:
         if identifier == "demo-power-curve":
             return DemoPowerCurve()
         artifact = self.required("model", identifier)
-        return BinnedPowerCurve(ModelInfo.model_validate(artifact["info"]), artifact["curves"])
+        info = ModelInfo.model_validate(artifact["info"])
+        if info.algorithm == "binned-power-curve-v1":
+            return BinnedPowerCurve(info, artifact["curves"])
+        dataset = DatasetUpload.model_validate(self.required("dataset", info.dataset_id)["data"])
+        if info.algorithm == "persistence-v1":
+            return PersistencePredictor(info, dataset.observations)
+        if info.algorithm in {"catboost-scada-v1", "catboost-weather-scada-v1"}:
+            from wind_backend.catboost_model import CatBoostPower
+
+            return CatBoostPower.load(artifact, self.models_path, dataset.observations)
+        raise ValueError(f"Unsupported model algorithm: {info.algorithm}")
 
     def models(self):
         return [DemoPowerCurve.info] + [
@@ -78,17 +95,32 @@ class WindService:
 
     def train(self, payload: TrainRequest):
         dataset = DatasetUpload.model_validate(self.required("dataset", payload.dataset_id)["data"])
-        model = BinnedPowerCurve.fit(
-            f"model-{uuid4().hex}",
-            payload.dataset_id,
-            dataset.observations,
-            payload.trained_through,
-            is_demo=dataset.is_demo,
-        )
+        identifier = f"model-{uuid4().hex}"
+        if payload.algorithm == "catboost":
+            from wind_backend.catboost_model import CatBoostPower
+
+            model = CatBoostPower.fit(
+                identifier, dataset.observations, payload, self.snapshots(), is_demo=dataset.is_demo
+            )
+            artifact = model.save(self.models_path)
+        else:
+            model_class = (
+                PersistencePredictor if payload.algorithm == "persistence" else BinnedPowerCurve
+            )
+            model = model_class.fit(
+                identifier,
+                payload.dataset_id,
+                dataset.observations,
+                payload.trained_through,
+                is_demo=dataset.is_demo,
+            )
+            artifact = {"info": model.info.model_dump(mode="json")}
+            if payload.algorithm == "binned-power-curve":
+                artifact["curves"] = model.curves
         self.repository.put(
             "model",
             model.info.id,
-            {"info": model.info.model_dump(mode="json"), "curves": model.curves},
+            artifact,
         )
         return model.info
 

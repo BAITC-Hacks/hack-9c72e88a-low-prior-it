@@ -11,9 +11,81 @@
 | `temperature_c` | Ambient temperature, °C |
 | `power_normalized` | Mean active power as capacity fraction, once source normalization is confirmed |
 
-The importer rejects duplicate turbine/hour keys, naive timestamps, nonfinite values, and out-of-contract ranges. It does not infer timezones, normalize targets, resample subhourly measurements, deduplicate source data, or distinguish missing power from shutdowns. Those are explicit backend preprocessing tasks.
+The HTTP importer rejects duplicate turbine/hour keys, naive timestamps, nonfinite values, and out-of-contract ranges. It does not infer timezones, normalize targets, resample subhourly measurements, deduplicate source data, or distinguish missing power from shutdowns. The offline SCADA foundation below prepares subhourly data before that import boundary.
 
 Historical timezone rules matter for a series spanning 2023–2026. Confirm whether source timestamps are local civil time, UTC, or fixed-offset plant time, including any changes. Preserve original values in raw data and record the mapping to UTC.
+
+## SCADA foundation
+
+`contracts/wind_contracts/scada.py` adds internal `ScadaReading` and `HourlyScada`
+contracts without changing HTTP schemas. Deterministic preparation tools live in
+`agent/wind_agent/scada.py`, temporal guards in `agent/wind_agent/temporal.py`.
+Numerical prediction models remain behind `Predictor` in `backend/wind_backend/ml.py`.
+The agent tools import shared contracts, never backend implementations.
+
+This first foundation follows `docs/task.pdf`: hourly 24–48-hour forecasts and a
+February 1–28, 2026 historical replay must use original weather forecasts available
+at each issue time. It does not implement a new model, weather downloader, replay,
+or LLM. The PDF also scores reproducibility; these helpers and their tests run offline.
+
+```python
+from datetime import datetime, timezone
+from wind_agent.scada import aggregate_hourly, parse_scada_csv, profile_scada
+
+# Canonical columns are the same six names as the observation CSV contract;
+# valid_time may now be subhourly. All timestamps require explicit UTC offsets.
+rows = parse_scada_csv("data/scada.canonical.csv")
+profile = profile_scada(rows, interval_minutes=10)
+origin = datetime(2026, 1, 31, tzinfo=timezone.utc)
+hours = aggregate_hourly(rows, interval_minutes=10, forecast_origin=origin)
+observations = [hour.to_observation() for hour in hours if hour.complete]
+# These Observation objects are compatible with DatasetUpload and existing ML.
+```
+
+- `inspect_scada_csv` returns valid readings, source row count, and invalid row
+  diagnostics with line numbers. This is a profiling result, not an approved clean
+  dataset. `parse_scada_csv` rejects the entire input if any row is invalid or the
+  file is empty. No silent clipping, filling, averaging duplicates, or normalization.
+- Native headers require `columns={canonical_name: source_header, ...}` covering
+  all six fields. Semicolon CSVs can pass `delimiter=";"`. UTF-8 BOM is supported.
+  Missing `available_at` is an error: derive it upstream only from a documented,
+  confirmed latency policy. Naive local timestamps must be converted upstream
+  with confirmed historical timezone rules; no timezone is guessed here.
+- Aggregation assumes equally spaced **interval-end averages**, aligned to a UTC
+  sampling grid (10 minutes by default). `(T-1h, T]` belongs to hour `T`, including
+  the reading exactly at `T`. Confirm this source convention before real ingestion.
+  Irregular sampling is rejected rather than treated as equal-duration intervals.
+- Preserved statistics: wind and power mean/std/min/max, temperature mean/std.
+  Standard deviations use the population convention (`ddof=0`), so one reading
+  has zero stddev. `power_mean` is the initial hourly target.
+- `sample_count`, `expected_count`, and `complete` expose coverage. Missing hours
+  remain absent; partially observed hours retain their statistics but cannot be
+  converted by `to_observation()`. Missing readings are never zero production.
+  Profiling counts missing slots between each turbine's first and last reading,
+  zero-power readings, delayed arrivals, ranges, and hourly sample-count frequencies.
+- With `forecast_origin`, raw readings are filtered by **both** `valid_time` and
+  `available_at` before aggregation, and unfinished hourly intervals are omitted.
+  Aggregate availability is the maximum of the hour end and contributor availability.
+  Offline aggregation without an origin is useful for targets; before using such
+  aggregates as features, filter them with `observations_as_of`. An offline hour
+  containing delayed data cannot be treated as known earlier.
+- `forecast_lead` enforces aligned future targets at leads 1–48.
+  `validate_weather_timing` enforces initialization <= publication <= origin;
+  it does not authenticate provenance. The existing `ForecastAgent` still enforces
+  snapshot verification, turbine identity, and complete weather coverage.
+  `validate_chronological_split` checks training target/availability cutoffs and
+  strictly later validation targets. Feature construction must separately enforce
+  its per-origin input lineage; no random split or target-relative SCADA lag is safe.
+
+Run `uv run pytest tests/test_scada.py` and `uv run pytest` for focused and full
+regression checks. Test readings and the existing weather fixtures are artificial;
+no real SCADA or verified competition weather archive is included. Actual source
+normalization, interval semantics, latency, and timezone remain unconfirmed.
+
+The smallest next implementation is an origin-safe persistence `Predictor` using
+the latest complete hourly observation available for each turbine, followed by a
+weather/SCADA feature builder. Keep historical weather inputs distinct from future
+observed weather, and retain existing forecast revision and model metadata contracts.
 
 ## Example rolling replay request
 

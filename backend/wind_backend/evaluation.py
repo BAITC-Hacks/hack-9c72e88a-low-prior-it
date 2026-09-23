@@ -7,6 +7,8 @@ from wind_contracts.models import ForecastPoint, Metric, Observation
 
 def evaluate(points: list[ForecastPoint], actuals: list[Observation]):
     observed = {(row.turbine_id, row.valid_time): row.power_normalized for row in actuals}
+    if len(observed) != len(actuals):
+        raise ValueError("Duplicate turbine/time actuals would make scoring ambiguous")
     errors = defaultdict(list)
     missing = 0
     for point in points:

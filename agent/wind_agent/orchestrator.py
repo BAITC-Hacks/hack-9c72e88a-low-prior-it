@@ -100,6 +100,8 @@ class ForecastAgent:
             warnings.append(
                 "Measured-wind baseline: forecast bias and height correction are not implemented."
             )
+        if self.predictor.info.algorithm in {"persistence-v1", "catboost-scada-v1"}:
+            warnings.append("SCADA-only model: weather values are not used by this predictor.")
         if any(
             t.hub_height_m is None or t.hub_height_m != s.wind_height_m
             for t, s in zip(turbines, snapshots, strict=True)

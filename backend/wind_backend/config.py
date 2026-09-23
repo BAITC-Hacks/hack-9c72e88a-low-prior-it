@@ -11,6 +11,7 @@ from wind_contracts.models import Turbine
 class Settings:
     db_path: Path
     turbines_path: Path
+    models_path: Path = Path("artifacts/models")
 
     @classmethod
     def from_env(cls):
@@ -18,6 +19,7 @@ class Settings:
         return cls(
             db_path=Path(os.getenv("WINDFARM_DB", "data/windfarm.sqlite3")),
             turbines_path=Path(os.getenv("WINDFARM_TURBINES", "config/turbines.example.json")),
+            models_path=Path(os.getenv("WINDFARM_MODELS", "artifacts/models")),
         )
 
     def turbines(self) -> list[Turbine]:
