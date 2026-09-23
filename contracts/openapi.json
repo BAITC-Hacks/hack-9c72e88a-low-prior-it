@@ -2019,6 +2019,95 @@
             "type": "string",
             "format": "date-time",
             "title": "Trained Through"
+          },
+          "algorithm": {
+            "type": "string",
+            "enum": [
+              "binned-power-curve",
+              "persistence",
+              "catboost"
+            ],
+            "title": "Algorithm",
+            "default": "binned-power-curve"
+          },
+          "feature_set": {
+            "type": "string",
+            "enum": [
+              "scada",
+              "weather-scada"
+            ],
+            "title": "Feature Set",
+            "default": "scada"
+          },
+          "first_origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Origin"
+          },
+          "last_origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Origin"
+          },
+          "horizon_hours": {
+            "type": "integer",
+            "enum": [
+              24,
+              48
+            ],
+            "title": "Horizon Hours",
+            "default": 48
+          },
+          "weather_source": {
+            "type": "string",
+            "enum": [
+              "archive",
+              "demo"
+            ],
+            "title": "Weather Source",
+            "default": "archive"
+          },
+          "iterations": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 10.0,
+            "title": "Iterations",
+            "default": 300
+          },
+          "depth": {
+            "type": "integer",
+            "maximum": 8.0,
+            "minimum": 2.0,
+            "title": "Depth",
+            "default": 6
+          },
+          "learning_rate": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Learning Rate",
+            "default": 0.05
+          },
+          "random_seed": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Random Seed",
+            "default": 42
           }
         },
         "additionalProperties": false,

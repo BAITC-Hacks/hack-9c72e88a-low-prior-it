@@ -15,6 +15,12 @@ The HTTP importer rejects duplicate turbine/hour keys, naive timestamps, nonfini
 
 Historical timezone rules matter for a series spanning 2023–2026. Confirm whether source timestamps are local civil time, UTC, or fixed-offset plant time, including any changes. Preserve original values in raw data and record the mapping to UTC.
 
+For the supplied organizer files, the user confirmed fixed **UTC+06:00** and
+10-minute **interval-start** timestamps. The source adapter converts to UTC and
+adds 10 minutes before hourly interval-end aggregation. Use preparation revision
+`utc6-start-provisional-v2`; the earlier `Asia/Almaty` interpretation is superseded.
+Reporting latency and physical power normalization are still unconfirmed.
+
 ## SCADA foundation
 
 `contracts/wind_contracts/scada.py` adds internal `ScadaReading` and `HourlyScada`
@@ -79,8 +85,9 @@ observations = [hour.to_observation() for hour in hours if hour.complete]
 
 Run `uv run pytest tests/test_scada.py` and `uv run pytest` for focused and full
 regression checks. Test readings and the existing weather fixtures are artificial;
-no real SCADA or verified competition weather archive is included. Actual source
-normalization, interval semantics, latency, and timezone remain unconfirmed.
+no real SCADA or verified competition weather archive is committed. Real SCADA is
+local under `dataset/`; source timezone and interval position are now confirmed
+as described above. Normalization and latency remain unconfirmed.
 
 The smallest next implementation is an origin-safe persistence `Predictor` using
 the latest complete hourly observation available for each turbine, followed by a

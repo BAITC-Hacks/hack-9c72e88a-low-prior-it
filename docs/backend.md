@@ -2,6 +2,11 @@
 
 Branch: `backend`. Public routes are in `backend/wind_backend/routes.py`. The API is the integration boundary for the browser; `Predictor` is the integration boundary for the agent.
 
+Local CatBoost and persistence implementations, source preparation, and a chronological
+comparison command are now available. See [ML training and validation](ml-training.md)
+for exact commands, source assumptions, model artifacts, and the two feature modes.
+`/models/train` retains its default binned curve and accepts an additive algorithm selector.
+
 ## Model contract
 
 `predict(turbine, weather, issued_at)` must return exactly one `ForecastPoint` for each requested weather hour, sorted by valid time. IDs and lead times must match the request, and output must be finite normalized power in `[0,1]`. A different target scale requires an explicit schema update after understanding organizer normalization.
@@ -14,7 +19,7 @@ Model metadata contains a unique immutable ID, algorithm, training dataset, data
 
 1. Import original data with source-to-canonical mappings documented.
 2. Make all filtering and transformations reproducible; separate instrumentation errors from real shutdown/curtailment.
-3. Establish persistence, empirical-curve, and candidate ML baselines.
+3. Compare the provided persistence, empirical-curve, and CatBoost baselines on eligible inputs.
 4. Use rolling chronological validation before February; fit scalers, imputers, and corrections within each training fold.
 5. For a forecast issued at T, all SCADA features and model-fitting rows must have been available by T. A lag relative to target time may still be in the future relative to T.
 6. Match training NWP inputs to operational lead times; measured-wind regression alone has a training/inference mismatch.

@@ -14,13 +14,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", type=Path, default=Path("dataset"))
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--timezone", required=True)
+    parser.add_argument(
+        "--timezone", required=True, help="IANA zone or fixed offset, e.g. UTC+06:00"
+    )
     parser.add_argument("--timestamp-position", choices=["start", "end"], required=True)
     parser.add_argument("--latency-minutes", type=int, required=True)
     parser.add_argument(
         "--provisional", action="store_true", help="Time/normalization assumptions are unconfirmed"
     )
     parser.add_argument("--quarantine-invalid", action="store_true")
+    parser.add_argument(
+        "--time-semantics-confirmed",
+        action="store_true",
+        help="Source timezone and interval position were confirmed by the data owner/user",
+    )
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output directory already exists; choose a new revision path")
@@ -55,6 +62,7 @@ def main():
         "provisional": args.provisional,
         "timezone": args.timezone,
         "timestamp_position": args.timestamp_position,
+        "time_semantics_confirmed": args.time_semantics_confirmed,
         "latency_minutes": args.latency_minutes,
         "normalization": "source values unchanged; assumed capacity fraction [0,1]",
         "target_policy": "complete hours only; missing intervals are never zero-filled",

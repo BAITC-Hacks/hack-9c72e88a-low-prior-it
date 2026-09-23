@@ -33,7 +33,7 @@ npm run dev:web
 
 The backend owns port **8000**; Vite owns **5173** and proxies `/api` and `/health`. The agent is an importable Python module inside the API process, so it needs no third HTTP service. The frontend uses relative API URLs, without credentials or browser-to-weather calls.
 
-Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. Real turbine coordinates, capacity, hub height, and source timezone are **not known yet**. Copy `config/turbines.example.json` to `config/turbines.local.json`, fill confirmed values, and set `WINDFARM_TURBINES=config/turbines.local.json`. Never invent coordinates from a nearby town.
+Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. Real turbine coordinates, capacity, and hub height are **not known yet**. Source timestamps are confirmed as interval starts in fixed UTC+06:00. Copy `config/turbines.example.json` to `config/turbines.local.json`, fill confirmed values, and set `WINDFARM_TURBINES=config/turbines.local.json`. Never invent coordinates from a nearby town.
 
 ## 2. Three people, three areas
 
@@ -195,6 +195,13 @@ Example forecast request:
 The UI's replay dates use UTC to demonstrate the mechanism. Confirm the competition's daily issue time and definition of “February” in the station timezone before final evaluation. Configure the API request accordingly; do not assume the UI preset is the final evaluation protocol.
 
 ## 6. Train a first baseline
+
+Real-data preparation, local CatBoost/persistence training, and chronological MAE/RMSE
+comparison are now available: see [ML training and validation](docs/ml-training.md).
+The existing training endpoint keeps the binned curve as its default; pass
+`algorithm="catboost"` or `algorithm="persistence"` to select a new model.
+Source timestamps are confirmed as interval starts in fixed UTC+06:00. Real-data
+experiments remain provisional until latency and normalization are confirmed.
 
 `examples/observations.demo.csv` contains **artificial development rows only**. Import it while the API is running:
 

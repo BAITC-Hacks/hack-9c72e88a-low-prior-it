@@ -572,6 +572,54 @@ export interface components {
              * Format: date-time
              */
             trained_through: string;
+            /**
+             * Algorithm
+             * @default binned-power-curve
+             * @enum {string}
+             */
+            algorithm: "binned-power-curve" | "persistence" | "catboost";
+            /**
+             * Feature Set
+             * @default scada
+             * @enum {string}
+             */
+            feature_set: "scada" | "weather-scada";
+            /** First Origin */
+            first_origin?: string | null;
+            /** Last Origin */
+            last_origin?: string | null;
+            /**
+             * Horizon Hours
+             * @default 48
+             * @enum {integer}
+             */
+            horizon_hours: 24 | 48;
+            /**
+             * Weather Source
+             * @default archive
+             * @enum {string}
+             */
+            weather_source: "archive" | "demo";
+            /**
+             * Iterations
+             * @default 300
+             */
+            iterations: number;
+            /**
+             * Depth
+             * @default 6
+             */
+            depth: number;
+            /**
+             * Learning Rate
+             * @default 0.05
+             */
+            learning_rate: number;
+            /**
+             * Random Seed
+             * @default 42
+             */
+            random_seed: number;
         };
         /** Turbine */
         Turbine: {

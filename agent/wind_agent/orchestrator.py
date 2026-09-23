@@ -94,7 +94,8 @@ class ForecastAgent:
         is_demo = request.weather_source == "demo" or self.predictor.info.is_demo
         if is_demo:
             warnings.append(
-                "DEMO: synthetic weather and/or illustrative model; not competition results."
+                "DEMO / PROVISIONAL: synthetic inputs, a demonstration model, or unconfirmed "
+                "source assumptions; not competition results."
             )
         if self.predictor.info.algorithm == "binned-power-curve-v1":
             warnings.append(
