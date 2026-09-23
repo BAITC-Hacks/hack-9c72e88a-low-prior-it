@@ -33,7 +33,7 @@ it('February replay uses its own fixed origin when the forecast issue input is e
   await waitFor(() => expect(result.current.connected).toBe(true));
   act(() => result.current.setIssue(''));
   await act(() => result.current.startReplay(null));
-  expect(api.createBacktest).toHaveBeenCalledWith(expect.objectContaining({ issued_at: '2026-01-31T00:00:00.000Z' }));
+  expect(api.createBacktest).toHaveBeenCalledWith(expect.objectContaining({ issued_at: '2026-01-31T12:00:00.000Z', last_issued_at: '2026-02-28T12:00:00Z' }));
   expect(result.current.error).toBe('');
 });
 

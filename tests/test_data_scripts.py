@@ -7,7 +7,6 @@ import sys
 from datetime import UTC, datetime, timedelta
 
 import httpx
-import pandas as pd
 import pytest
 
 from scripts import import_weather_archive
@@ -16,20 +15,25 @@ from .conftest import ROOT, snapshot
 
 
 def test_bundled_import_remains_unverified_and_accepts_existing_revision(
-    client, monkeypatch, capsys
+    client, monkeypatch, capsys, tmp_path
 ):
-    archive = pd.DataFrame(
-        {
-            "run_utc": pd.to_datetime(["2026-01-30"] * 2),
-            "loc": [1, 1],
-            "valid_utc": pd.to_datetime(["2026-01-30T01:00", "2026-01-30T02:00"]),
-            "wind_speed_100m": [8, None],
-            "wind_direction_100m": [90, 90],
-            "temperature_2m": [-5, -5],
-        }
-    )
-    monkeypatch.setattr(import_weather_archive, "load_archive", lambda: archive)
-    monkeypatch.setattr(sys, "argv", ["import_weather_archive.py"])
+    archive = tmp_path / "ecmwf.csv"
+    with archive.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(
+            [
+                "run_utc",
+                "loc",
+                "valid_utc",
+                "lead_h",
+                "wind_speed_100m",
+                "wind_direction_100m",
+                "temperature_2m",
+            ]
+        )
+        writer.writerow(["2026-01-30 00:00", 1, "2026-01-30 01:00", 1, 8, 90, -5])
+        writer.writerow(["2026-01-30 00:00", 1, "2026-01-30 02:00", 2, None, 90, -5])
+    monkeypatch.setattr(sys, "argv", ["import_weather_archive.py", "--input", str(archive)])
     real_client = httpx.Client
 
     def handler(request):
@@ -42,14 +46,23 @@ def test_bundled_import_remains_unverified_and_accepts_existing_revision(
         lambda **kwargs: real_client(transport=httpx.MockTransport(handler), **kwargs),
     )
     import_weather_archive.main()
-    assert "Imported 1 UNVERIFIED" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "Imported 1 new snapshots" in output
+    assert "UNVERIFIED candidates cannot be used in archive replay" in output
+    assert '"missing_required_weather_rows": 1' in output
     imported = client.get("/api/v1/weather/snapshots").json()
     assert len(imported) == 1
     assert imported[0]["verification"] == "unverified"
     assert imported[0]["available_at"] is None
+    assert imported[0]["availability_evidence"] is None
     assert len(imported[0]["points"]) == 1
+    assert imported[0]["points"][0]["valid_time"] == "2026-01-30T01:00:00Z"
+    assert imported[0]["points"][0]["wind_speed_ms"] == 8
     import_weather_archive.main()
-    assert "Imported 0 UNVERIFIED" in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert "Imported 0 new snapshots" in output
+    assert "UNVERIFIED candidates cannot be used in archive replay" in output
+    assert client.get("/api/v1/weather/snapshots").json() == imported
 
 
 @pytest.mark.parametrize("verified", [False, True])

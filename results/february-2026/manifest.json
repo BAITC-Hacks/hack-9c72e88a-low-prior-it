@@ -1,0 +1,650 @@
+{
+  "protocol": "ecmwf-00z-noon-48h-v1",
+  "status": "provisional-hindcast-reconstruction",
+  "weather_source": "archive",
+  "synthetic_weather": false,
+  "operational_historical_availability_proven": false,
+  "model": {
+    "id": "model-weather-experiment-1f60629dea49f482937c2b41",
+    "algorithm": "catboost-weather-scada-v1",
+    "trained_through": "2026-01-31T12:00:00Z",
+    "dataset_id": "dataset-weather-4eb1633527a46b3e61f5",
+    "training_rows": 61180,
+    "turbine_ids": [
+      "turbine-1",
+      "turbine-2"
+    ],
+    "is_demo": true
+  },
+  "parameters": {
+    "iterations": 500,
+    "depth": 6,
+    "learning_rate": 0.04,
+    "random_seed": 42,
+    "loss_function": "MAE",
+    "l2_leaf_reg": 10.0,
+    "thread_count": 2,
+    "task_type": "CPU",
+    "allow_writing_files": false,
+    "verbose": false
+  },
+  "model_files": {
+    "turbine-1": {
+      "filename": "turbine-1.cbm",
+      "sha256": "fc007d99189b3c208e675a8701a3935efbf6b27e2b07cc3e3007141eb61d3208"
+    },
+    "turbine-2": {
+      "filename": "turbine-2.cbm",
+      "sha256": "585c4f63c698b51f6eb671df3e28f9c6bde5eeff50d52554915ab8af0d88b3c0"
+    }
+  },
+  "history_sha256": "4eb1633527a46b3e61f53d2ad7aa41b76eaf42e5f29df9ad83764d11aeeb598d",
+  "input_sha256": {
+    "data/raw/turbine_1.csv": "d82def7e56c0a1eed3f2f68eb29fd66e4299999921c9703720a880a5cf7d6703",
+    "data/raw/turbine_2.csv": "16a844db949562290c96a86efa20178a71540ff6252275c003db4715edb9434a",
+    "data/weather/ecmwf_ifs_single_runs.csv.gz": "7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3"
+  },
+  "implementation_sha256": {
+    "agent/wind_agent/__init__.py": "e7e7b8381bde0596b909db1ef073a23858f380ac3acc1a9a121d11c39b1dffc7",
+    "agent/wind_agent/analysis.py": "a774e333cd00a7ba94cb45a8a29c6b30d38d7cdf74db1e7348729d3804f0d252",
+    "agent/wind_agent/ecmwf_archive.py": "c472994a038f7b91ad02b2e4acada8d7878d5d70ff8b51e2681e5c0569629540",
+    "agent/wind_agent/interfaces.py": "87d4ce118bcee651cd0ef8d00be9cc8e63eafef6bf65a0e0fa241b8631ff23ca",
+    "agent/wind_agent/nvidia.py": "fba99b498f414081b8c4a9777066157193469aadce6797adc727a335be52e93f",
+    "agent/wind_agent/openai.py": "549311b1c603e5c0c4db3a099bc4799b2aec759b4814204104b2ee3d6d5cb8fe",
+    "agent/wind_agent/orchestrator.py": "edb8fa8a5d656fd68b14d02e069c02ec09d8b39a2a54c952119b83b258b0d602",
+    "agent/wind_agent/scada.py": "bf6c6ac373ef4ff6d2050b41a5e2f5c11ae906d1a2fd3370c9365432395ba30c",
+    "agent/wind_agent/source_data.py": "a0bde1a101e0e246118e12ba5b859bb82dc320fb8909e12fec654ba69150f05e",
+    "agent/wind_agent/temporal.py": "ea5cdf94a912672253fe31662009883bb9522c2993088aa7e0b3d6c69076c849",
+    "agent/wind_agent/weather.py": "6c066b17b19955285f06468f63d33326e87d8150ddd715d6d58b4f4f24fcdf66",
+    "agent/wind_agent/worker.py": "6aed2dd97a57c9ede4ee1d741ce558fd7381ae9fb944b14bf0a753127e6b87ec",
+    "backend/wind_backend/__init__.py": "ee0b7dfe098555dd7dd50aa03d2d8ac4bc34a56bc40cb7267b5c159dcb924fbe",
+    "backend/wind_backend/catboost_model.py": "a0454d46b3ce6e5d557c1f33502928df37e93a40fcf9e7743d66724f636b2297",
+    "backend/wind_backend/config.py": "281360199e8eb2d8d8f6a8dfba11eca0d7f10d1839a74145949bfea6dcdecab2",
+    "backend/wind_backend/evaluation.py": "299300058db0f35e0c4c8752ab4d472a58051011a0355497b351a40d766660df",
+    "backend/wind_backend/evidence.py": "90de0e2a2f4eb4062e51ae6b8e8c22e9ca447e1feaa0ae11a8d6f17bcb03557b",
+    "backend/wind_backend/features.py": "d3e9f3ecdcb58280087f9bf8b6f52058197757c02fc875326a4a1483c747a84d",
+    "backend/wind_backend/main.py": "65caa1ba456c9a0a79b5f16f0e9d040bdc11a8498668b9b60ed97e3dea6d2e69",
+    "backend/wind_backend/ml.py": "e46925e8270bbf6e0f6c1734a6632f80831c1804a3d23bb04930ab026a2e8a18",
+    "backend/wind_backend/model_selection.py": "ee49740d0811cee55cc49f174f26ca8d8dd1c54b5e38490d35e8b0e2d997a71d",
+    "backend/wind_backend/ridge_model.py": "f19b5ac22fa14c5976bd26f32e29f6101d53d3968a92fada361f64b23e3c7db1",
+    "backend/wind_backend/routes.py": "4cfa29f463bcac31f52cf9a96a3d7a9f62218deb13a99f2cab32d092d94d4bff",
+    "backend/wind_backend/service.py": "fc37aa68d93b19b98e30312b06369d4ee4a837a1c30db98256b5be6ec4f05aec",
+    "backend/wind_backend/storage.py": "a2384e1e590cc66b092a2016b004fa402570ceada2144f58f3f83983e387b6ed",
+    "backend/wind_backend/weather_experiment.py": "61cb5c8ec751db3606785d65bc3078f071fac95870d1e58e1ee5f6598c4e3758",
+    "contracts/wind_contracts/__init__.py": "fe9458a732963e7dc585b150c54ebf647a4cbd76c8c815b52d1327fd7d0d560d",
+    "contracts/wind_contracts/evidence.py": "53d128d95c2f4e9cdeef7e6b359dc8784ada58352b826c82212e9b131adb3c6b",
+    "contracts/wind_contracts/models.py": "4a140ce7506cc1e9b9b31d0bbc3495713921d2e3b1f57be3b8d174ccb56bc652",
+    "contracts/wind_contracts/scada.py": "54736d01843727adc721d8410582686668af4dae72692c6b37264a832c9056ed",
+    "scripts/prepare_dataset.py": "5dd1396d3e064166001bfe127eea4f31744d00bd0a918fcd6a2828b20c803098",
+    "scripts/reproduce.py": "19e0f2340cb9ea41dd56a30ae73874410343a4d78628f4a3e9935ead2afb0b61",
+    "uv.lock": "877418aea6089b5206a8d48f9088a2f6de5d6c28d3670b071aff6f71191ae22e"
+  },
+  "versions": {
+    "python": "3.14.7",
+    "catboost": "1.2.10",
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "pydantic": "2.13.5"
+  },
+  "first_issue": "2026-01-31T12:00:00+00:00",
+  "last_issue": "2026-02-28T12:00:00+00:00",
+  "issue_hour_utc": 12,
+  "issue_time_local": "17:00 Asia/Almaty (UTC+05:00 in February 2026)",
+  "issue_step_hours": 24,
+  "horizon_hours": 48,
+  "turbine_ids": [
+    "turbine-1",
+    "turbine-2"
+  ],
+  "issue_count": 29,
+  "forecast_rows": 2784,
+  "forecast_sha256": "db3e1e5471d00baf7f72a631c1821c6eb548cfad6392a3eb1c8f329f93c97e6e",
+  "weather": {
+    "protocol": "ecmwf-00utc-hindcast-schedule-10h-v1",
+    "source": "Open-Meteo Single Runs",
+    "model": "ecmwf_ifs",
+    "source_file": "ecmwf_ifs_single_runs.csv.gz",
+    "source_sha256": "7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3",
+    "run_hour_utc": 0,
+    "issue_hour_utc": 12,
+    "publication_delay_hours": 10,
+    "availability_basis": "Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof.",
+    "schedule_assumption_accepted": true,
+    "historical_operational_availability_proven": false,
+    "hindcast": true,
+    "documentation_reviewed_on": "2026-09-23",
+    "sources": [
+      "https://open-meteo.com/en/docs/single-runs-api",
+      "https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086",
+      "https://www.ecmwf.int/en/forecasts/datasets/open-data"
+    ],
+    "limitations": [
+      "Open-Meteo identifies the early ECMWF IFS archive as Cycle 49R1 hindcasts. These values are not proven to be the contemporaneous operational forecasts.",
+      "Publication time is inferred from the ECMWF dissemination/open-data schedule reviewed in September 2026, not measured for each historical run. The current schedule is not evidence of the schedule or outages in 2024-2026.",
+      "A 10-hour publication delay is a conservative reconstruction assumption, not an Open-Meteo historical service guarantee.",
+      "The compiled CSV does not retain individual API response metadata. Units are supported by the collector's explicit m/s and GMT request parameters.",
+      "Both turbines can share one NWP grid cell; 100 m forecast wind is not a measurement of the unknown turbine hub height."
+    ],
+    "wind_height_m": 100,
+    "units": {
+      "wind_speed": "m/s",
+      "wind_direction": "degrees",
+      "temperature": "C"
+    },
+    "units_evidence": "windagent/openmeteo.py fetch_single_run explicitly requests wind_speed_unit=ms and timezone=GMT; temperature default is Celsius. Individual hourly_units responses are not retained in the compiled CSV.",
+    "timestamp_semantics": "UTC source valid_time is unchanged; instantaneous weather at the hourly interval end is the feature for power averaged over the preceding hour.",
+    "counts": {
+      "selected_rows": 102672,
+      "excluded_other_cycle_rows": 13392,
+      "missing_required_weather_rows": 144,
+      "selected_run_location_groups": 1426,
+      "empty_groups_skipped": 2,
+      "snapshots": 1424,
+      "points": 102528
+    },
+    "missing_run_dates": [
+      "2025-08-05",
+      "2025-08-06",
+      "2025-08-08",
+      "2025-08-09"
+    ],
+    "empty_groups": [
+      {
+        "run_init": "2025-08-07T00:00:00+00:00",
+        "turbine_id": "turbine-1"
+      },
+      {
+        "run_init": "2025-08-07T00:00:00+00:00",
+        "turbine_id": "turbine-2"
+      }
+    ]
+  },
+  "snapshots": {
+    "ecmwf00-assumed-7b9a425c47be-1-20260131": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-01-31T00:00:00+00:00",
+      "available_at": "2026-01-31T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "c0bdcaba179f005c47dda2cd9460af203908a94a4a3983754d92fa4f4a85511c",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-01-31T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260131": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-01-31T00:00:00+00:00",
+      "available_at": "2026-01-31T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "c424f50f262fc77c75f9ec2d7745fbcebbc77c49c6938edbddd49f0fc0d0e8e0",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-01-31T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260201": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-01T00:00:00+00:00",
+      "available_at": "2026-02-01T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "8968ef6d47915ada772eeb15ccf5fd18857edd7c1465ced27b5c47dac36eafea",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-01T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260201": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-01T00:00:00+00:00",
+      "available_at": "2026-02-01T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "18c339a5adef97ef8d374d7abd7db827dfe42d6f0671334552e719fdaf740412",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-01T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260202": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-02T00:00:00+00:00",
+      "available_at": "2026-02-02T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "a50f9055914f6704711a64ecc317ec4e8aad973991401ec37798191866915c70",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-02T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260202": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-02T00:00:00+00:00",
+      "available_at": "2026-02-02T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "035dc44e90505ec203ff180ff4ed9605a4a9b81bc51d8a048b6606005e715e48",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-02T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260203": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-03T00:00:00+00:00",
+      "available_at": "2026-02-03T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "87539c10465b492305da8070741502c1af18f3e7ec0859393cdd419c07c63ba6",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-03T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260203": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-03T00:00:00+00:00",
+      "available_at": "2026-02-03T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "305fb62b1444287d23bc51a1062b1746158b14d9907c102a421a577deb6363a3",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-03T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260204": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-04T00:00:00+00:00",
+      "available_at": "2026-02-04T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "621db5c702c57cb2d6de92317197f42e38b1043e078ead4c111ab9a5482556f5",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-04T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260204": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-04T00:00:00+00:00",
+      "available_at": "2026-02-04T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "fefda6d4bb6f07455ed6ba071e05d77479aa68ed88a77c0cf6a23e3e172ebb9b",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-04T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260205": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-05T00:00:00+00:00",
+      "available_at": "2026-02-05T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "4140c670d260738cebce1402b56992e11c3408db5bbc41bc0953a790bad098c0",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-05T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260205": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-05T00:00:00+00:00",
+      "available_at": "2026-02-05T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "c7211e02dcfe2b89a9306d4acedeb6c79ab8da049978312629e057715ca10e8b",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-05T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260206": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-06T00:00:00+00:00",
+      "available_at": "2026-02-06T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "1b6c8f8fc2cd50cc6da6dba5b910f00f9f562bc7f0789fc8ca58f268682dcbc5",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-06T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260206": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-06T00:00:00+00:00",
+      "available_at": "2026-02-06T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "341311640df80cc4f7d8627101ace89f985154688a39e5ee641543d1f627da04",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-06T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260207": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-07T00:00:00+00:00",
+      "available_at": "2026-02-07T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "3027d1716b2e40289d6ecdaa98761b0f5c949022682cd3cbdcb89553ae34fad4",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-07T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260207": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-07T00:00:00+00:00",
+      "available_at": "2026-02-07T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "c213d3598113982324be6207370ae70179c5661886f9c0690810e5b906adf164",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-07T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260208": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-08T00:00:00+00:00",
+      "available_at": "2026-02-08T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "b064ba6ca38231a8ac5c324afc1aba6d16da1e4321ed17bcefc9bd6934c881ff",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-08T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260208": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-08T00:00:00+00:00",
+      "available_at": "2026-02-08T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "9aded9f91aea782b8c93b98ffcd67a65fc44b793de43e58166c19fb3f30282ed",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-08T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260209": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-09T00:00:00+00:00",
+      "available_at": "2026-02-09T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "31e2f07ce7da05b046cf545833f88917113f5914734560f5b03ba3053552e978",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-09T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260209": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-09T00:00:00+00:00",
+      "available_at": "2026-02-09T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "458daca289adb987778545ab51ca3c9a1009b2b5e8b6fa1ef2ba284ea1fdc7b9",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-09T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260210": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-10T00:00:00+00:00",
+      "available_at": "2026-02-10T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "1b1c6fef0e3eb87961599c18ea58d5a65c9b80dcb55869a64b9d9c75f0559946",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-10T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260210": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-10T00:00:00+00:00",
+      "available_at": "2026-02-10T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "a97f3d7644fba439d2b4437de9a05fba38118027b9badec15d51ee7ee85fbad6",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-10T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260211": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-11T00:00:00+00:00",
+      "available_at": "2026-02-11T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "ed67228c4500fbb84060f92fba995fb6396cecd90b2255cef2edb8ea43667f3c",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-11T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260211": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-11T00:00:00+00:00",
+      "available_at": "2026-02-11T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "3b5af7e161c3fc92b3f405c6ca4333912cf26358a4fc2ab2c7e4694e56d9af85",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-11T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260212": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-12T00:00:00+00:00",
+      "available_at": "2026-02-12T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "4829552ff98d30bbe69dbec6cc5701d9be303553ba068d14ec235c6993a78544",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-12T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260212": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-12T00:00:00+00:00",
+      "available_at": "2026-02-12T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "474dc22a16fc4db23f2c841d8bc764210b31d731bb09fca294793fdc50f654da",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-12T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260213": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-13T00:00:00+00:00",
+      "available_at": "2026-02-13T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "968bb8de4f4b3ac366f542c2fc547213a6c0205072a47720d63dba0546b169a3",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-13T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260213": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-13T00:00:00+00:00",
+      "available_at": "2026-02-13T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "941890423a77f646f898b1bead457119d6d31316ace0eb8658db57c532603dfd",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-13T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260214": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-14T00:00:00+00:00",
+      "available_at": "2026-02-14T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "a19b0f26172f2b8b0bad96a4a39e3b54ae6aec712e20e37155d019ca49d82426",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-14T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260214": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-14T00:00:00+00:00",
+      "available_at": "2026-02-14T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "c03cf6e45afedf7a4342b91c71e72acdaee348d5bf2da62c004a560d81c92d8b",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-14T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260215": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-15T00:00:00+00:00",
+      "available_at": "2026-02-15T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "1142d2720b193634f748f0ab01511a134316c62e3ceca43e2df08233811003d5",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-15T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260215": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-15T00:00:00+00:00",
+      "available_at": "2026-02-15T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "ead6907cd7151f3e986f928ee40e092f40401012d77816d830185abb846ee7d4",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-15T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260216": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-16T00:00:00+00:00",
+      "available_at": "2026-02-16T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "a05e77bcaf3ed2726d6bba5ea830071c2db13a7f09ec13a1f8fbd43c4d6fe180",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-16T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260216": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-16T00:00:00+00:00",
+      "available_at": "2026-02-16T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "b0d2d8a9bdfeeb24de4813fc69f29e96dd2c5263b7dcd9ac3aaa5371740b3cae",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-16T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260217": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-17T00:00:00+00:00",
+      "available_at": "2026-02-17T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "3828e5b2fed9b1d6f7b60ab2617b8636653bb710ffe2714120bd61072580db0f",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-17T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260217": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-17T00:00:00+00:00",
+      "available_at": "2026-02-17T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "35d12d293a32801d4843fdfea89ee918a2ee9fcb584ac7956fad03be14c4bade",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-17T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260218": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-18T00:00:00+00:00",
+      "available_at": "2026-02-18T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "48b22bc30ab008614056bc063dfffcac5199eb3c66312c06d0a7183d660203e0",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-18T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260218": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-18T00:00:00+00:00",
+      "available_at": "2026-02-18T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "47ab944a0b42876a4db7008d4f8227961a028ce01f1d8d7487f05c051b9f788e",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-18T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260219": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-19T00:00:00+00:00",
+      "available_at": "2026-02-19T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "9ba31bdadf276ae71bce3b5da03eec35264dacb0ea7fba48dc745e3f4159179a",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-19T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260219": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-19T00:00:00+00:00",
+      "available_at": "2026-02-19T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "bf1d944c17003084ec92c758221ccde9fbc5c64db8050f9b907bee06929c2bb9",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-19T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260220": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-20T00:00:00+00:00",
+      "available_at": "2026-02-20T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "2d4704ce41ccd56e6e9412e0a9834771aa7ed24c94a46b6e93da807c8e5be262",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-20T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260220": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-20T00:00:00+00:00",
+      "available_at": "2026-02-20T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "269a1784e0d4c0de196868e2c71ce1637f73f412937a69d49e4b78a29b622781",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-20T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260221": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-21T00:00:00+00:00",
+      "available_at": "2026-02-21T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "e69928ef864b4df8cddff74c0f8430bef6a0b4a9592c69ab94aac8f7c80707d8",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-21T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260221": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-21T00:00:00+00:00",
+      "available_at": "2026-02-21T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "8130e58e7676546502285acd7ca531f2c305e873df0be6d1dc28bf1a24b92973",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-21T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260222": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-22T00:00:00+00:00",
+      "available_at": "2026-02-22T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "d927c44fbd0f71a40fbca429d1e9fde31562db5ac95956466c243b8602ee3dfe",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-22T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260222": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-22T00:00:00+00:00",
+      "available_at": "2026-02-22T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "2977236cdc9c0a9590aaabd8097b65e97895de2404d39ec4f449f0a9b462db1d",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-22T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260223": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-23T00:00:00+00:00",
+      "available_at": "2026-02-23T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "9b2682a318f207c0b7d7341f75c304e7da7530e6f765ee70b22a1b986da615dc",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-23T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260223": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-23T00:00:00+00:00",
+      "available_at": "2026-02-23T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "07687cc0c4244a0c71aa464d813fa4d8d197d10cdaf0e508bde1397b8e49ed7e",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-23T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260224": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-24T00:00:00+00:00",
+      "available_at": "2026-02-24T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "9abb8f9d1a502ee14e38ec20249267aa349e8eaf95f182b76da6025793e3fe0e",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-24T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260224": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-24T00:00:00+00:00",
+      "available_at": "2026-02-24T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "9e1f0a70233c017168306692b9a89164b1b22984ca9467c047a59cf9f1a1b665",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-24T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260225": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-25T00:00:00+00:00",
+      "available_at": "2026-02-25T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "46066af56d61a0428e6e8dfb099d831b192375ab3c6fc0264d27599fcfdb0601",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-25T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260225": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-25T00:00:00+00:00",
+      "available_at": "2026-02-25T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "fed04707095fc270245c7c4d39915d1723f5063c0ef61fdddbe55b9a0c08182c",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-25T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260226": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-26T00:00:00+00:00",
+      "available_at": "2026-02-26T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "24972bc93dc965b4381c0cd31f444535ae5b29dd7e9a7e86d7155f4bb6dd006a",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-26T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260226": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-26T00:00:00+00:00",
+      "available_at": "2026-02-26T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "0a00ab7979a6a11aa64c21e3149ce2f40e36a9a70c62d982b4424286aa29d586",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-26T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260227": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-27T00:00:00+00:00",
+      "available_at": "2026-02-27T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "5749b5c246eaa8177e009315f543e06d142d571312cb4bf745c61425194b4140",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-27T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260227": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-27T00:00:00+00:00",
+      "available_at": "2026-02-27T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "e75f4bf612bc292b25bbcb4b46b2d5cddd90fdec4d622f1688a883ddb95a4a17",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-27T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-1-20260228": {
+      "turbine_id": "turbine-1",
+      "run_init": "2026-02-28T00:00:00+00:00",
+      "available_at": "2026-02-28T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "2dd2f86751e3bf8964fdb2727147346f877984258cfdfe708f4561b3f85f52d2",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-28T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    },
+    "ecmwf00-assumed-7b9a425c47be-2-20260228": {
+      "turbine_id": "turbine-2",
+      "run_init": "2026-02-28T00:00:00+00:00",
+      "available_at": "2026-02-28T10:00:00+00:00",
+      "retrieved_at": "2026-09-23T12:12:52.012691+00:00",
+      "sha256": "904f04e16f9b838e486357148d188db013b125ced96ba26888aea7f890c24c47",
+      "availability_evidence": "Explicit offline import protocol=ecmwf-00utc-hindcast-schedule-10h-v1; source=Open-Meteo Single Runs, ECMWF IFS; run_init=2026-02-28T00:00:00+00:00; CSV sha256=7b9a425c47be656834545ad32c17307fd739680952bb4fb5ec9fe253125597a3. Schedule-assumed hindcast reconstruction: run_init + 10 hours; not per-run historical publication proof. ECMWF 00 UTC atmospheric dissemination ends at 07:34 UTC in the schedule reviewed 2026-09-23; +10h includes a 2h26m buffer. Schedule: https://confluence.ecmwf.int/pages/viewpage.action?pageId=600793086; open data: https://www.ecmwf.int/en/forecasts/datasets/open-data. The current schedule does not establish historical release times. Open-Meteo describes the early archive as IFS Cycle 49R1 hindcasts; contemporaneous operational availability is not proven. Source documentation: https://open-meteo.com/en/docs/single-runs-api. retrieved_at is the local import time, not original API retrieval."
+    }
+  },
+  "scored_points": 0,
+  "metrics": [],
+  "february_target_pairs": 2662,
+  "target_policy": "UTC interval ends; full T+1..T+48 retained, including edge dates",
+  "scada_assumptions": {
+    "timezone": "UTC+06:00",
+    "timestamp_position": "start",
+    "latency_minutes": 10,
+    "provisional": true,
+    "normalization": "source values unchanged; assumed capacity fraction [0,1]"
+  },
+  "limitations": [
+    "Open-Meteo identifies the early ECMWF IFS archive as Cycle 49R1 hindcasts. These values are not proven to be the contemporaneous operational forecasts.",
+    "Publication time is inferred from the ECMWF dissemination/open-data schedule reviewed in September 2026, not measured for each historical run. The current schedule is not evidence of the schedule or outages in 2024-2026.",
+    "A 10-hour publication delay is a conservative reconstruction assumption, not an Open-Meteo historical service guarantee.",
+    "The compiled CSV does not retain individual API response metadata. Units are supported by the collector's explicit m/s and GMT request parameters.",
+    "Both turbines can share one NWP grid cell; 100 m forecast wind is not a measurement of the unknown turbine hub height.",
+    "February actual generation was not supplied; no February accuracy is claimed.",
+    "SCADA latency is assumed to be 10 minutes; rated capacity and hub height are unknown.",
+    "After January observations end, SCADA history ages without synthetic updates.",
+    "January is a reused comparison period, not a previously untouched holdout."
+  ]
+}

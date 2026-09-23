@@ -1,5 +1,7 @@
 # Local training and validation
 
+The current end-to-end protocol is `npm run reproduce`: bundled raw SCADA and ECMWF 00 UTC weather, daily 12 UTC issues, November/December selection, five-model January comparison, and February reconstruction. See [current results](tuned-training-results.md) and [hindcast/publication assumptions](weather-archive.md). The older manual commands below document the earlier SCADA experiment and use a different window; they do not reproduce the current benchmark.
+
 The repository now supports `binned-power-curve`, `persistence`, and `catboost`
 through the existing `POST /api/v1/models/train` endpoint. The default remains the
 original binned curve for compatibility. No API key or NVIDIA service is needed.
@@ -9,13 +11,12 @@ early stopping is performed on the January comparison period.
 
 ## Source data and assumptions
 
-`dataset/turbine1.csv` and `dataset/turbine2.csv` are organizer SCADA files. The
+`data/raw/turbine_1.csv` and `data/raw/turbine_2.csv` are the tracked organizer SCADA files. Older local experiments used copies under `dataset/`. The
 adapter maps their Russian headers explicitly. Source files are never edited and
 `dataset/` is ignored by Git. Prepared data belongs in `data/prepared/`.
 
 The current files contain 142,360 and 149,499 readings, from March 11, 2023 through
-January 31, 2026 in the source clock. No February actuals or verified archived weather
-forecasts are available. Candidate weather CSVs merged from main remain unverified;
+January 31, 2026 in the source clock. No February actuals or independent per-run historical publication proof are available. The reproduction uses an explicitly documented schedule-assumed ECMWF hindcast import; default API/worker candidates remain unverified;
 see [DATA.md](../DATA.md). Values fall within the existing normalized-power contract
 of [0,1], but the physical normalization definition is not confirmed.
 
@@ -109,7 +110,7 @@ its own feature version, so existing `scada` and `weather-scada` artifacts still
 `feature_set="weather-scada"` additionally consumes forecast wind speed, cyclic
 wind direction and temperature from existing `WeatherSnapshot` contracts. It
 requires complete, verified historical forecasts published by each origin. Missing
-archives cause an explicit failure. Future measured wind is never substituted.
+archives are skipped and counted during fitting; inference and evaluation still fail explicitly. Future measured wind is never substituted.
 The training routine records which snapshot was used at each origin. For offline
 experiments supply `--feature-set weather-scada --weather path/to/snapshots.json`
 where the JSON is an array of existing `WeatherSnapshot` objects.
@@ -154,7 +155,7 @@ semantics. Current data stops in January, so February MAE/RMSE cannot be compute
 Do not feed February actuals back into training or features without an explicit
 evaluation policy permitting that information at the relevant origins.
 
-## Chronological model selection
+## Chronological model selection (legacy SCADA experiment)
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/tune_model.py --prepared data/prepared/utc6-start-provisional-v2 --evaluate-january --register

@@ -9,7 +9,7 @@ export default function useDashboard() {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [datasets, setDatasets] = useState<DatasetInfo[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [issue, setIssue] = useState('2026-01-31T00:00');
+  const [issue, setIssue] = useState('2026-01-31T12:00');
   const [horizon, setHorizon] = useState<24 | 48>(48);
   const [source, setSource] = useState<'demo' | 'archive'>('demo');
   const [model, setModel] = useState('demo-power-curve');
@@ -117,7 +117,7 @@ export default function useDashboard() {
 
   function startReplay(dataset: string | null) {
     return act(async () => {
-      setBacktest(await api.createBacktest({ ...request('2026-01-31T00:00'), last_issued_at: '2026-02-28T00:00:00Z', evaluation_start: '2026-02-01T00:00:00Z', evaluation_end: '2026-03-01T00:00:00Z', actuals_dataset_id: dataset }));
+      setBacktest(await api.createBacktest({ ...request('2026-01-31T12:00'), last_issued_at: '2026-02-28T12:00:00Z', evaluation_start: '2026-02-01T00:00:00Z', evaluation_end: '2026-03-01T00:00:00Z', actuals_dataset_id: dataset }));
     });
   }
 

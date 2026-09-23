@@ -74,12 +74,12 @@ it('opens the forecast workspace for an Insights deep link', async () => {
 });
 
 it('selects a country and turbine, runs a 24-hour forecast, and exposes its results and export', async () => {
-  const submitted = { ...request, issued_at: new Date(request.issued_at).toISOString(), horizon_hours: 24 as const, turbine_ids: ['turbine-2'] };
+  const submitted = { ...request, issued_at: '2026-01-31T12:00:00.000Z', horizon_hours: 24 as const, turbine_ids: ['turbine-2'] };
   const queued = { ...forecast('run-journey', 'queued'), request: submitted };
   vi.mocked(api.createForecast).mockResolvedValue(queued);
   vi.mocked(api.forecast).mockResolvedValue({ ...queued, status: 'succeeded', result: {
     model_id: 'demo-power-curve', input_fingerprint: 'test-fixture', is_demo: true, snapshots: [], warnings: [],
-    points: Array.from({ length: 24 }, (_, index) => ({ turbine_id: 'turbine-2', lead_hours: index + 1, valid_time: new Date(Date.parse(request.issued_at) + (index + 1) * 3600000).toISOString(), power_normalized: .5 })),
+    points: Array.from({ length: 24 }, (_, index) => ({ turbine_id: 'turbine-2', lead_hours: index + 1, valid_time: new Date(Date.parse(submitted.issued_at) + (index + 1) * 3600000).toISOString(), power_normalized: .5 })),
   } });
   render(<App />);
   await screen.findByRole('option', { name: 'Kazakhstan' });
