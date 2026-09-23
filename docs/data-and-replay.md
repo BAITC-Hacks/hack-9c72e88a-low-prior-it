@@ -78,14 +78,19 @@ observations = [hour.to_observation() for hour in hours if hour.complete]
   its per-origin input lineage; no random split or target-relative SCADA lag is safe.
 
 Run `uv run pytest tests/test_scada.py` and `uv run pytest` for focused and full
-regression checks. Test readings and the existing weather fixtures are artificial;
-no real SCADA or verified competition weather archive is included. Actual source
-normalization, interval semantics, latency, and timezone remain unconfirmed.
+regression checks. Test readings and weather fixtures for the API are artificial.
+The integrated data branch also includes raw SCADA and candidate weather CSVs;
+these are separate from verified API snapshots. Actual source normalization,
+interval semantics, latency, and timezone remain unconfirmed.
 
-The smallest next implementation is an origin-safe persistence `Predictor` using
-the latest complete hourly observation available for each turbine, followed by a
-weather/SCADA feature builder. Keep historical weather inputs distinct from future
-observed weather, and retain existing forecast revision and model metadata contracts.
+The integrated ML module includes origin-safe persistence, weather/SCADA features,
+CatBoost, and a weather ridge candidate. Keep historical weather inputs distinct
+from future observed weather, and retain forecast revision and model metadata contracts.
+
+The preparation CLI supports both `dataset/turbine1.csv` (its original default)
+and the merged filenames through `--input-dir data/raw --filename-pattern
+'turbine_{number}.csv'`. Provide the timezone, timestamp position, and reporting
+latency explicitly; use `--provisional` while these assumptions await confirmation.
 
 ## Example rolling replay request
 

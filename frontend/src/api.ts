@@ -8,6 +8,10 @@ export type ForecastRequest = Schemas['ForecastRequest'];
 export type ModelInfo = Schemas['ModelInfo'];
 export type DatasetInfo = Schemas['DatasetInfo'];
 export type WeatherPoint = Schemas['WeatherPoint'];
+export type Observation = Schemas['Observation'];
+export type DatasetUpload = Schemas['DatasetUpload'];
+export type TrainRequest = Schemas['TrainRequest'];
+export type WeatherSnapshot = Schemas['WeatherSnapshot'];
 
 async function request<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -42,4 +46,10 @@ export const api = {
   backtest: (id: string) => request<BacktestRun>(`/backtests/${encodeURIComponent(id)}`),
   backtests: () => request<BacktestRun[]>(routes.backtests.slice(7)),
   datasets: () => request<DatasetInfo[]>(routes.datasets.slice(7)),
+  importDataset: (body: DatasetUpload) => request<DatasetInfo>('/datasets', body),
+  train: (body: TrainRequest) => request<ModelInfo>('/models/train', body),
+  weather: () => request<WeatherSnapshot[]>('/weather/snapshots'),
+  importWeather: (body: WeatherSnapshot) => request<WeatherSnapshot>('/weather/snapshots', body),
+  fetchWeather: (body: Schemas['WeatherFetchRequest']) => request<WeatherSnapshot>('/weather/fetch', body),
+  observations: (id: string, start: string, end: string) => request<Observation[]>(`/datasets/${encodeURIComponent(id)}/observations?${new URLSearchParams({ start, end })}`),
 };

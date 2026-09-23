@@ -23,12 +23,14 @@ The starter refresh endpoint returns `{changed, run}`. If unchanged, keep the cu
 - UTC February replay, with clearly unavailable accuracy metrics when actuals are not attached.
 - An observations selector for replay, with per-turbine and per-horizon MAE/RMSE when actuals match.
 - A weather panel synchronized to the selected forecast hour, a persistent hourly table, and a station-coordinate schematic with an empty state for unconfigured locations.
+- Canonical CSV/JSON dataset import with provenance, binned/persistence/ridge/CatBoost training, and verified-weather management in expandable panels.
+- Actual-observation overlays from the inclusive observation-window API; hollow circles distinguish measurements from predictions and synthetic datasets remain labelled.
 
 ## Next tasks
 
 1. Keep feature components and API state separate as screens grow (`components/` and `useDashboard.ts`).
-2. Add dataset upload/training using the existing routes; replay already supports selecting imported actuals.
-3. Add forecasts versus actuals and metrics from the agreed contract.
+2. Refine dataset upload/training feedback; these controls and the replay actuals selector are implemented.
+3. Expand forecasts-versus-actuals inspection and metrics using the agreed contract.
 4. Integrate the globe and geographic basemap after coordinates are confirmed; include map attribution.
 5. Add calibrated uncertainty when the backend provides it; avoid invented shaded confidence bands.
 6. Add browser tests for forecast creation, failure display, export, history, and mobile navigation.

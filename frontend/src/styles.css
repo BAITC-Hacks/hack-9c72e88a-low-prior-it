@@ -23,6 +23,19 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 18px; }
 body { margin: 0; min-width: 320px; }
+.management-content { display: grid; gap: 16px; padding: 18px 0 0; }
+.management-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.management-form .control-field { flex: 1 1 200px; min-width: 0; }
+.management-form input, .management-form select { width: 100%; }
+.management-check { display: flex; align-items: center; gap: 8px; min-height: 35px; font-size: 12px; color: var(--text-muted); }
+.training-form { border-top: 1px solid var(--border); padding-top: 16px; }
+.management-editor { display: grid; gap: 12px; }
+.management-editor .button { justify-self: start; }
+.management-editor textarea { width: 100%; resize: vertical; background: var(--page); border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text); padding: 12px; font: 11px/1.7 monospace; }
+.csv-columns { display: block; overflow: auto; font-size: 11px; color: var(--text-muted); }
+.chart-actuals { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 11px; }
+.chart-actuals select { max-width: 175px; height: 28px; padding-block: 3px; font-size: 11px; }
+.actuals-status { padding: 0 0 12px; color: var(--text-muted); font-size: 11px; }
 button, input, select { font: inherit; }
 button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
 button, .button { cursor: pointer; }

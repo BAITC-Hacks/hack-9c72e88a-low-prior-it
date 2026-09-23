@@ -266,6 +266,102 @@
         }
       }
     },
+    "/api/v1/datasets/{dataset_id}/observations": {
+      "get": {
+        "tags": [
+          "Data and ML"
+        ],
+        "summary": "Observations",
+        "operationId": "observations_api_v1_datasets__dataset_id__observations_get",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Observation"
+                  },
+                  "title": "Response Observations Api V1 Datasets  Dataset Id  Observations Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/v1/models": {
       "get": {
         "tags": [
@@ -1571,6 +1667,11 @@
             "title": "Is Demo",
             "default": false
           },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance",
+            "default": ""
+          },
           "rows": {
             "type": "integer",
             "title": "Rows"
@@ -1609,6 +1710,11 @@
             "type": "boolean",
             "title": "Is Demo",
             "default": false
+          },
+          "provenance": {
+            "type": "string",
+            "title": "Provenance",
+            "default": ""
           },
           "observations": {
             "items": {
@@ -2019,6 +2125,104 @@
             "type": "string",
             "format": "date-time",
             "title": "Trained Through"
+          },
+          "algorithm": {
+            "type": "string",
+            "enum": [
+              "binned-power-curve",
+              "persistence",
+              "catboost",
+              "weather-ridge"
+            ],
+            "title": "Algorithm",
+            "default": "binned-power-curve"
+          },
+          "weather_snapshot_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+            },
+            "type": "array",
+            "title": "Weather Snapshot Ids"
+          },
+          "feature_set": {
+            "type": "string",
+            "enum": [
+              "scada",
+              "weather-scada"
+            ],
+            "title": "Feature Set",
+            "default": "scada"
+          },
+          "first_origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Origin"
+          },
+          "last_origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Origin"
+          },
+          "horizon_hours": {
+            "type": "integer",
+            "enum": [
+              24,
+              48
+            ],
+            "title": "Horizon Hours",
+            "default": 48
+          },
+          "weather_source": {
+            "type": "string",
+            "enum": [
+              "archive",
+              "demo"
+            ],
+            "title": "Weather Source",
+            "default": "archive"
+          },
+          "iterations": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 10.0,
+            "title": "Iterations",
+            "default": 300
+          },
+          "depth": {
+            "type": "integer",
+            "maximum": 8.0,
+            "minimum": 2.0,
+            "title": "Depth",
+            "default": 6
+          },
+          "learning_rate": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Learning Rate",
+            "default": 0.05
+          },
+          "random_seed": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Random Seed",
+            "default": 42
           }
         },
         "additionalProperties": false,

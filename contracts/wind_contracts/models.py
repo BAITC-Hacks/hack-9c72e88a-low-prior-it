@@ -65,6 +65,7 @@ class Observation(Contract):
 class DatasetUpload(Contract):
     name: str = Field(min_length=1, max_length=120)
     is_demo: bool = False
+    provenance: str = ""
     observations: list[Observation] = Field(min_length=1, max_length=100_000)
 
     @model_validator(mode="after")
@@ -79,6 +80,7 @@ class DatasetInfo(Contract):
     id: Identifier
     name: str
     is_demo: bool = False
+    provenance: str = ""
     rows: int
     first_time: Timestamp
     last_time: Timestamp
@@ -87,7 +89,8 @@ class DatasetInfo(Contract):
 class TrainRequest(Contract):
     dataset_id: Identifier
     trained_through: Hour
-    algorithm: Literal["binned-power-curve", "persistence", "catboost"] = "binned-power-curve"
+    algorithm: Literal["binned-power-curve", "persistence", "catboost", "weather-ridge"] = "binned-power-curve"
+    weather_snapshot_ids: list[Identifier] = Field(default_factory=list)
     feature_set: Literal["scada", "weather-scada"] = "scada"
     first_origin: Hour | None = None
     last_origin: Hour | None = None

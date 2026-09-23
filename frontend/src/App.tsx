@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ForecastChart from './ForecastChart';
 import AgentPanel from './components/AgentPanel';
+import DataWorkspace from './components/DataWorkspace';
 import ForecastTable from './components/ForecastTable';
 import Icon, { type IconName } from './components/Icon';
 import ReplayPanel from './components/ReplayPanel';
@@ -15,6 +16,7 @@ const navigation: { id: string; title: string; icon: IconName }[] = [
   { id: 'activity', title: 'Agent', icon: 'activity' },
   { id: 'hourly', title: 'Hourly data', icon: 'grid' },
   { id: 'replay', title: 'Backtesting', icon: 'bars' },
+  { id: 'data', title: 'Data & models', icon: 'grid' },
 ];
 
 export default function App() {
@@ -75,7 +77,7 @@ export default function App() {
             <div className="panel-heading"><div><h2 id="forecast-title"><span className="context-mark" />{forecastHorizon}-hour power forecast</h2><p className="panel-subtitle">{d.run ? `Issued ${utcTime(d.run.request.issued_at)} UTC · Hourly resolution` : 'Hourly normalized generation for selected turbines'}</p></div><div className="panel-actions"><span className={`badge ${d.run?.status === 'failed' ? 'danger' : d.run?.status === 'succeeded' ? 'accent' : ''}`}><span className="status-dot" />{d.run?.status === 'succeeded' ? 'Complete' : d.run?.status || 'Awaiting run'}</span>{d.run?.status === 'succeeded' && <button className="icon-button" title="Check for updated forecast inputs" aria-label="Check for updated forecast inputs" disabled={d.disabled} onClick={() => void d.refreshForecast()}><Icon name="refresh" size={14} /></button>}</div></div>
             {d.dirty && <div className="pending-inputs"><Icon name="info" size={13} />Controls changed. Run a new forecast to update the chart.</div>}
             {d.run?.error && <div className="notice danger" role="alert"><Icon name="warning" /><span>{d.run.error}</span></div>}
-            <ForecastChart key={d.run?.id || 'empty'} run={d.run} turbines={d.turbines} horizon={d.horizon} activeLead={d.activeLead} onLeadChange={d.setActiveLead} />
+            <ForecastChart key={d.run?.id || 'empty'} run={d.run} turbines={d.turbines} datasets={d.datasets} horizon={d.horizon} activeLead={d.activeLead} onLeadChange={d.setActiveLead} />
           </section>
           <WeatherPanel run={d.run} turbines={d.turbines} activeLead={d.activeLead} />
         </div>
@@ -85,6 +87,8 @@ export default function App() {
         <ForecastTable key={d.run?.id || 'empty-table'} run={d.run} turbines={d.turbines} activeLead={d.activeLead} onLeadChange={d.setActiveLead} />
 
         <ReplayPanel backtest={d.backtest} datasets={d.datasets} models={d.models} turbines={d.turbines} disabled={d.disabled || !d.selected.length} onReplay={dataset => void d.startReplay(dataset)} />
+
+        <DataWorkspace datasets={d.datasets} turbines={d.turbines} disabled={d.disabled} onChanged={d.reloadWorkspace} />
 
         <details className="panel provenance-panel"><summary><span><Icon name="shield" />Forecast provenance & model details</span><Icon name="chevron" size={14} /></summary><div className="provenance-content"><div className="provenance-model"><span className="field-label">Prediction model</span><strong>{forecastModel?.algorithm || 'No model result'}</strong><span>Training cutoff: {forecastModel?.trained_through ? `${utcTime(forecastModel.trained_through)} UTC` : 'Not applicable / untrained demo'}</span><span>Uncertainty: not calibrated</span>{d.run && <code>{d.run.id}</code>}</div><div className="provenance-weather">{d.run?.result?.snapshots.map(snapshot => <div key={snapshot.id}><strong>{d.turbines.find(t => t.id === snapshot.turbine_id)?.name || snapshot.turbine_id}</strong><span>{snapshot.weather_model} · {snapshot.verification}</span><span>Initialized {utcTime(snapshot.run_init)} UTC</span><span>Available {snapshot.available_at ? `${utcTime(snapshot.available_at)} UTC` : 'unverified'}</span></div>)}</div>{d.run?.result?.warnings.length ? <ul>{d.run.result.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul> : <p className="muted">Model and weather lineage appear with the forecast result.</p>}</div></details>
         <footer className="workspace-footer"><span><Icon name="turbine" size={13} />LOW PRIOR-IT <span className="footer-divider">/</span> Wind forecasting</span><span>UTC time · Normalized power · Hourly resolution</span></footer>

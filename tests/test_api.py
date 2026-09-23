@@ -62,7 +62,10 @@ def test_unknown_resource_and_missing_archive_are_explicit(client, forecast_requ
     assert client.get(f"/api/v1/forecasts/{run['id']}/export").status_code == 409
 
 
-def test_download_requires_coordinates(client):
+def test_download_requires_coordinates(client, monkeypatch):
+    turbine = client.app.state.service.turbines["turbine-1"]
+    monkeypatch.setattr(turbine, "latitude", None)
+    monkeypatch.setattr(turbine, "longitude", None)
     response = client.post(
         "/api/v1/weather/fetch",
         json={"turbine_id": "turbine-1", "run_init": "2026-01-31T00:00:00Z"},

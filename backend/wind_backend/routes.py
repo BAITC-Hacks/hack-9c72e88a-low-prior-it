@@ -13,7 +13,9 @@ from wind_contracts.models import (
     ForecastRequest,
     ForecastRun,
     ModelInfo,
+    Observation,
     RefreshResponse,
+    Timestamp,
     TrainRequest,
     Turbine,
     WeatherFetchRequest,
@@ -45,6 +47,17 @@ def datasets(service: Service):
 @router.post("/datasets", response_model=DatasetInfo, status_code=201, tags=["Data and ML"])
 def upload_dataset(payload: DatasetUpload, service: Service):
     return service.upload_dataset(payload)
+
+
+@router.get("/datasets/{dataset_id}/observations", response_model=list[Observation], tags=["Data and ML"])
+def observations(dataset_id: str, start: Timestamp, end: Timestamp, service: Service):
+    if end < start:
+        raise ValueError("Observation window end must be at or after start")
+    dataset = DatasetUpload.model_validate(service.required("dataset", dataset_id)["data"])
+    return sorted(
+        [row for row in dataset.observations if start <= row.valid_time <= end],
+        key=lambda row: (row.valid_time, row.turbine_id),
+    )
 
 
 @router.get("/models", response_model=list[ModelInfo], tags=["Data and ML"])
