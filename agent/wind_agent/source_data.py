@@ -2,8 +2,10 @@
 
 import csv
 import hashlib
+import re
 from collections import Counter
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, tzinfo
+from datetime import timezone as fixed_timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -17,7 +19,23 @@ SOURCE_COLUMNS = {
 }
 
 
-def local_to_utc(moment: datetime, zone: ZoneInfo) -> datetime:
+def source_timezone(name: str) -> tzinfo:
+    """Accept IANA zones or explicit UTC offsets without applying civil-time changes."""
+    if name == "UTC":
+        return UTC
+    if name.startswith("UTC"):
+        match = re.fullmatch(r"UTC([+-])(\d{2}):(\d{2})", name)
+        if match is None:
+            raise ValueError("Fixed timezone must use UTC+HH:MM or UTC-HH:MM")
+        sign, hours, minutes = match.groups()
+        if int(hours) > 23 or int(minutes) > 59:
+            raise ValueError("Invalid fixed UTC offset")
+        offset = timedelta(hours=int(hours), minutes=int(minutes))
+        return fixed_timezone(offset if sign == "+" else -offset)
+    return ZoneInfo(name)
+
+
+def local_to_utc(moment: datetime, zone: tzinfo) -> datetime:
     """Reject ambiguous/nonexistent civil times instead of guessing a DST fold."""
     candidates = set()
     for fold in (0, 1):
@@ -42,7 +60,7 @@ def read_organizer_csv(
     if timestamp_position not in {"start", "end"} or latency_minutes < 0:
         raise ValueError("Specify timestamp_position=start/end and nonnegative latency_minutes")
     path = Path(path)
-    zone = ZoneInfo(timezone)
+    zone = source_timezone(timezone)
     rows, issues, seen = [], [], set()
     source_count = 0
     with path.open(encoding="utf-8-sig", newline="") as source:

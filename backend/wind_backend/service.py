@@ -66,7 +66,11 @@ class WindService:
             from wind_backend.ridge_model import WeatherRidge
 
             return WeatherRidge(info, artifact["parameters"], dataset.observations)
-        if info.algorithm in {"catboost-scada-v1", "catboost-weather-scada-v1"}:
+        if info.algorithm in {
+            "catboost-scada-v1",
+            "catboost-scada-extended-v1",
+            "catboost-weather-scada-v1",
+        }:
             from wind_backend.catboost_model import CatBoostPower
 
             return CatBoostPower.load(artifact, self.models_path, dataset.observations)
@@ -112,10 +116,16 @@ class WindService:
             from wind_backend.ridge_model import WeatherRidge
 
             snapshots = (
-                [WeatherSnapshot.model_validate(self.required("weather", key)) for key in payload.weather_snapshot_ids]
-                if payload.weather_snapshot_ids else self.snapshots()
+                [
+                    WeatherSnapshot.model_validate(self.required("weather", key))
+                    for key in payload.weather_snapshot_ids
+                ]
+                if payload.weather_snapshot_ids
+                else self.snapshots()
             )
-            model = WeatherRidge.fit(identifier, dataset.observations, payload, snapshots, dataset.is_demo)
+            model = WeatherRidge.fit(
+                identifier, dataset.observations, payload, snapshots, dataset.is_demo
+            )
             artifact = {"info": model.info.model_dump(mode="json"), "parameters": model.parameters}
         else:
             model_class = (

@@ -94,13 +94,18 @@ class ForecastAgent:
         is_demo = request.weather_source == "demo" or self.predictor.info.is_demo
         if is_demo:
             warnings.append(
-                "DEMO: synthetic weather and/or illustrative model; not competition results."
+                "DEMO / PROVISIONAL: synthetic inputs, a demonstration model, or unconfirmed "
+                "source assumptions; not competition results."
             )
         if self.predictor.info.algorithm == "binned-power-curve-v1":
             warnings.append(
                 "Measured-wind baseline: forecast bias and height correction are not implemented."
             )
-        if self.predictor.info.algorithm in {"persistence-v1", "catboost-scada-v1"}:
+        if self.predictor.info.algorithm in {
+            "persistence-v1",
+            "catboost-scada-v1",
+            "catboost-scada-extended-v1",
+        }:
             warnings.append("SCADA-only model: weather values are not used by this predictor.")
         if any(
             t.hub_height_m is None or t.hub_height_m != s.wind_height_m

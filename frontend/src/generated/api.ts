@@ -612,7 +612,7 @@ export interface components {
              * @default scada
              * @enum {string}
              */
-            feature_set: "scada" | "weather-scada";
+            feature_set: "scada" | "scada-extended" | "weather-scada";
             /** First Origin */
             first_origin?: string | null;
             /** Last Origin */
@@ -649,6 +649,23 @@ export interface components {
              * @default 42
              */
             random_seed: number;
+            /**
+             * Loss Function
+             * @default RMSE
+             * @enum {string}
+             */
+            loss_function: "RMSE" | "MAE";
+            /**
+             * L2 Leaf Reg
+             * @default 3
+             */
+            l2_leaf_reg: number;
+            /**
+             * Origin Step Hours
+             * @default 24
+             * @enum {integer}
+             */
+            origin_step_hours: 6 | 12 | 24;
         };
         /** Turbine */
         Turbine: {

@@ -1,0 +1,1023 @@
+{
+  "selection": {
+    "plan": {
+      "created_at": "2026-09-23T10:31:11.425549+00:00",
+      "candidates": [
+        {
+          "name": "baseline",
+          "feature_set": "scada",
+          "iterations": 300,
+          "depth": 6,
+          "learning_rate": 0.05,
+          "loss_function": "RMSE",
+          "l2_leaf_reg": 3,
+          "origin_step_hours": 24
+        },
+        {
+          "name": "compact-mae",
+          "feature_set": "scada",
+          "iterations": 500,
+          "depth": 4,
+          "learning_rate": 0.04,
+          "loss_function": "MAE",
+          "l2_leaf_reg": 10,
+          "origin_step_hours": 24
+        },
+        {
+          "name": "extended-rmse",
+          "feature_set": "scada-extended",
+          "iterations": 500,
+          "depth": 5,
+          "learning_rate": 0.04,
+          "loss_function": "RMSE",
+          "l2_leaf_reg": 10,
+          "origin_step_hours": 12
+        },
+        {
+          "name": "extended-mae",
+          "feature_set": "scada-extended",
+          "iterations": 500,
+          "depth": 5,
+          "learning_rate": 0.04,
+          "loss_function": "MAE",
+          "l2_leaf_reg": 10,
+          "origin_step_hours": 12
+        }
+      ],
+      "folds": [
+        {
+          "name": "november",
+          "cutoff": "2025-11-01T00:00:00Z",
+          "end": "2025-11-14T00:00:00Z"
+        },
+        {
+          "name": "december",
+          "cutoff": "2025-12-01T00:00:00Z",
+          "end": "2025-12-14T00:00:00Z"
+        }
+      ],
+      "objective": "pooled MAE; pooled RMSE tie-break; baseline is eligible",
+      "january_used_for_selection": false,
+      "random_seed": 42,
+      "first_origin": "2023-04-01T00:00:00Z",
+      "prepared": "data\\prepared\\utc6-start-provisional-v2"
+    },
+    "results": [
+      {
+        "candidate": {
+          "name": "baseline",
+          "feature_set": "scada",
+          "iterations": 300,
+          "depth": 6,
+          "learning_rate": 0.05,
+          "loss_function": "RMSE",
+          "l2_leaf_reg": 3,
+          "origin_step_hours": 24
+        },
+        "folds": [
+          {
+            "name": "november",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\baseline\\november\\experiment-05f7cc6a1c4c41e0b5f146633ae6901d\\report.json",
+            "model_id": "model-0727a32206084eb6a91a6cd530856bcc",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.2919426160714286,
+                    "rmse": 0.32952001156850874
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.32472962003968253,
+                    "rmse": 0.3660807110150918
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.3024498898809524,
+                    "rmse": 0.3416738308158314
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.328538810515873,
+                    "rmse": 0.37030664283453235
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.37074900793650795,
+                    "rmse": 0.47055349704858856
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.47660218253968256,
+                    "rmse": 0.569372326540515
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.3618948412698413,
+                    "rmse": 0.4631231858992382
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.46683035714285714,
+                    "rmse": 0.560491748673152
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              }
+            }
+          },
+          {
+            "name": "december",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\baseline\\december\\experiment-1eb30fd4610144d5ae6b64b63c8c819b\\report.json",
+            "model_id": "model-371074b0d19f4a5d957467273fbb3661",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.3348785763052209,
+                    "rmse": 0.3837924560011678
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.37850676004016065,
+                    "rmse": 0.4090907809392453
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.3254451523517382,
+                    "rmse": 0.3615744208046684
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.35407267484662575,
+                    "rmse": 0.3849131478208353
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.2973895582329317,
+                    "rmse": 0.44277129424723416
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.34234437751004015,
+                    "rmse": 0.4774547207587675
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.28598670756646216,
+                    "rmse": 0.4311256983262861
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.3397648261758691,
+                    "rmse": 0.47329369199480387
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              }
+            }
+          }
+        ],
+        "pooled": {
+          "samples": 2660,
+          "mae": 0.3299176007518797,
+          "rmse": 0.36900429989959754
+        }
+      },
+      {
+        "candidate": {
+          "name": "compact-mae",
+          "feature_set": "scada",
+          "iterations": 500,
+          "depth": 4,
+          "learning_rate": 0.04,
+          "loss_function": "MAE",
+          "l2_leaf_reg": 10,
+          "origin_step_hours": 24
+        },
+        "folds": [
+          {
+            "name": "november",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\compact-mae\\november\\experiment-e3b8bed177c84c278a5e6d399bf3af12\\report.json",
+            "model_id": "model-960e63f798124c7ebc6613496677ed1c",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.2939406607142857,
+                    "rmse": 0.3502249622914189
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.33202266964285715,
+                    "rmse": 0.39381419371892346
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.30034720238095236,
+                    "rmse": 0.3620358792111328
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.34311481349206346,
+                    "rmse": 0.4084907635680065
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.37074900793650795,
+                    "rmse": 0.47055349704858856
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.47660218253968256,
+                    "rmse": 0.569372326540515
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.3618948412698413,
+                    "rmse": 0.4631231858992382
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.46683035714285714,
+                    "rmse": 0.560491748673152
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              }
+            }
+          },
+          {
+            "name": "december",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\compact-mae\\december\\experiment-87f4be7222c745dfab21a2a6e374815a\\report.json",
+            "model_id": "model-7b7d6b270ba94279989c85dc10798e41",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.2971267078313253,
+                    "rmse": 0.3583641931258039
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.3407743303212851,
+                    "rmse": 0.3831595324043406
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.2867426349693251,
+                    "rmse": 0.3504347206125965
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.32845020552147236,
+                    "rmse": 0.37331943780889654
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.2973895582329317,
+                    "rmse": 0.44277129424723416
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.34234437751004015,
+                    "rmse": 0.4774547207587675
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.28598670756646216,
+                    "rmse": 0.4311256983262861
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.3397648261758691,
+                    "rmse": 0.47329369199480387
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              }
+            }
+          }
+        ],
+        "pooled": {
+          "samples": 2660,
+          "mae": 0.31536200263157893,
+          "rmse": 0.37309693751787126
+        }
+      },
+      {
+        "candidate": {
+          "name": "extended-rmse",
+          "feature_set": "scada-extended",
+          "iterations": 500,
+          "depth": 5,
+          "learning_rate": 0.04,
+          "loss_function": "RMSE",
+          "l2_leaf_reg": 10,
+          "origin_step_hours": 12
+        },
+        "folds": [
+          {
+            "name": "november",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-rmse\\november\\experiment-b5e0e7564bf44148b7066e848d2adbdb\\report.json",
+            "model_id": "model-02f2c7cc6b574ab09751eaadc5a02d96",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.300313806547619,
+                    "rmse": 0.3384111551760027
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.3270593402777778,
+                    "rmse": 0.3683253676271783
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.30584732341269844,
+                    "rmse": 0.34315900071304023
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.3306747847222222,
+                    "rmse": 0.37111300727324537
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.37074900793650795,
+                    "rmse": 0.47055349704858856
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.47660218253968256,
+                    "rmse": 0.569372326540515
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.3618948412698413,
+                    "rmse": 0.4631231858992382
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.46683035714285714,
+                    "rmse": 0.560491748673152
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              }
+            }
+          },
+          {
+            "name": "december",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-rmse\\december\\experiment-6c91acddf8ef4cdd88d272a1e0ee0cb8\\report.json",
+            "model_id": "model-2079af0645494712b5c5d59d0de5b7db",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.34942267269076305,
+                    "rmse": 0.3806179008667399
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.3798970863453815,
+                    "rmse": 0.40525349876720984
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.3370764734151329,
+                    "rmse": 0.3668655940578031
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.36726438036809816,
+                    "rmse": 0.3918308024662276
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.2973895582329317,
+                    "rmse": 0.44277129424723416
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.34234437751004015,
+                    "rmse": 0.4774547207587675
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.28598670756646216,
+                    "rmse": 0.4311256983262861
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.3397648261758691,
+                    "rmse": 0.47329369199480387
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              }
+            }
+          }
+        ],
+        "pooled": {
+          "samples": 2660,
+          "mae": 0.3369992796992481,
+          "rmse": 0.37116646149275234
+        }
+      },
+      {
+        "candidate": {
+          "name": "extended-mae",
+          "feature_set": "scada-extended",
+          "iterations": 500,
+          "depth": 5,
+          "learning_rate": 0.04,
+          "loss_function": "MAE",
+          "l2_leaf_reg": 10,
+          "origin_step_hours": 12
+        },
+        "folds": [
+          {
+            "name": "november",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-mae\\november\\experiment-67b98486a0b645b581d221509fe416cd\\report.json",
+            "model_id": "model-7d7f5d602b534956a1c10f9efb1b0d0f",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.301753558531746,
+                    "rmse": 0.3541486211684228
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.34267671924603177,
+                    "rmse": 0.3974476321934679
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.3038215505952381,
+                    "rmse": 0.35330577057004264
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.34615164583333335,
+                    "rmse": 0.39829658114460526
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.37074900793650795,
+                    "rmse": 0.47055349704858856
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.47660218253968256,
+                    "rmse": 0.569372326540515
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 336,
+                    "mae": 0.3618948412698413,
+                    "rmse": 0.4631231858992382
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 336,
+                    "mae": 0.46683035714285714,
+                    "rmse": 0.560491748673152
+                  }
+                ],
+                "scored_points": 1344,
+                "unscored_points": 0
+              }
+            }
+          },
+          {
+            "name": "december",
+            "report": "artifacts\\tuning\\selection-c007751c7c6b49008fc5751f4b626653\\extended-mae\\december\\experiment-53d98172b4b34124988aee552521dd1e\\report.json",
+            "model_id": "model-14442b7725e64627834027385af3b5d8",
+            "comparison": {
+              "catboost": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.3288762359437751,
+                    "rmse": 0.370093276957993
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.36935860542168675,
+                    "rmse": 0.3967909188993944
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.3266484744376278,
+                    "rmse": 0.3653328726187676
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.3526230408997955,
+                    "rmse": 0.3821430935906381
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              },
+              "persistence": {
+                "metrics": [
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "1-24",
+                    "samples": 332,
+                    "mae": 0.2973895582329317,
+                    "rmse": 0.44277129424723416
+                  },
+                  {
+                    "turbine_id": "turbine-1",
+                    "horizon": "25-48",
+                    "samples": 332,
+                    "mae": 0.34234437751004015,
+                    "rmse": 0.4774547207587675
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "1-24",
+                    "samples": 326,
+                    "mae": 0.28598670756646216,
+                    "rmse": 0.4311256983262861
+                  },
+                  {
+                    "turbine_id": "turbine-2",
+                    "horizon": "25-48",
+                    "samples": 326,
+                    "mae": 0.3397648261758691,
+                    "rmse": 0.47329369199480387
+                  }
+                ],
+                "scored_points": 1316,
+                "unscored_points": 28
+              }
+            }
+          }
+        ],
+        "pooled": {
+          "samples": 2660,
+          "mae": 0.3339007701754386,
+          "rmse": 0.37762824123288075
+        }
+      }
+    ],
+    "selected": {
+      "name": "compact-mae",
+      "feature_set": "scada",
+      "iterations": 500,
+      "depth": 4,
+      "learning_rate": 0.04,
+      "loss_function": "MAE",
+      "l2_leaf_reg": 10,
+      "origin_step_hours": 24
+    },
+    "selected_at": "2026-09-23T10:38:19.772217+00:00"
+  },
+  "preparation": {
+    "provisional": true,
+    "timezone": "UTC+06:00",
+    "timestamp_position": "start",
+    "time_semantics_confirmed": true,
+    "latency_minutes": 10,
+    "normalization": "source values unchanged; assumed capacity fraction [0,1]",
+    "target_policy": "complete hours only; missing intervals are never zero-filled",
+    "sources": [
+      {
+        "source": "dataset\\turbine1.csv",
+        "sha256": "c4c341582fb2dd348b7187f0128cff265fe055f469413871ebb5db50eef58b5b",
+        "turbine_id": "turbine-1",
+        "source_rows": 142360,
+        "accepted_rows": 142360,
+        "quarantined_rows": 0,
+        "quarantine_reasons": {},
+        "issues": []
+      },
+      {
+        "source": "dataset\\turbine2.csv",
+        "sha256": "820578cd18bb557cd30c2e102f3ae5a386dfc6c489a5a15743339c2b017305e5",
+        "turbine_id": "turbine-2",
+        "source_rows": 149499,
+        "accepted_rows": 149499,
+        "quarantined_rows": 0,
+        "quarantine_reasons": {},
+        "issues": []
+      }
+    ],
+    "profiles": {
+      "turbine-1": {
+        "rows": 142360,
+        "first_time": "2023-03-10 18:10:00+00:00",
+        "last_time": "2026-01-31 18:00:00+00:00",
+        "missing_slots": 9992,
+        "zero_power_rows": 534,
+        "delayed_rows": 142360,
+        "power_min": 0.0,
+        "power_max": 1.0,
+        "hour_coverage": {
+          "6": 23667,
+          "4": 22,
+          "5": 39,
+          "2": 10,
+          "3": 15,
+          "1": 10
+        },
+        "complete_hours": 23667,
+        "incomplete_hours": 96
+      },
+      "turbine-2": {
+        "rows": 149499,
+        "first_time": "2023-03-10 18:10:00+00:00",
+        "last_time": "2026-01-31 18:00:00+00:00",
+        "missing_slots": 2853,
+        "zero_power_rows": 2680,
+        "delayed_rows": 149499,
+        "power_min": 0.0,
+        "power_max": 1.0,
+        "hour_coverage": {
+          "6": 24785,
+          "5": 85,
+          "2": 35,
+          "4": 49,
+          "1": 26,
+          "3": 24
+        },
+        "complete_hours": 24785,
+        "incomplete_hours": 219
+      }
+    }
+  },
+  "history_sha256": "4eb1633527a46b3e61f53d2ad7aa41b76eaf42e5f29df9ad83764d11aeeb598d",
+  "january": {
+    "model": {
+      "id": "model-1ce9040924c14cd583a3924c7860c2ee",
+      "algorithm": "catboost-scada-v1",
+      "trained_through": "2026-01-01T00:00:00Z",
+      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
+      "training_rows": 91720,
+      "turbine_ids": [
+        "turbine-1",
+        "turbine-2"
+      ],
+      "is_demo": true
+    },
+    "training_request": {
+      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
+      "trained_through": "2026-01-01T00:00:00Z",
+      "algorithm": "catboost",
+      "weather_snapshot_ids": [],
+      "feature_set": "scada",
+      "first_origin": "2023-04-01T00:00:00Z",
+      "last_origin": "2025-12-29T00:00:00Z",
+      "horizon_hours": 48,
+      "weather_source": "archive",
+      "iterations": 500,
+      "depth": 4,
+      "learning_rate": 0.04,
+      "random_seed": 42,
+      "loss_function": "MAE",
+      "l2_leaf_reg": 10.0,
+      "origin_step_hours": 24
+    },
+    "comparison": {
+      "previous": {
+        "pooled": {
+          "samples": 2688,
+          "mae": 0.2983401903521825,
+          "rmse": 0.3406661788160405
+        },
+        "metrics": [
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "1-24",
+            "samples": 672,
+            "mae": 0.2768891865079365,
+            "rmse": 0.3257653832189551
+          },
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "25-48",
+            "samples": 672,
+            "mae": 0.3218737450396825,
+            "rmse": 0.36032243994085983
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "1-24",
+            "samples": 672,
+            "mae": 0.2772994523809524,
+            "rmse": 0.3209580792089295
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "25-48",
+            "samples": 672,
+            "mae": 0.3172983774801587,
+            "rmse": 0.3538987811765919
+          }
+        ]
+      },
+      "selected": {
+        "pooled": {
+          "samples": 2688,
+          "mae": 0.2800609888392857,
+          "rmse": 0.3350790235828312
+        },
+        "metrics": [
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "1-24",
+            "samples": 672,
+            "mae": 0.2640697663690476,
+            "rmse": 0.32310213411476313
+          },
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "25-48",
+            "samples": 672,
+            "mae": 0.3025332817460317,
+            "rmse": 0.3519553219646171
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "1-24",
+            "samples": 672,
+            "mae": 0.2601404439484127,
+            "rmse": 0.31852503401920446
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "25-48",
+            "samples": 672,
+            "mae": 0.2935004632936508,
+            "rmse": 0.34552289816338827
+          }
+        ]
+      },
+      "persistence": {
+        "pooled": {
+          "samples": 2688,
+          "mae": 0.3435974702380952,
+          "rmse": 0.4556732692476906
+        },
+        "metrics": [
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "1-24",
+            "samples": 672,
+            "mae": 0.32306299603174604,
+            "rmse": 0.4432703505431363
+          },
+          {
+            "turbine_id": "turbine-1",
+            "horizon": "25-48",
+            "samples": 672,
+            "mae": 0.3730357142857143,
+            "rmse": 0.47606827797176876
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "1-24",
+            "samples": 672,
+            "mae": 0.32052579365079364,
+            "rmse": 0.43859658489973935
+          },
+          {
+            "turbine_id": "turbine-2",
+            "horizon": "25-48",
+            "samples": 672,
+            "mae": 0.35776537698412697,
+            "rmse": 0.46374124248351983
+          }
+        ]
+      }
+    },
+    "unscored_points": 0,
+    "validation_start": "2026-01-01T00:00:00+00:00",
+    "validation_end": "2026-01-28T00:00:00+00:00"
+  },
+  "refit": {
+    "model": {
+      "id": "model-278bd6130ed3466ca981f75368f0df8e",
+      "algorithm": "catboost-scada-v1",
+      "trained_through": "2026-01-31T00:00:00Z",
+      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
+      "training_rows": 94600,
+      "turbine_ids": [
+        "turbine-1",
+        "turbine-2"
+      ],
+      "is_demo": true
+    },
+    "request": {
+      "dataset_id": "dataset-c7dce26f9fb940fdb33a1a53aad3a5b2",
+      "trained_through": "2026-01-31T00:00:00Z",
+      "algorithm": "catboost",
+      "weather_snapshot_ids": [],
+      "feature_set": "scada",
+      "first_origin": "2023-04-01T00:00:00Z",
+      "last_origin": "2026-01-28T00:00:00Z",
+      "horizon_hours": 48,
+      "weather_source": "archive",
+      "iterations": 500,
+      "depth": 4,
+      "learning_rate": 0.04,
+      "random_seed": 42,
+      "loss_function": "MAE",
+      "l2_leaf_reg": 10.0,
+      "origin_step_hours": 24
+    },
+    "evaluation": null,
+    "selection_sha256": "78701476f44fee1f21c2fdb534b41089277ca2ab48393c9f56e68be23bb40252"
+  },
+  "smoke": {
+    "run_id": "run-d27adad83b5f4c1f8616fac8f60154fe",
+    "points": 96,
+    "is_demo": true,
+    "weather_source": "demo"
+  },
+  "notes": [
+    "Selection uses November and December only; January is a reused comparison period, not a pristine unseen test.",
+    "Raw SCADA, model binaries and individual predictions are not included in this summary.",
+    "Reporting latency and physical power normalization remain unconfirmed.",
+    "Refitted weights have no measured February score."
+  ]
+}

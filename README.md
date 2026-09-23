@@ -6,6 +6,8 @@ The skeleton runs end to end today with **clearly labelled synthetic weather**. 
 
 The integrated dashboard also supports dataset import, actual-power overlays, model training (binned curve, persistence, weather ridge, and CatBoost), and weather snapshot management. The data branch contributes raw CSVs and compressed candidate weather archives for offline analysis; their presence does not establish historical publication provenance. See [data analysis](DATA.md) and [data/replay contracts](docs/data-and-replay.md).
 
+Chronological CatBoost selection reduces January MAE from **0.29834 to 0.28006** on the same 2,688 forecast pairs. Selection uses November/December only; a separate January 31 refit is available locally. These are provisional SCADA-only results, not February competition scores. See [results and model IDs](docs/tuned-training-results.md) and [reproduction](docs/ml-training.md#chronological-model-selection).
+
 ## 1. Start here
 
 Prerequisites: [Node.js](https://nodejs.org/) 22.12+ and [uv](https://docs.astral.sh/uv/getting-started/installation/). uv installs the Python version in `.python-version` if necessary. Run all commands from the repository root.
@@ -35,7 +37,7 @@ npm run dev:web
 
 The backend owns port **8000**; Vite owns **5173** and proxies `/api` and `/health`. The agent is an importable Python module inside the API process, so it needs no third HTTP service. The frontend uses relative API URLs, without credentials or browser-to-weather calls.
 
-Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. The project owner confirmed the example turbine coordinates from the data branch; the original map links are retained. Rated capacity and hub height were not supplied in the case and remain null. Observation latency and source timestamp semantics remain unconfirmed. Copy `config/turbines.example.json` to `config/turbines.local.json` to override metadata and set `WINDFARM_TURBINES=config/turbines.local.json`.
+Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. The project owner confirmed the example turbine coordinates and normalized power from the data branch; the original map links are retained. Source timestamps are confirmed as interval starts in fixed UTC+06:00. Rated capacity and hub height were not supplied and remain null; observation latency remains unconfirmed. Copy `config/turbines.example.json` to `config/turbines.local.json` to override metadata and set `WINDFARM_TURBINES=config/turbines.local.json`.
 
 ## 2. Three people, three areas
 
@@ -200,6 +202,13 @@ Example forecast request:
 The UI's replay dates use UTC to demonstrate the mechanism. Confirm the competition's daily issue time and definition of “February” in the station timezone before final evaluation. Configure the API request accordingly; do not assume the UI preset is the final evaluation protocol.
 
 ## 6. Train a first baseline
+
+Real-data preparation, local CatBoost/persistence training, and chronological MAE/RMSE
+comparison are now available: see [ML training and validation](docs/ml-training.md).
+The existing training endpoint keeps the binned curve as its default; pass
+`algorithm="catboost"` or `algorithm="persistence"` to select a new model.
+Source timestamps are confirmed as interval starts in fixed UTC+06:00. Real-data
+experiments remain provisional until latency and normalization are confirmed.
 
 `examples/observations.demo.csv` contains **artificial development rows only**. Import it while the API is running:
 

@@ -15,6 +15,15 @@ The HTTP importer rejects duplicate turbine/hour keys, naive timestamps, nonfini
 
 Historical timezone rules matter for a series spanning 2023–2026. Confirm whether source timestamps are local civil time, UTC, or fixed-offset plant time, including any changes. Preserve original values in raw data and record the mapping to UTC.
 
+For the supplied organizer files, the user confirmed fixed **UTC+06:00** and
+10-minute **interval-start** timestamps. The source adapter converts to UTC and
+adds 10 minutes before hourly interval-end aggregation. Use preparation revision
+`utc6-start-provisional-v2`; the earlier `Asia/Almaty` interpretation is superseded.
+The integrated data branch records owner confirmation of normalized power.
+Reporting latency remains unconfirmed. Existing preparation/model artifacts retain
+their recorded assumptions and provisional labels; this documentation update does
+not retroactively change their provenance.
+
 ## SCADA foundation
 
 `contracts/wind_contracts/scada.py` adds internal `ScadaReading` and `HourlyScada`
@@ -80,9 +89,10 @@ observations = [hour.to_observation() for hour in hours if hour.complete]
 Run `uv run pytest tests/test_scada.py` and `uv run pytest` for focused and full
 regression checks. Test readings and weather fixtures for the API are artificial.
 The integrated data branch also includes raw SCADA and candidate weather CSVs;
-these are separate from verified API snapshots. The owner confirms normalized power
-and accepts fixed UTC+6 plant time based on the data correlation. Interval semantics
-and reporting latency remain assumptions; rated capacity and hub height were not supplied.
+these are separate from verified API snapshots. The owner confirms normalized power;
+source timestamps are confirmed as fixed UTC+06:00 and interval start. Reporting
+latency remains an assumption; rated capacity and hub height were not supplied.
+Current models retain their recorded provenance and provisional label.
 
 The integrated ML module includes origin-safe persistence, weather/SCADA features,
 CatBoost, and a weather ridge candidate. Keep historical weather inputs distinct

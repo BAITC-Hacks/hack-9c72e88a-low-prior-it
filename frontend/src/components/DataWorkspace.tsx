@@ -16,7 +16,7 @@ export default function DataWorkspace({ datasets, turbines, disabled, onChanged 
   const [cutoff, setCutoff] = useState('2026-01-30T23:00');
   const [firstOrigin, setFirstOrigin] = useState('2025-12-01T00:00');
   const [lastOrigin, setLastOrigin] = useState('2026-01-28T00:00');
-  const [featureSet, setFeatureSet] = useState<'scada' | 'weather-scada'>('scada');
+  const [featureSet, setFeatureSet] = useState<TrainRequest['feature_set']>('scada');
   const [turbine, setTurbine] = useState('turbine-1');
   const [weatherRun, setWeatherRun] = useState('2026-01-31T00:00');
   const [weatherJson, setWeatherJson] = useState('');
@@ -60,6 +60,7 @@ export default function DataWorkspace({ datasets, turbines, disabled, onChanged 
       dataset_id: dataset, trained_through: iso(cutoff), algorithm,
       feature_set: featureSet, horizon_hours: 48, weather_source: 'archive',
       iterations: 300, depth: 6, learning_rate: 0.05, random_seed: 42,
+      loss_function: 'RMSE', l2_leaf_reg: 3, origin_step_hours: 24,
     };
     if (algorithm === 'catboost') Object.assign(body, { first_origin: iso(firstOrigin), last_origin: iso(lastOrigin), horizon_hours: 48, feature_set: featureSet, weather_source: 'archive' });
     const model = await api.train(body);
@@ -88,7 +89,7 @@ export default function DataWorkspace({ datasets, turbines, disabled, onChanged 
           {algorithm === 'catboost' && <>
             <label className="control-field"><span>First training issue · UTC</span><input type="datetime-local" step="3600" value={firstOrigin} disabled={locked} onChange={event => setFirstOrigin(event.target.value)} required /></label>
             <label className="control-field"><span>Last training issue · UTC</span><input type="datetime-local" step="3600" value={lastOrigin} disabled={locked} onChange={event => setLastOrigin(event.target.value)} required /></label>
-            <label className="control-field"><span>Features</span><select value={featureSet} disabled={locked} onChange={event => setFeatureSet(event.target.value as typeof featureSet)}><option value="scada">SCADA history</option><option value="weather-scada">Verified weather + SCADA</option></select></label>
+            <label className="control-field"><span>Features</span><select value={featureSet} disabled={locked} onChange={event => setFeatureSet(event.target.value as typeof featureSet)}><option value="scada">SCADA history</option><option value="scada-extended">SCADA history + weekly lags</option><option value="weather-scada">Verified weather + SCADA</option></select></label>
           </>}
           <button className="button secondary" disabled={locked || !dataset}>{busy ? 'Working…' : 'Train model'}</button>
         </form>

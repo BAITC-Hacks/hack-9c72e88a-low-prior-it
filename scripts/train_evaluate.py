@@ -34,10 +34,16 @@ def main():
     parser.add_argument("--last-origin", required=True)
     parser.add_argument("--validation-start", required=True)
     parser.add_argument("--validation-end", required=True)
-    parser.add_argument("--feature-set", choices=["scada", "weather-scada"], default="scada")
+    parser.add_argument(
+        "--feature-set", choices=["scada", "scada-extended", "weather-scada"], default="scada"
+    )
     parser.add_argument("--weather", type=Path)
     parser.add_argument("--iterations", type=int, default=300)
     parser.add_argument("--depth", type=int, default=6)
+    parser.add_argument("--learning-rate", type=float, default=0.05)
+    parser.add_argument("--loss-function", choices=["RMSE", "MAE"], default="RMSE")
+    parser.add_argument("--l2-leaf-reg", type=float, default=3)
+    parser.add_argument("--origin-step-hours", type=int, choices=[6, 12, 24], default=24)
     parser.add_argument(
         "--register", action="store_true", help="Register dataset/models in the local API database"
     )
@@ -89,6 +95,10 @@ def main():
         last_origin=args.last_origin,
         iterations=args.iterations,
         depth=args.depth,
+        learning_rate=args.learning_rate,
+        loss_function=args.loss_function,
+        l2_leaf_reg=args.l2_leaf_reg,
+        origin_step_hours=args.origin_step_hours,
     )
     model_id = f"model-{uuid4().hex}"
     print(f"Training {args.feature_set} CatBoost, {len(rows)} hourly observations", flush=True)
@@ -148,7 +158,7 @@ def main():
         "weather_used": args.feature_set == "weather-scada",
         "comparison": comparison,
         "notes": [
-            "Fixed model; chronological holdout; no hyperparameter tuning on validation.",
+            "Fixed model; chronological evaluation; no refitting or early stopping during evaluation.",
             "Each origin uses SCADA available by that origin, including earlier validation observations.",
             "Overlapping forecasts retained as separate issue/lead pairs; missing actuals unscored.",
         ],

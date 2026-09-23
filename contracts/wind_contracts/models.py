@@ -89,9 +89,11 @@ class DatasetInfo(Contract):
 class TrainRequest(Contract):
     dataset_id: Identifier
     trained_through: Hour
-    algorithm: Literal["binned-power-curve", "persistence", "catboost", "weather-ridge"] = "binned-power-curve"
+    algorithm: Literal["binned-power-curve", "persistence", "catboost", "weather-ridge"] = (
+        "binned-power-curve"
+    )
     weather_snapshot_ids: list[Identifier] = Field(default_factory=list)
-    feature_set: Literal["scada", "weather-scada"] = "scada"
+    feature_set: Literal["scada", "scada-extended", "weather-scada"] = "scada"
     first_origin: Hour | None = None
     last_origin: Hour | None = None
     horizon_hours: Literal[24, 48] = 48
@@ -100,17 +102,22 @@ class TrainRequest(Contract):
     depth: int = Field(default=6, ge=2, le=8)
     learning_rate: float = Field(default=0.05, gt=0, le=1)
     random_seed: int = Field(default=42, ge=0, le=2**31 - 1)
+    loss_function: Literal["RMSE", "MAE"] = "RMSE"
+    l2_leaf_reg: float = Field(default=3.0, ge=0, le=100)
+    origin_step_hours: Literal[6, 12, 24] = 24
 
     @model_validator(mode="after")
     def training_window(self):
         if self.algorithm == "catboost":
             if self.first_origin is None or self.last_origin is None:
                 raise ValueError(
-                    "CatBoost requires first_origin and last_origin for daily forecast samples"
+                    "CatBoost requires first_origin and last_origin for forecast samples"
                 )
-            days = (self.last_origin - self.first_origin).total_seconds() / 86400
-            if not 0 <= days <= 1096 or not days.is_integer():
-                raise ValueError("Training origins must span 0..1096 whole days")
+            hours = (self.last_origin - self.first_origin).total_seconds() / 3600
+            if not 0 <= hours <= 1096 * 24 or hours % self.origin_step_hours:
+                raise ValueError(
+                    "Training origins must align to origin_step_hours within 1096 days"
+                )
             if self.last_origin + timedelta(hours=self.horizon_hours) > self.trained_through:
                 raise ValueError("Every training target must be at or before trained_through")
         elif self.first_origin is not None or self.last_origin is not None:

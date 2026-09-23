@@ -32,6 +32,29 @@ FEATURE_NAMES = [
     for stat in ("mean", "std", "count")
 ]
 SCADA_FEATURE_NAMES = FEATURE_NAMES[4:]
+LAG_HOURS = (1, 2, 3, 6, 12, 24, 48, 72, 168)
+EXTENDED_FEATURE_VERSION = "scada-extended-v1"
+EXTENDED_FEATURE_NAMES = (
+    SCADA_FEATURE_NAMES
+    + [f"{field}_lag_{lag}h" for lag in LAG_HOURS for field in ("power", "wind", "temperature")]
+    + [
+        f"{field}_{stat}_{hours}h"
+        for hours in (48, 168)
+        for field in ("power", "wind", "temperature")
+        for stat in ("mean", "std", "min", "max", "count")
+    ]
+    + [f"{field}_change_{lag}h" for lag in (3, 24) for field in ("power", "wind", "temperature")]
+)
+
+
+def feature_schema(feature_set: str):
+    if feature_set == "scada-extended":
+        return EXTENDED_FEATURE_VERSION, EXTENDED_FEATURE_NAMES
+    if feature_set == "scada":
+        return FEATURE_VERSION, SCADA_FEATURE_NAMES
+    if feature_set == "weather-scada":
+        return FEATURE_VERSION, FEATURE_NAMES
+    raise ValueError(f"Unsupported feature set: {feature_set}")
 
 
 class ObservationHistory:
@@ -70,7 +93,12 @@ class ObservationHistory:
             (origin - last.valid_time).total_seconds() / 3600,
         ]
         for hours in (3, 6, 24):
-            window = [row for row in available if row.valid_time > origin - timedelta(hours=hours)]
+            # Unique whole-hour observations: at most `hours` rows can fall in this window.
+            window = [
+                row
+                for row in available[-hours:]
+                if row.valid_time > origin - timedelta(hours=hours)
+            ]
             for field in ("power_normalized", "wind_speed_ms", "temperature_c"):
                 values = [getattr(row, field) for row in window]
                 # Empty window != zero generation; CatBoost explicitly supports missing numeric values.
@@ -83,17 +111,55 @@ class ObservationHistory:
                 )
         return result
 
+    def extended_features(self, turbine_id: str, origin: datetime) -> list[float]:
+        available = self.available(turbine_id, origin)
+        if not available:
+            raise ValueError(f"{turbine_id}: no SCADA available at {origin.isoformat()}")
+        fields = ("power_normalized", "wind_speed_ms", "temperature_c")
+        # Exact origin-relative lag, never a row shift that crosses a missing hour.
+        lookup = {row.valid_time: row for row in available[-169:]}
+        result = []
+        for lag in LAG_HOURS:
+            row = lookup.get(origin - timedelta(hours=lag))
+            result.extend(getattr(row, field) if row is not None else math.nan for field in fields)
+        for hours in (48, 168):
+            window = [
+                row
+                for row in available[-hours:]
+                if row.valid_time > origin - timedelta(hours=hours)
+            ]
+            for field in fields:
+                values = [getattr(row, field) for row in window]
+                result.extend(
+                    [mean(values), pstdev(values), min(values), max(values), len(values)]
+                    if values
+                    else [math.nan, math.nan, math.nan, math.nan, 0]
+                )
+        for lag in (3, 24):
+            earlier = lookup.get(origin - timedelta(hours=lag))
+            result.extend(
+                getattr(available[-1], field) - getattr(earlier, field)
+                if earlier is not None
+                else math.nan
+                for field in fields
+            )
+        return result
+
 
 def build_scada_features(
     history: ObservationHistory,
     turbine_id: str,
     targets: list[datetime],
     origin: datetime,
+    *,
+    extended: bool = False,
 ) -> list[list[float]]:
     origin = TypeAdapter(Hour).validate_python(origin)
     if not targets or targets != sorted(set(targets)):
         raise ValueError("Targets must be nonempty, unique and sorted")
     scada = history.scada_features(turbine_id, origin)
+    if extended:
+        scada += history.extended_features(turbine_id, origin)
     result = []
     for target in targets:
         lead = forecast_lead(origin, target)
