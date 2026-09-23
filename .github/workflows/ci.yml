@@ -1,0 +1,23 @@
+name: Integration checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: npm ci
+      - run: npm run contracts
+      - run: git diff --exit-code -- contracts/openapi.json frontend/src/generated/api.ts
+      - run: npm run check
