@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evidence */
+        get: operations["evidence_api_v1_evidence_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evidence/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Evidence */
+        get: operations["export_evidence_api_v1_evidence_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/assets": {
         parameters: {
             query?: never;
@@ -486,6 +520,237 @@ export interface components {
             /** Forecast Turbine Id */
             forecast_turbine_id?: string | null;
         };
+        /** EvidenceBenchmark */
+        EvidenceBenchmark: {
+            /** Name */
+            name: string;
+            /**
+             * First Issue
+             * Format: date-time
+             */
+            first_issue: string;
+            /**
+             * Last Issue
+             * Format: date-time
+             */
+            last_issue: string;
+            /**
+             * Issue Step Hours
+             * @default 24
+             * @constant
+             */
+            issue_step_hours: 24;
+            /**
+             * Horizon Hours
+             * @default 48
+             * @constant
+             */
+            horizon_hours: 48;
+            /**
+             * Trained Through
+             * Format: date-time
+             */
+            trained_through: string;
+            /** Feature Set */
+            feature_set: string;
+            /**
+             * Reused Comparison
+             * @default true
+             * @constant
+             */
+            reused_comparison: true;
+            /** Scored Pairs */
+            scored_pairs: number;
+            /** Unscored Pairs */
+            unscored_pairs: number;
+            /** Models */
+            models: components["schemas"]["EvidenceModel"][];
+        };
+        /** EvidenceCandidate */
+        EvidenceCandidate: {
+            /** Name */
+            name: string;
+            /** Selected */
+            selected: boolean;
+            /** Feature Set */
+            feature_set: string;
+            /** Iterations */
+            iterations: number;
+            /** Depth */
+            depth: number;
+            /**
+             * Loss Function
+             * @enum {string}
+             */
+            loss_function: "MAE" | "RMSE";
+            pooled: components["schemas"]["EvidenceScore"];
+            /** Folds */
+            folds: components["schemas"]["EvidenceFold"][];
+        };
+        /** EvidenceCheckpoint */
+        EvidenceCheckpoint: {
+            /** Id */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "verified" | "provisional" | "open";
+            /** Title */
+            title: string;
+            /** Detail */
+            detail: string;
+        };
+        /** EvidenceData */
+        EvidenceData: {
+            /** Complete Hours */
+            complete_hours: number;
+            /** Timezone */
+            timezone: string;
+            /** Timestamp Position */
+            timestamp_position: string;
+            /** Latency Minutes */
+            latency_minutes: number;
+            /**
+             * Provisional
+             * @default true
+             * @constant
+             */
+            provisional: true;
+            /** History Sha256 */
+            history_sha256: string;
+            /** Sources */
+            sources: components["schemas"]["EvidenceSource"][];
+        };
+        /** EvidenceFold */
+        EvidenceFold: {
+            /** Name */
+            name: string;
+            /**
+             * First Issue
+             * Format: date-time
+             */
+            first_issue: string;
+            /**
+             * Last Issue
+             * Format: date-time
+             */
+            last_issue: string;
+            pooled: components["schemas"]["EvidenceScore"];
+            /** Scored Pairs */
+            scored_pairs: number;
+            /** Unscored Pairs */
+            unscored_pairs: number;
+        };
+        /** EvidenceMetric */
+        EvidenceMetric: {
+            /** Turbine Id */
+            turbine_id: string;
+            /**
+             * Horizon
+             * @enum {string}
+             */
+            horizon: "1-24" | "25-48";
+            /** Samples */
+            samples: number;
+            /** Mae */
+            mae: number;
+            /** Rmse */
+            rmse: number;
+        };
+        /** EvidenceModel */
+        EvidenceModel: {
+            /**
+             * Id
+             * @enum {string}
+             */
+            id: "selected" | "previous" | "persistence";
+            /** Label */
+            label: string;
+            pooled: components["schemas"]["EvidenceScore"];
+            /** Metrics */
+            metrics: components["schemas"]["EvidenceMetric"][];
+        };
+        /** EvidenceRefit */
+        EvidenceRefit: {
+            /**
+             * Trained Through
+             * Format: date-time
+             */
+            trained_through: string;
+            /** Training Rows */
+            training_rows: number;
+            /**
+             * Evaluated
+             * @default false
+             * @constant
+             */
+            evaluated: false;
+        };
+        /** EvidenceReport */
+        EvidenceReport: {
+            /**
+             * Status
+             * @default provisional
+             * @constant
+             */
+            status: "provisional";
+            /** Source File */
+            source_file: string;
+            /** Source Sha256 */
+            source_sha256: string;
+            /**
+             * Selected At
+             * Format: date-time
+             */
+            selected_at: string;
+            benchmark: components["schemas"]["EvidenceBenchmark"];
+            selection: components["schemas"]["EvidenceSelection"];
+            data: components["schemas"]["EvidenceData"];
+            refit: components["schemas"]["EvidenceRefit"];
+            /** Checkpoints */
+            checkpoints: components["schemas"]["EvidenceCheckpoint"][];
+            /** Limitations */
+            limitations: string[];
+        };
+        /** EvidenceScore */
+        EvidenceScore: {
+            /** Samples */
+            samples: number;
+            /** Mae */
+            mae: number;
+            /** Rmse */
+            rmse: number;
+        };
+        /** EvidenceSelection */
+        EvidenceSelection: {
+            /** Objective */
+            objective: string;
+            /**
+             * First Training Origin
+             * Format: date-time
+             */
+            first_training_origin: string;
+            /** Candidates */
+            candidates: components["schemas"]["EvidenceCandidate"][];
+        };
+        /** EvidenceSource */
+        EvidenceSource: {
+            /** Turbine Id */
+            turbine_id: string;
+            /** Source File */
+            source_file: string;
+            /** Sha256 */
+            sha256: string;
+            /** Rows */
+            rows: number;
+            /** Complete Hours */
+            complete_hours: number;
+            /** Incomplete Hours */
+            incomplete_hours: number;
+            /** Missing Slots */
+            missing_slots: number;
+        };
         /** ForecastPoint */
         ForecastPoint: {
             /** Turbine Id */
@@ -837,6 +1102,118 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    evidence_api_v1_evidence_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceReport"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    export_evidence_api_v1_evidence_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceReport"];
                 };
             };
             /** @description Not Found */

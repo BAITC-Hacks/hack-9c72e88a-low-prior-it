@@ -5,7 +5,7 @@ import { api } from '../../src/api';
 import { forecast, request, turbines } from './fixtures';
 
 vi.mock('../../src/api', () => ({ api: {
-  assets: vi.fn(), turbines: vi.fn(), models: vi.fn(), forecasts: vi.fn(), backtests: vi.fn(), datasets: vi.fn(), createForecast: vi.fn(), forecast: vi.fn(),
+  assets: vi.fn(), turbines: vi.fn(), models: vi.fn(), forecasts: vi.fn(), backtests: vi.fn(), datasets: vi.fn(), createForecast: vi.fn(), forecast: vi.fn(), evidence: vi.fn(),
 } }));
 
 beforeEach(() => {
@@ -16,6 +16,7 @@ beforeEach(() => {
   vi.mocked(api.forecasts).mockResolvedValue([]);
   vi.mocked(api.backtests).mockResolvedValue([]);
   vi.mocked(api.datasets).mockResolvedValue([]);
+  vi.mocked(api.evidence).mockRejectedValue(new Error('Evidence fixture unavailable'));
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ features: [{
     type: 'Feature', properties: { code: 'KZ', name: 'Kazakhstan', lat: 49, lng: 68, span: 27 },
     geometry: { type: 'Polygon', coordinates: [] },
@@ -40,6 +41,36 @@ it('normalizes an unknown URL section to Explore', async () => {
   await screen.findByRole('heading', { name: 'Energy explorer' });
   expect(window.location.hash).toBe('#explore');
   expect(screen.getByRole('link', { name: 'Explore' }).getAttribute('aria-current')).toBe('location');
+});
+
+it('preserves the Evidence deep link and returns there with Back', async () => {
+  window.history.replaceState(null, '', '/#evidence');
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Model evidence' });
+  expect(window.location.hash).toBe('#evidence');
+  expect(screen.queryByRole('heading', { name: 'Forecast workspace' })).toBeNull();
+  fireEvent.click(screen.getByRole('link', { name: 'Forecast' }));
+  await screen.findByRole('heading', { name: 'Forecast workspace' });
+  act(() => window.history.back());
+  await waitFor(() => expect(window.location.hash).toBe('#evidence'));
+  expect(screen.getByRole('heading', { name: 'Model evidence' })).toBeTruthy();
+});
+
+it('restores the saved Evidence workspace on a new visit', async () => {
+  localStorage.setItem('low-prior-view', 'evidence');
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Model evidence' });
+  expect(window.location.hash).toBe('#evidence');
+});
+
+it('opens the forecast workspace for an Insights deep link', async () => {
+  window.history.replaceState(null, '', '/#insights');
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Forecast workspace' });
+  expect(window.location.hash).toBe('#insights');
+  const insights = document.getElementById('insights');
+  expect(insights).not.toBeNull();
+  expect(insights!.closest('[hidden]')).toBeNull();
 });
 
 it('selects a country and turbine, runs a 24-hour forecast, and exposes its results and export', async () => {

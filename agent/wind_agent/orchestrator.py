@@ -12,6 +12,7 @@ from wind_contracts.models import (
     WeatherSnapshot,
 )
 
+from wind_agent.analysis import summarize_forecast
 from wind_agent.interfaces import Predictor, TransientWeatherError, WeatherProvider
 from wind_agent.weather import target_hours
 
@@ -122,6 +123,8 @@ class ForecastAgent:
                 message="Checked hourly coverage, bounds, and provenance",
             )
         )
+        for message in summarize_forecast(points, is_demo=is_demo):
+            emit(AgentEvent(at=datetime.now(UTC), stage="analyse", message=message))
         result = ForecastResult(
             model_id=self.predictor.info.id,
             input_fingerprint=token,

@@ -21,6 +21,7 @@
   background: var(--page);
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; scroll-padding-top: 18px; }
 body { margin: 0; min-width: 320px; }
 .management-content { display: grid; gap: 16px; padding: 18px 0 0; }
@@ -83,7 +84,6 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { opacity: .55; }
 .topbar { min-height: 66px; padding: 12px 26px; border-bottom: 1px solid var(--border); background: var(--chrome); display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .topbar-title { display: flex; align-items: center; gap: 19px; }.wordmark { display: flex; align-items: center; gap: 20px; font-weight: 650; font-size: 11px; letter-spacing: 1.8px; white-space: nowrap; color: var(--text-soft); }.wordmark-divider { display: block; height: 26px; width: 1px; background: var(--border-strong); }.topbar h1 { font-size: 16px; letter-spacing: -.25px; }.topbar-subtitle { display: block; font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .topbar-tools { display: flex; align-items: center; gap: 16px; }.timezone { font-size: 10px; color: var(--text-muted); display: flex; gap: 5px; align-items: center; }.connection { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 7px; }.connection.connected { color: var(--accent-text); }.connection.connected .status-dot { background: var(--accent); }.connection.disconnected { color: var(--error); }.connection.disconnected .status-dot { background: var(--error); }
-[hidden] { display: none !important; }
 .workspace-loading { padding: 40px 24px; color: var(--text-muted); }
 .workspace-notices { max-width: 1720px; margin: 0 auto; padding: 12px 24px 0; }
 .dashboard { padding: 0 24px 12px; max-width: 1720px; margin: 0 auto; }

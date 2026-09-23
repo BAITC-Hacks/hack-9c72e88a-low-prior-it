@@ -67,6 +67,128 @@
         }
       }
     },
+    "/api/v1/evidence": {
+      "get": {
+        "tags": [
+          "Model evidence"
+        ],
+        "summary": "Evidence",
+        "operationId": "evidence_api_v1_evidence_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceReport"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/evidence/export": {
+      "get": {
+        "tags": [
+          "Model evidence"
+        ],
+        "summary": "Export Evidence",
+        "operationId": "export_evidence_api_v1_evidence_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceReport"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/assets": {
       "get": {
         "tags": [
@@ -1931,6 +2053,547 @@
         ],
         "title": "EnergyAsset",
         "description": "Explorable infrastructure; forecast support is an explicit capability."
+      },
+      "EvidenceBenchmark": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "first_issue": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Issue"
+          },
+          "last_issue": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Issue"
+          },
+          "issue_step_hours": {
+            "type": "integer",
+            "const": 24,
+            "title": "Issue Step Hours",
+            "default": 24
+          },
+          "horizon_hours": {
+            "type": "integer",
+            "const": 48,
+            "title": "Horizon Hours",
+            "default": 48
+          },
+          "trained_through": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Trained Through"
+          },
+          "feature_set": {
+            "type": "string",
+            "title": "Feature Set"
+          },
+          "reused_comparison": {
+            "type": "boolean",
+            "const": true,
+            "title": "Reused Comparison",
+            "default": true
+          },
+          "scored_pairs": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Scored Pairs"
+          },
+          "unscored_pairs": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unscored Pairs"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceModel"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Models"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "first_issue",
+          "last_issue",
+          "trained_through",
+          "feature_set",
+          "scored_pairs",
+          "unscored_pairs",
+          "models"
+        ],
+        "title": "EvidenceBenchmark"
+      },
+      "EvidenceCandidate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "selected": {
+            "type": "boolean",
+            "title": "Selected"
+          },
+          "feature_set": {
+            "type": "string",
+            "title": "Feature Set"
+          },
+          "iterations": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Iterations"
+          },
+          "depth": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Depth"
+          },
+          "loss_function": {
+            "type": "string",
+            "enum": [
+              "MAE",
+              "RMSE"
+            ],
+            "title": "Loss Function"
+          },
+          "pooled": {
+            "$ref": "#/components/schemas/EvidenceScore"
+          },
+          "folds": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceFold"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Folds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "selected",
+          "feature_set",
+          "iterations",
+          "depth",
+          "loss_function",
+          "pooled",
+          "folds"
+        ],
+        "title": "EvidenceCandidate"
+      },
+      "EvidenceCheckpoint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "provisional",
+              "open"
+            ],
+            "title": "Status"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "title",
+          "detail"
+        ],
+        "title": "EvidenceCheckpoint"
+      },
+      "EvidenceData": {
+        "properties": {
+          "complete_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Complete Hours"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "timestamp_position": {
+            "type": "string",
+            "title": "Timestamp Position"
+          },
+          "latency_minutes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Latency Minutes"
+          },
+          "provisional": {
+            "type": "boolean",
+            "const": true,
+            "title": "Provisional",
+            "default": true
+          },
+          "history_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "History Sha256"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceSource"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complete_hours",
+          "timezone",
+          "timestamp_position",
+          "latency_minutes",
+          "history_sha256",
+          "sources"
+        ],
+        "title": "EvidenceData"
+      },
+      "EvidenceFold": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "first_issue": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Issue"
+          },
+          "last_issue": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Issue"
+          },
+          "pooled": {
+            "$ref": "#/components/schemas/EvidenceScore"
+          },
+          "scored_pairs": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Scored Pairs"
+          },
+          "unscored_pairs": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unscored Pairs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "first_issue",
+          "last_issue",
+          "pooled",
+          "scored_pairs",
+          "unscored_pairs"
+        ],
+        "title": "EvidenceFold"
+      },
+      "EvidenceMetric": {
+        "properties": {
+          "turbine_id": {
+            "type": "string",
+            "title": "Turbine Id"
+          },
+          "horizon": {
+            "type": "string",
+            "enum": [
+              "1-24",
+              "25-48"
+            ],
+            "title": "Horizon"
+          },
+          "samples": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Samples"
+          },
+          "mae": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Mae"
+          },
+          "rmse": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Rmse"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "turbine_id",
+          "horizon",
+          "samples",
+          "mae",
+          "rmse"
+        ],
+        "title": "EvidenceMetric"
+      },
+      "EvidenceModel": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "selected",
+              "previous",
+              "persistence"
+            ],
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "pooled": {
+            "$ref": "#/components/schemas/EvidenceScore"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceMetric"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Metrics"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "pooled",
+          "metrics"
+        ],
+        "title": "EvidenceModel"
+      },
+      "EvidenceRefit": {
+        "properties": {
+          "trained_through": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Trained Through"
+          },
+          "training_rows": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Training Rows"
+          },
+          "evaluated": {
+            "type": "boolean",
+            "const": false,
+            "title": "Evaluated",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "trained_through",
+          "training_rows"
+        ],
+        "title": "EvidenceRefit"
+      },
+      "EvidenceReport": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "provisional",
+            "title": "Status",
+            "default": "provisional"
+          },
+          "source_file": {
+            "type": "string",
+            "title": "Source File"
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Source Sha256"
+          },
+          "selected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Selected At"
+          },
+          "benchmark": {
+            "$ref": "#/components/schemas/EvidenceBenchmark"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/EvidenceSelection"
+          },
+          "data": {
+            "$ref": "#/components/schemas/EvidenceData"
+          },
+          "refit": {
+            "$ref": "#/components/schemas/EvidenceRefit"
+          },
+          "checkpoints": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceCheckpoint"
+            },
+            "type": "array",
+            "title": "Checkpoints"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_file",
+          "source_sha256",
+          "selected_at",
+          "benchmark",
+          "selection",
+          "data",
+          "refit",
+          "checkpoints",
+          "limitations"
+        ],
+        "title": "EvidenceReport"
+      },
+      "EvidenceScore": {
+        "properties": {
+          "samples": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Samples"
+          },
+          "mae": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Mae"
+          },
+          "rmse": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Rmse"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "samples",
+          "mae",
+          "rmse"
+        ],
+        "title": "EvidenceScore"
+      },
+      "EvidenceSelection": {
+        "properties": {
+          "objective": {
+            "type": "string",
+            "title": "Objective"
+          },
+          "first_training_origin": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Training Origin"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceCandidate"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Candidates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "objective",
+          "first_training_origin",
+          "candidates"
+        ],
+        "title": "EvidenceSelection"
+      },
+      "EvidenceSource": {
+        "properties": {
+          "turbine_id": {
+            "type": "string",
+            "title": "Turbine Id"
+          },
+          "source_file": {
+            "type": "string",
+            "title": "Source File"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256"
+          },
+          "rows": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Rows"
+          },
+          "complete_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Complete Hours"
+          },
+          "incomplete_hours": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Incomplete Hours"
+          },
+          "missing_slots": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Missing Slots"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "turbine_id",
+          "source_file",
+          "sha256",
+          "rows",
+          "complete_hours",
+          "incomplete_hours",
+          "missing_slots"
+        ],
+        "title": "EvidenceSource"
       },
       "ForecastPoint": {
         "properties": {

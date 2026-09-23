@@ -3,6 +3,7 @@ import ForecastChart from './ForecastChart';
 import AgentPanel from './components/AgentPanel';
 import DataWorkspace from './components/DataWorkspace';
 import ForecastTable from './components/ForecastTable';
+import ForecastInsights from './components/ForecastInsights';
 import Icon, { type IconName } from './components/Icon';
 import ProfileMenu from './components/ProfileMenu';
 import ReplayPanel from './components/ReplayPanel';
@@ -13,11 +14,12 @@ import { initialSection, sectionFromHash, workspaceForSection, type WorkspaceSec
 import useDashboard from './useDashboard';
 
 const ExploreView = lazy(() => import('./explore/ExploreView'));
-class ExploreBoundary extends Component<{ children: ReactNode; onForecast: () => void }, { failed: boolean }> {
+const EvidenceView = lazy(() => import('./evidence/EvidenceView'));
+class WorkspaceBoundary extends Component<{ children: ReactNode; onForecast: () => void; label: string }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    return this.state.failed ? <section className="dashboard"><div className="panel"><h2>Energy explorer could not load</h2><p className="muted">Reload this page to try again, or continue to the forecast workspace.</p><div className="panel-actions"><button className="button" onClick={() => window.location.reload()}>Reload page</button><button className="button primary" onClick={this.props.onForecast}>Open forecast</button></div></div></section> : this.props.children;
+    return this.state.failed ? <section className="dashboard"><div className="panel"><h2>{this.props.label} could not load</h2><p className="muted">Reload this page to try again, or continue to the forecast workspace.</p><div className="panel-actions"><button className="button" onClick={() => window.location.reload()}>Reload page</button><button className="button primary" onClick={this.props.onForecast}>Open forecast</button></div></div></section> : this.props.children;
   }
 }
 function readInitialSection(): WorkspaceSection {
@@ -32,6 +34,7 @@ const navigation: { id: WorkspaceSection; title: string; icon: IconName }[] = [
   { id: 'stations', title: 'Assets', icon: 'map' },
   { id: 'activity', title: 'Agent', icon: 'activity' },
   { id: 'replay', title: 'Backtesting', icon: 'bars' },
+  { id: 'evidence', title: 'Evidence', icon: 'shield' },
   { id: 'data', title: 'Data & models', icon: 'grid' },
 ];
 
@@ -40,12 +43,14 @@ export default function App() {
   const [section, setSection] = useState(readInitialSection);
   const view = workspaceForSection(section);
   const [exploreVisited, setExploreVisited] = useState(() => section === 'explore');
+  const [evidenceVisited, setEvidenceVisited] = useState(() => section === 'evidence');
   const [navigationRevision, setNavigationRevision] = useState(0);
   const [assetRevision, setAssetRevision] = useState(0);
   function navigate(id: WorkspaceSection) {
     const next = workspaceForSection(id);
     setSection(id); setNavigationRevision(value => value + 1);
     if (next === 'explore') setExploreVisited(true);
+    if (next === 'evidence') setEvidenceVisited(true);
     try { localStorage.setItem('low-prior-view', next); } catch { /* Session-only when storage is unavailable. */ }
     if (window.location.hash !== `#${id}`) window.location.hash = id;
   }
@@ -63,7 +68,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      const target = document.getElementById(section === 'forecast' ? 'forecast-workspace' : section);
+      const target = document.getElementById(section === 'forecast' || section === 'evidence' ? `${section}-workspace` : section);
       if (view === 'forecast' && section !== 'forecast') target?.scrollIntoView();
       else window.scrollTo({ top: 0 });
       if (target && navigationRevision > 0) {
@@ -108,7 +113,8 @@ export default function App() {
           {d.error && <div className="notice danger" role="alert"><Icon name="warning" /><span>{d.error}</span><button className="icon-button" onClick={() => d.setError('')} aria-label="Dismiss error"><Icon name="close" size={14} /></button></div>}
           {d.notice && <div className="notice info" role="status"><Icon name="info" /><span>{d.notice}</span><button className="icon-button" onClick={() => d.setNotice('')} aria-label="Dismiss notification"><Icon name="close" size={14} /></button></div>}
         </div>}
-        {exploreVisited && <div id="explore" tabIndex={-1} aria-label="Energy explorer workspace" hidden={view !== 'explore'}><ExploreBoundary onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading energy explorer…</div>}><ExploreView active={view === 'explore'} refreshRevision={assetRevision} forecastingDisabled={d.disabled} onOpenForecast={openForecast} /></Suspense></ExploreBoundary></div>}
+        {exploreVisited && <div id="explore" tabIndex={-1} aria-label="Energy explorer workspace" hidden={view !== 'explore'}><WorkspaceBoundary label="Energy explorer" onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading energy explorer…</div>}><ExploreView active={view === 'explore'} refreshRevision={assetRevision} forecastingDisabled={d.disabled} onOpenForecast={openForecast} /></Suspense></WorkspaceBoundary></div>}
+        {evidenceVisited && <div id="evidence-workspace" tabIndex={-1} aria-label="Model evidence workspace" hidden={view !== 'evidence'}><WorkspaceBoundary label="Model evidence" onForecast={() => navigate('forecast')}><Suspense fallback={<div className="workspace-loading" role="status">Loading model evidence…</div>}><EvidenceView active={view === 'evidence'} /></Suspense></WorkspaceBoundary></div>}
         <div id="forecast-workspace" className="dashboard" aria-label="Forecast workspace" hidden={view !== 'forecast'}>
         <div className="workspace-heading"><div className="section-context"><span className="context-mark" /><h2>Forecast workspace</h2><span className="badge">Wind energy</span></div><label className="history-control"><Icon name="clock" size={13} /><span className="sr-only">Saved forecast</span><select aria-label="Saved forecast" value={d.run?.id || ''} disabled={!history.length || d.busy || isActive(d.run?.status)} onChange={event => { const next = history.find(r => r.id === event.target.value); if (next) d.selectRun(next); }}>
           {!history.length && <option value="">No saved forecasts</option>}{history.map(run => <option key={run.id} value={run.id}>{utcTime(run.request.issued_at)} UTC · {run.request.horizon_hours}h · {run.status} · {run.id.slice(-5)}</option>)}
@@ -141,6 +147,8 @@ export default function App() {
           </section>
           <WeatherPanel run={d.run} turbines={d.turbines} activeLead={d.activeLead} />
         </div>
+
+        <ForecastInsights run={d.run} activeLead={d.activeLead} onInspect={lead => { d.setActiveLead(lead); navigate('forecast'); }} />
 
         <div className="context-grid"><StationMap turbines={d.turbines} selected={d.selected} onToggle={d.toggleTurbine} disabled={d.disabled} /><AgentPanel run={d.run} /></div>
 

@@ -8,6 +8,10 @@ The integrated dashboard also supports dataset import, actual-power overlays, mo
 
 Chronological CatBoost selection reduces January MAE from **0.29834 to 0.28006** on the same 2,688 forecast pairs. Selection uses November/December only; a separate January 31 refit is available locally. These are provisional SCADA-only results, not February competition scores. See [results and model IDs](docs/tuned-training-results.md) and [reproduction](docs/ml-training.md#chronological-model-selection).
 
+Open **Evidence** in the navigation to inspect the recorded benchmark, compare turbines and lead windows, trace model selection, and download the evidence JSON. The selected model's January MAE is **18.49% lower than persistence** on matching forecast pairs. January was reused as a comparison window; it is not an untouched holdout. This screen describes the recorded experiment, independently of the model currently selected for forecasting.
+
+Completed forecasts now include an **operations brief**: highest/lowest continuous three-hour output windows, the largest adjacent-hour change, and a downloadable Markdown report with input lineage. The agent also logs mean output, peak output and largest rises/drops for each turbine. Signals use normalized power and retain demo/provisional labels. Start the presentation with the [three-minute judge walkthrough](docs/judges-walkthrough.md).
+
 ## 1. Start here
 
 Prerequisites: [Node.js](https://nodejs.org/) 22.12+ and [uv](https://docs.astral.sh/uv/getting-started/installation/). uv installs the Python version in `.python-version` if necessary. Run all commands from the repository root.
@@ -161,6 +165,8 @@ All business routes use `/api/v1`. Full request/response types and examples are 
 | POST | `/datasets` | Import validated observations (201) |
 | GET | `/datasets/{id}/observations?start=...&end=...` | Observations in an inclusive, timezone-aware window for chart comparison |
 | GET | `/models` | Available demo and trained model metadata |
+| GET | `/evidence` | Recorded chronological benchmark, comparisons, provenance and limitations |
+| GET | `/evidence/export` | Download the same typed evidence report as JSON |
 | POST | `/models/train` | Fit baseline using only data available by cutoff (201) |
 | GET | `/weather/snapshots?turbine_id=...` | Stored weather and provenance |
 | POST | `/weather/fetch` | Download an **unverified** Single Runs candidate (201) |
@@ -269,7 +275,13 @@ An optional watcher checks an existing successful run for newly imported eligibl
 uv run python -m wind_agent.worker --run-id run-REPLACE --interval 60
 ```
 
-It polls input changes and follows the new run ID after recomputation. It does not download weather, advance issue time, or retrain models. New daily forecasts and automated verified ingestion are Agent-owner follow-up tasks.
+It polls input changes and follows the new run ID after recomputation. It does not advance issue time or retrain models. For one bounded check, add `--once`. To acquire a candidate weather run for every turbine before checking inputs, provide an explicit UTC initialization:
+
+```sh
+uv run python -m wind_agent.worker --run-id run-REPLACE --once --fetch-run-init 2026-01-31T00:00:00Z
+```
+
+This downloads **unverified candidates**, prints a JSON cycle report and exits with a success/error status. Acquisition failures stop before refresh; partial candidate IDs are retained in the report. A successful cycle does not mean a queued forecast has finished. Historical publication evidence is never inferred, and candidates are not automatically promoted to verified. Newly eligible verified snapshots can trigger recomputation through the existing refresh rules. Scheduled new issue times and automated verified ingestion remain follow-up work.
 
 ## 8. Contracts, tests, and integration
 
@@ -291,6 +303,8 @@ This creates labelled local demo records, checks a 48-hour forecast and unchange
 Tests cover real integration boundaries: full demo flow, persistent results and CSVs, hourly coverage, invalid units/times, late or unverified weather, model cutoffs, observation latency, retries, immutable snapshots, changed-input refresh, and replay scoring. No live network is needed for tests.
 
 ### Work from the integrated main branch
+
+Check your author email before committing; see [Contributing](CONTRIBUTING.md) for identity setup and historical author aliases.
 
 The frontend, ML/agent, and data branches are consolidated on `main`. The merge keeps the operational dashboard and shared API contracts, adapts the data branch's management controls and ridge model to those contracts, packages both Python modules, and regenerates the shared schemas. Existing feature branches remain available with their history.
 
