@@ -13,6 +13,7 @@ export type Observation = Schemas['Observation'];
 export type DatasetUpload = Schemas['DatasetUpload'];
 export type TrainRequest = Schemas['TrainRequest'];
 export type WeatherSnapshot = Schemas['WeatherSnapshot'];
+export type EvidenceReport = Schemas['EvidenceReport'];
 
 async function request<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -35,9 +36,11 @@ const routes = {
   forecasts: '/api/v1/forecasts',
   backtests: '/api/v1/backtests',
   datasets: '/api/v1/datasets',
+  evidence: '/api/v1/evidence',
 } satisfies Record<string, keyof paths>;
 
 export const api = {
+  evidence: () => request<EvidenceReport>(routes.evidence.slice(7)),
   assets: () => request<EnergyAsset[]>(routes.assets.slice(7)),
   turbines: () => request<Turbine[]>(routes.turbines.slice(7)),
   models: () => request<ModelInfo[]>(routes.models.slice(7)),

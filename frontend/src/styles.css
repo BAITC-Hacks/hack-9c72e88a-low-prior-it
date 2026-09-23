@@ -21,6 +21,7 @@
   background: var(--page);
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; scroll-padding-top: 18px; }
 body { margin: 0; min-width: 320px; }
 .management-content { display: grid; gap: 16px; padding: 18px 0 0; }

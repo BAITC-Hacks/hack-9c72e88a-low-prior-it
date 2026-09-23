@@ -2,6 +2,10 @@
 
 Branch: `Agent`. Primary entry point: `agent/wind_agent/orchestrator.py`.
 
+The `analyse` stage now records descriptive mean/peak output and the largest adjacent-hour rises/drops for each turbine, with UTC timestamps and percentage-point units. Flat forecasts are identified explicitly. This analysis neither changes predictions nor adds probabilistic confidence or operational safety claims; demo/provisional status is included.
+
+The watcher supports `--once` for a bounded refresh and `--once --fetch-run-init <UTC hour>` for a candidate-acquisition cycle. It downloads each selected turbine through the existing weather API, requires unverified provenance, then checks refresh eligibility. Failed acquisition stops before refresh and reports any partial candidates; JSON distinguishes unchanged/queued from completed forecasts. Downloading never grants historical verification. The normal polling mode still follows updated run IDs. See the [judge walkthrough](judges-walkthrough.md) for commands and remaining automation gaps.
+
 ## Public boundaries
 
 ```python
