@@ -2,13 +2,13 @@ import asyncio
 from datetime import timedelta
 
 import pytest
-from wind_agent.analysis import summarize_forecast
+from wind_agent.analysis import analysis_tools, summarize_forecast
 from wind_agent.orchestrator import ForecastAgent, fingerprint
 from wind_agent.weather import DemoWeatherProvider
 from wind_backend.ml import DemoPowerCurve
-from wind_contracts.models import ForecastPoint, ForecastRequest, Turbine
+from wind_contracts.models import ForecastPoint, ForecastRequest, ForecastResult, ModelInfo, Turbine
 
-from .conftest import ISSUE
+from .conftest import ISSUE, snapshot
 
 
 def points(powers, *, turbine_id="turbine-1", leads=None):
@@ -97,3 +97,71 @@ def test_agent_emits_analysis_without_changing_predictions_or_fingerprint(horizo
         for message in summaries
     )
     assert events[-1].stage == "complete"
+
+
+@pytest.mark.parametrize("horizon", [24, 48])
+def test_quality_audit_reports_only_requested_wind_hours_without_mutation(horizon):
+    first = snapshot()
+    for index, point in enumerate(first.points):
+        point.wind_speed_ms = float(index + 1)
+    second = snapshot(identifier="archive-b", turbine_id="turbine-2")
+    request = ForecastRequest(
+        turbine_ids=["turbine-1", "turbine-2"],
+        issued_at=ISSUE,
+        horizon_hours=horizon,
+        weather_source="archive",
+    )
+    model = ModelInfo(id="weather-model", algorithm="catboost-weather-scada-v1")
+    result = ForecastResult(
+        model_id=model.id,
+        input_fingerprint="unchanged",
+        is_demo=False,
+        snapshots=[first, second],
+        points=[],
+        warnings=["Provisional timing assumption"],
+    )
+    before = result.model_dump_json()
+    weather = analysis_tools(request, result, model)["quality_audit"]["weather"]
+    assert weather[0]["forecast_wind"][0] == {
+        "lead_hours": "1-24",
+        "samples": 24,
+        "minimum": 1,
+        "mean": 12.5,
+        "maximum": 24,
+    }
+    assert weather[1]["forecast_wind"][0]["mean"] == 8
+    if horizon == 48:
+        assert weather[0]["forecast_wind"][1] == {
+            "lead_hours": "25-48",
+            "samples": 24,
+            "minimum": 25,
+            "mean": 36.5,
+            "maximum": 48,
+        }
+    else:
+        assert len(weather[0]["forecast_wind"]) == 1
+    assert weather[0]["wind_height_m"] == 100
+    assert weather[0]["wind_speed_units"] == "m/s"
+    assert weather[0]["availability_evidence"] == first.availability_evidence
+    assert weather[0]["availability_evidence_truncated"] is False
+    weather[0]["forecast_wind"][0]["mean"] = 0
+    assert result.model_dump_json() == before
+
+
+@pytest.mark.parametrize("weather_model", [True, False])
+def test_scada_warning_distinguishes_weather_catboost(weather_model):
+    predictor = DemoPowerCurve()
+    predictor.info = predictor.info.model_copy(
+        update={
+            "algorithm": "catboost-weather-scada-v1" if weather_model else "catboost-scada-v1",
+        }
+    )
+    request = ForecastRequest(turbine_ids=["turbine-1"], issued_at=ISSUE)
+    result = asyncio.run(
+        ForecastAgent(DemoWeatherProvider(), predictor).run(
+            request,
+            [Turbine(id="turbine-1", name="One")],
+            lambda _: None,
+        )
+    )
+    assert any("SCADA-only model" in warning for warning in result.warnings) is not weather_model

@@ -47,6 +47,44 @@ def analysis_tools(request, result, model):
                         last=values[-1],
                     )
                 )
+    weather = []
+    for snapshot in result.snapshots:
+        if snapshot.turbine_id not in request.turbine_ids:
+            continue
+        wind_groups = []
+        for first, last in ((1, 24), (25, 48)):
+            last = min(last, request.horizon_hours)
+            values = [
+                point.wind_speed_ms
+                for point in snapshot.points
+                if first <= (point.valid_time - request.issued_at).total_seconds() / 3600 <= last
+            ]
+            if values:
+                wind_groups.append(
+                    dict(
+                        lead_hours=f"{first}-{last}",
+                        samples=len(values),
+                        minimum=min(values),
+                        mean=round(mean(values), 6),
+                        maximum=max(values),
+                    )
+                )
+        evidence = snapshot.availability_evidence or ""
+        weather.append(
+            dict(
+                turbine_id=snapshot.turbine_id,
+                source=snapshot.source,
+                weather_model=snapshot.weather_model,
+                verification=snapshot.verification,
+                run_init=snapshot.run_init.isoformat(),
+                available_at=snapshot.available_at.isoformat() if snapshot.available_at else None,
+                wind_height_m=snapshot.wind_height_m,
+                wind_speed_units="m/s",
+                forecast_wind=wind_groups,
+                availability_evidence=evidence[:1600] or None,
+                availability_evidence_truncated=len(evidence) > 1600,
+            )
+        )
     return {
         "forecast_summary": dict(
             issued_at=request.issued_at.isoformat(),
@@ -62,16 +100,7 @@ def analysis_tools(request, result, model):
             coverage_and_bounds_checked=True,
             accuracy_measured_for_this_run=False,
             warnings=list(result.warnings),
-            weather=[
-                dict(
-                    turbine_id=s.turbine_id,
-                    source=s.source,
-                    verification=s.verification,
-                    run_init=s.run_init.isoformat(),
-                    available_at=s.available_at.isoformat() if s.available_at else None,
-                )
-                for s in result.snapshots
-            ],
+            weather=weather,
         ),
     }
 
