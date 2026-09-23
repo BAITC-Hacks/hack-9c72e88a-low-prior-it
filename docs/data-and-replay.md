@@ -80,8 +80,9 @@ observations = [hour.to_observation() for hour in hours if hour.complete]
 Run `uv run pytest tests/test_scada.py` and `uv run pytest` for focused and full
 regression checks. Test readings and weather fixtures for the API are artificial.
 The integrated data branch also includes raw SCADA and candidate weather CSVs;
-these are separate from verified API snapshots. Actual source normalization,
-interval semantics, latency, and timezone remain unconfirmed.
+these are separate from verified API snapshots. The owner confirms normalized power
+and accepts fixed UTC+6 plant time based on the data correlation. Interval semantics
+and reporting latency remain assumptions; rated capacity and hub height were not supplied.
 
 The integrated ML module includes origin-safe persistence, weather/SCADA features,
 CatBoost, and a weather ridge candidate. Keep historical weather inputs distinct
@@ -91,6 +92,10 @@ The preparation CLI supports both `dataset/turbine1.csv` (its original default)
 and the merged filenames through `--input-dir data/raw --filename-pattern
 'turbine_{number}.csv'`. Provide the timezone, timestamp position, and reporting
 latency explicitly; use `--provisional` while these assumptions await confirmation.
+For accepted fixed UTC+6 use `--timezone Etc/GMT-6`, rather than a civil timezone
+whose offset changed. The legacy `convert_scada.py` permits four samples/hour;
+the primary `prepare_dataset.py` retains only complete hours. Their output datasets
+must keep distinct preparation metadata.
 
 ## Example rolling replay request
 

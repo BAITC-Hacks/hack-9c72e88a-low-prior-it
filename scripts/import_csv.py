@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file")
     parser.add_argument("--name", required=True)
+    parser.add_argument("--provenance", default="", help="Source and preparation assumptions")
     parser.add_argument(
         "--demo",
         action="store_true",
@@ -20,7 +21,9 @@ def main():
     args = parser.parse_args()
     with open(args.file, encoding="utf-8-sig", newline="") as file:
         rows = [Observation.model_validate(row) for row in csv.DictReader(file)]
-    payload = DatasetUpload(name=args.name, is_demo=args.demo, observations=rows)
+    payload = DatasetUpload(
+        name=args.name, is_demo=args.demo, provenance=args.provenance, observations=rows
+    )
     response = httpx.post(
         f"{args.api}/api/v1/datasets", json=payload.model_dump(mode="json"), timeout=60
     )

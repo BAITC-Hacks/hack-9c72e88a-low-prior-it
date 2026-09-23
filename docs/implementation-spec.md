@@ -1,10 +1,10 @@
 # Low Prior Wind
 
-An agent-driven workspace for forecasting hourly output from **two wind turbines, 24–48 hours ahead**. `main` integrates the `frontend`, `ml-aiagent`, and `danik` branches. The local `Agent` and `backend` branches contain no additional work. Solar and hydro are outside the current scope.
+> Historical implementation brief from `danik`, retained as context. Current startup commands, API contracts, implemented features and remaining work are maintained in the root [README](../README.md). This snapshot does not override the integrated documentation.
+
+An agent-driven workspace for forecasting hourly output from **two wind turbines, 24–48 hours ahead**. This repository is the shared starting point for the `Agent`, `backend`, and `frontend` branches. Solar and hydro are outside the current scope.
 
 The skeleton runs end to end today with **clearly labelled synthetic weather**. It includes a real API, React dashboard, SQLite persistence, baseline model training, auditable weather snapshots, daily replay, CSV export, and tests. It does **not** claim a trained competition model or verified February weather coverage.
-
-The integrated dashboard also supports dataset import, actual-power overlays, model training (binned curve, persistence, weather ridge, and CatBoost), and weather snapshot management. The data branch contributes raw CSVs and compressed candidate weather archives for offline analysis; their presence does not establish historical publication provenance. See [data analysis](DATA.md) and [data/replay contracts](docs/data-and-replay.md).
 
 ## 1. Start here
 
@@ -35,7 +35,7 @@ npm run dev:web
 
 The backend owns port **8000**; Vite owns **5173** and proxies `/api` and `/health`. The agent is an importable Python module inside the API process, so it needs no third HTTP service. The frontend uses relative API URLs, without credentials or browser-to-weather calls.
 
-Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. The project owner confirmed the example turbine coordinates from the data branch; the original map links are retained. Rated capacity and hub height were not supplied in the case and remain null. Observation latency and source timestamp semantics remain unconfirmed. Copy `config/turbines.example.json` to `config/turbines.local.json` to override metadata and set `WINDFARM_TURBINES=config/turbines.local.json`.
+Configuration is optional for the demo. Copy `.env.example` to `.env` to change database/config paths. Real turbine coordinates, capacity, hub height, and source timezone are **not known yet**. Copy `config/turbines.example.json` to `config/turbines.local.json`, fill confirmed values, and set `WINDFARM_TURBINES=config/turbines.local.json`. Never invent coordinates from a nearby town.
 
 ## 2. Three people, three areas
 
@@ -83,8 +83,6 @@ Configuration is optional for the demo. Copy `.env.example` to `.env` to change 
 **Own:** `frontend/` except generated contracts, `docs/frontend.md`; update the npm lockfile when dependencies change.
 
 **Already provided:** React + TypeScript + Vite, typed API client, turbine selection, 24/48-hour controls, normalized-power chart and table, asynchronous job polling, errors, provenance, decision log, history, replay, and CSV downloads.
-
-Also integrated: canonical CSV/JSON upload, source provenance, all four model-training choices, observation overlays, candidate weather download, and immutable snapshot import. Expand **Datasets & model training** or **Weather archive** below the replay panel.
 
 **Your tasks, in order:**
 
@@ -154,7 +152,6 @@ All business routes use `/api/v1`. Full request/response types and examples are 
 | GET | `/turbines` | Configured turbine metadata |
 | GET | `/datasets` | Imported dataset metadata |
 | POST | `/datasets` | Import validated observations (201) |
-| GET | `/datasets/{id}/observations?start=...&end=...` | Observations in an inclusive, timezone-aware window for chart comparison |
 | GET | `/models` | Available demo and trained model metadata |
 | POST | `/models/train` | Fit baseline using only data available by cutoff (201) |
 | GET | `/weather/snapshots?turbine_id=...` | Stored weather and provenance |
@@ -226,19 +223,6 @@ turbine_id,valid_time,available_at,wind_speed_ms,temperature_c,power_normalized
 
 Native source column names must be mapped explicitly by the backend owner. `available_at` must reflect known observation latency; the example's zero latency is artificial. Do not upload private/raw datasets to Git.
 
-The already tracked files from `danik` use `data/raw/turbine_1.csv` and `turbine_2.csv`. The ML preparation tool accepts them with `--input-dir data/raw --filename-pattern 'turbine_{number}.csv'`; pass `--output`, `--timezone`, `--timestamp-position`, and `--latency-minutes` explicitly. Use `--provisional` while timestamp position and latency remain assumptions. Fixed UTC+6 plant time was inferred from the data and accepted by the project owner; it is not official case metadata. Use `--timezone Etc/GMT-6` for that fixed offset. API timestamps remain UTC interval ends. The 07:00 UTC issue schedule (12:00 Astana) is a team choice for the 24–48-hour requirement.
-
-Use `uv run python scripts/train_evaluate.py --help` for the CatBoost chronological training/evaluation CLI. `windagent/` contains the data branch's exploratory pandas utilities; `agent/wind_agent/` owns the API's strict orchestration and canonical SCADA preparation. Exploratory tables are not automatically imported as verified weather snapshots.
-
-Additional tools from `danik`, adapted to the integrated contracts:
-
-- `uv run python scripts/data_report.py` reproduces local SCADA coverage and timezone-correlation evidence in `artifacts/data-report.json`.
-- `uv run python scripts/validate_models.py --data PATH/observations.csv` evaluates persistence before February 2026; `--snapshots PATH/snapshots.json` enables weather baselines using verified snapshots. The report records missing weather and actuals. CatBoost evaluation remains in `train_evaluate.py`.
-- `uv run python scripts/import_weather_archive.py` imports bundled ECMWF candidates into the running API as **unverified** snapshots. The local import time does not establish historical availability.
-- `scripts/convert_scada.py --latency-minutes N` preserves the earlier exploratory conversion: fixed UTC+6, assumed interval-start readings and at least four samples/hour. Prefer `prepare_dataset.py` for the strict complete-hour dataset; do not mix the two policies in a benchmark.
-
-See the [demo walkthrough](docs/demo.md). The [initial implementation brief](docs/implementation-spec.md) and [legacy data notes](docs/legacy-data-notes.md) are retained for historical context; current commands and contracts are documented here.
-
 ## 7. Weather archive and agent workflow
 
 The adapter is implemented but has only been tested against mocked provider responses. Real coordinates and genuine archive coverage must be verified by the Agent owner.
@@ -278,19 +262,25 @@ This creates labelled local demo records, checks a 48-hour forecast and unchange
 
 Tests cover real integration boundaries: full demo flow, persistent results and CSVs, hourly coverage, invalid units/times, late or unverified weather, model cutoffs, observation latency, retries, immutable snapshots, changed-input refresh, and replay scoring. No live network is needed for tests.
 
-### Work from the integrated main branch
+### Put the common foundation into all three branches
 
-The frontend, ML/agent, and data branches are consolidated on `main`. The merge keeps the operational dashboard and shared API contracts, adapts the data branch's management controls and ridge model to those contracts, packages both Python modules, and regenerates the shared schemas. Existing feature branches remain available with their history.
-
-Start new work from the consolidated branch:
+The three branches originally point at the same initial commit. First review and commit this skeleton on `main`, then each teammate brings that foundation into their own branch. Example commands for the person integrating the foundation:
 
 ```sh
 git switch main
-git pull --ff-only origin main
-git switch -c your-next-feature
+git add .
+git commit -m "Add shared wind forecasting skeleton"
+git push origin main
 ```
 
-To continue an existing feature branch, commit local work first, fetch, switch to that branch, and merge `origin/main` before making further changes.
+Each teammate then runs the following, replacing `Agent` with their exact branch name (`Agent`, `backend`, or `frontend`):
+
+```sh
+git fetch origin
+git switch Agent
+git merge origin/main
+git push -u origin Agent
+```
 
 For normal integration, open a PR to `main`, include route/contract changes and test evidence, merge after checks, then update the other branches from `main`. Integrate in small working slices: **contracts → weather/model implementation → dashboard features → complete replay**. Everyone can work immediately using the demo provider/model; no teammate has to wait for the final ML model.
 

@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import logging
 import math
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
@@ -108,6 +109,7 @@ async def download_single_run(
                     )
                 return response.json()
             except (httpx.TransportError, TransientWeatherError) as exc:
+                logging.getLogger(__name__).warning("Weather attempt %s failed: %s", attempt + 1, exc)
                 if attempt == 2:
                     raise TransientWeatherError("Open-Meteo unavailable after 3 attempts") from exc
                 await asyncio.sleep(0.5 * 2**attempt)

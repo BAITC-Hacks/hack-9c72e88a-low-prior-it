@@ -21,3 +21,14 @@ jobs:
       - run: npm run contracts
       - run: git diff --exit-code -- contracts/openapi.json frontend/src/generated/api.ts
       - run: npm run check
+      - name: Exercise HTTP forecast and February replay
+        run: |
+          export WINDFARM_DB=artifacts/ci-smoke.sqlite3
+          uv run uvicorn wind_backend.main:app --host 127.0.0.1 --port 8000 > /tmp/wind-api.log 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid"; cat /tmp/wind-api.log' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health; then break; fi
+            sleep 1
+          done
+          uv run python scripts/smoke_demo.py --api http://127.0.0.1:8000
