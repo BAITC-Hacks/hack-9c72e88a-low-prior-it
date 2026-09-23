@@ -1,131 +1,94 @@
-import { useEffect, useState } from 'react';
-import { api, type BacktestRun, type ForecastRequest, type ForecastRun, type ModelInfo, type Turbine } from './api';
+import { useState } from 'react';
 import ForecastChart from './ForecastChart';
+import AgentPanel from './components/AgentPanel';
+import ForecastTable from './components/ForecastTable';
+import Icon, { type IconName } from './components/Icon';
+import ReplayPanel from './components/ReplayPanel';
+import StationMap from './components/StationMap';
+import WeatherPanel from './components/WeatherPanel';
+import { isActive, utcTime } from './format';
+import useDashboard from './useDashboard';
 
-const active = (status?: string) => status === 'queued' || status === 'running';
-const utcTime = (value: string) => new Date(value).toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' });
+const navigation: { id: string; title: string; icon: IconName }[] = [
+  { id: 'forecast', title: 'Forecast', icon: 'chart' },
+  { id: 'stations', title: 'Turbines', icon: 'map' },
+  { id: 'activity', title: 'Agent', icon: 'activity' },
+  { id: 'hourly', title: 'Hourly data', icon: 'grid' },
+  { id: 'replay', title: 'Backtesting', icon: 'bars' },
+];
 
 export default function App() {
-  const [turbines, setTurbines] = useState<Turbine[]>([]);
-  const [models, setModels] = useState<ModelInfo[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [issue, setIssue] = useState('2026-01-31T00:00');
-  const [horizon, setHorizon] = useState<24 | 48>(48);
-  const [source, setSource] = useState<'demo' | 'archive'>('demo');
-  const [model, setModel] = useState('demo-power-curve');
-  const [run, setRun] = useState<ForecastRun | null>(null);
-  const [backtest, setBacktest] = useState<BacktestRun | null>(null);
-  const [history, setHistory] = useState<ForecastRun[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const [connected, setConnected] = useState(false);
+  const d = useDashboard();
+  const [section, setSection] = useState('forecast');
+  const points = d.run?.result?.points || [];
+  const pointKeys = new Set(points.map(p => `${p.turbine_id}:${new Date(p.valid_time).getTime()}`));
+  const wind = (d.run?.result?.snapshots || []).flatMap(s => s.points.filter(p => pointKeys.has(`${s.turbine_id}:${new Date(p.valid_time).getTime()}`)));
+  const mean = points.length ? points.reduce((sum, p) => sum + p.power_normalized, 0) / points.length : null;
+  const peak = points.length ? Math.max(...points.map(p => p.power_normalized)) : null;
+  const meanWind = wind.length ? wind.reduce((sum, p) => sum + p.wind_speed_ms, 0) / wind.length : null;
+  const covered = new Set(points.map(p => p.turbine_id)).size;
+  const forecastHorizon = d.run?.request.horizon_hours || d.horizon;
+  const forecastModel = d.models.find(m => m.id === d.run?.request.model_id);
+  const demo = d.run?.result?.is_demo ?? (d.run ? d.run.request.weather_source === 'demo' || forecastModel?.is_demo : d.source === 'demo' || d.models.find(m => m.id === d.model)?.is_demo);
+  const history = d.run && !d.history.some(r => r.id === d.run?.id) ? [d.run, ...d.history] : d.history;
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([api.turbines(), api.models(), api.forecasts()]).then(([t, m, f]) => {
-      if (cancelled) return;
-      setTurbines(t); setSelected(t.map(item => item.id)); setModels(m); setHistory(f);
-      setRun(f[0] || null); setConnected(true);
-    }).catch(err => { if (!cancelled) setError(`Cannot connect to the API. ${err.message}`); });
-    return () => { cancelled = true; };
-  }, []);
+  return <div className="app-shell">
+    <a className="skip-link" href="#main">Skip to dashboard</a>
+    <aside className="navigation-rail" aria-label="Workspace navigation">
+      <a className="rail-brand" href="#main" aria-label="Low Prior wind operations"><Icon name="turbine" size={28} /></a>
+      <nav>{navigation.map(item => <a key={item.id} href={`#${item.id}`} className={section === item.id ? 'rail-link selected' : 'rail-link'} title={item.title} aria-label={item.title} aria-current={section === item.id ? 'location' : undefined} onClick={() => setSection(item.id)}><Icon name={item.icon} size={20} /><span className="rail-label">{item.title}</span></a>)}</nav>
+      <div className="rail-bottom"><span className="rail-monogram">LP</span><span>v0.1</span></div>
+    </aside>
 
-  useEffect(() => {
-    if (!run || !active(run.status)) return;
-    let cancelled = false;
-    const id = window.setInterval(() => {
-      api.forecast(run.id).then(next => { if (!cancelled) setRun(next); })
-        .catch(err => { if (!cancelled) { setError(err.message); window.clearInterval(id); } });
-    }, 800);
-    return () => { cancelled = true; window.clearInterval(id); };
-  }, [run?.id, run?.status]);
+    <div className="workspace">
+      <header className="topbar"><div className="topbar-title"><span className="wordmark">LOW PRIOR<span className="wordmark-divider" /></span><div><h1>Wind operations</h1><span className="topbar-subtitle">Generation forecasting & monitoring</span></div></div><div className="topbar-tools"><span className="timezone"><Icon name="clock" size={13} />UTC</span><span className={`connection ${d.connected ? 'connected' : d.loading ? '' : 'disconnected'}`}><span className="status-dot" />{d.loading ? 'Connecting' : d.connected ? 'Connected' : 'Disconnected'}</span><button className="icon-button" onClick={() => void d.reloadWorkspace()} disabled={d.busy || d.loading} aria-label="Refresh workspace data" title="Refresh workspace data"><Icon name="refresh" className={d.busy ? 'spinning' : ''} /></button></div></header>
 
-  useEffect(() => {
-    if (!backtest || !active(backtest.status)) return;
-    let cancelled = false;
-    const id = window.setInterval(() => {
-      api.backtest(backtest.id).then(next => { if (!cancelled) setBacktest(next); })
-        .catch(err => { if (!cancelled) { setError(err.message); window.clearInterval(id); } });
-    }, 1000);
-    return () => { cancelled = true; window.clearInterval(id); };
-  }, [backtest?.id, backtest?.status]);
+      <main id="main" className="dashboard">
+        <div className="workspace-heading"><div className="section-context"><span className="context-mark" /><h2>Forecast workspace</h2><span className="badge">Wind energy</span></div><label className="history-control"><Icon name="clock" size={13} /><span className="sr-only">Saved forecast</span><select aria-label="Saved forecast" value={d.run?.id || ''} disabled={!history.length || d.busy || isActive(d.run?.status)} onChange={event => { const next = history.find(r => r.id === event.target.value); if (next) d.selectRun(next); }}>
+          {!history.length && <option value="">No saved forecasts</option>}{history.map(run => <option key={run.id} value={run.id}>{utcTime(run.request.issued_at)} UTC · {run.request.horizon_hours}h · {run.status} · {run.id.slice(-5)}</option>)}
+        </select></label></div>
 
-  async function act(task: () => Promise<void>) {
-    setBusy(true); setError(''); setNotice('');
-    try { await task(); } catch (err) { setError(err instanceof Error ? err.message : 'Request failed'); }
-    finally { setBusy(false); }
-  }
-
-  function request(): ForecastRequest {
-    if (!issue) throw new Error('Choose a forecast issue time.');
-    if (!selected.length) throw new Error('Select at least one turbine.');
-    return { turbine_ids: selected, issued_at: `${issue}:00Z`, horizon_hours: horizon, weather_source: source, model_id: model };
-  }
-
-  const points = run?.result?.points || [];
-  const average = points.length ? points.reduce((sum, p) => sum + p.power_normalized, 0) / points.length : null;
-  const disabled = busy || !connected || active(run?.status);
-
-  return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="Low Prior home"><span className="brand-icon">↗</span><span>LOW PRIOR<span className="brand-sub">ENERGY INTELLIGENCE</span></span></a>
-        <div className="workspace-label">WORKSPACE / 01</div>
-        <nav><a className="nav-active" href="#forecast">◉ <span>Wind forecast</span></a><a href="#replay">↻ <span>Historical replay</span></a><a href="#activity">≡ <span>Agent activity</span></a></nav>
-        <div className="sidebar-foot"><span className="dot" /> Wind first.<br /><small>Two turbines. One shared forecast workflow.</small></div>
-      </aside>
-
-      <main>
-        <header><span className="eyebrow">OPERATIONS / WIND</span><span className={`connection ${connected ? 'online' : ''}`}><span className="dot" />{connected ? 'API connected' : 'API disconnected'}</span></header>
-        <div className="page-title"><div><h1>See the next 48 hours.</h1><p>Forecast turbine output. Inspect the inputs. Follow every decision.</p></div><span className="version">TEAM STARTER · v0.1</span></div>
-        <div className="demo-banner"><strong>Development workspace</strong><span>Demo mode uses synthetic weather and an illustrative model. Real replay requires verified archives and a trained model.</span></div>
-        {error && <div className="alert error" role="alert">{error}</div>}
-        {notice && <div className="alert" role="status">{notice}</div>}
-
-        <section className="turbine-grid" aria-label="Select turbines">
-          {turbines.map((t, index) => <label className={`turbine-card ${selected.includes(t.id) ? 'selected' : ''}`} key={t.id}>
-            <div className="turbine-top"><span className="eyebrow">ASSET / 0{index + 1}</span><input type="checkbox" checked={selected.includes(t.id)} onChange={() => setSelected(ids => ids.includes(t.id) ? ids.filter(id => id !== t.id) : [...ids, t.id])} /></div>
-            <h2>{t.name}<span className="turbine-symbol" aria-hidden="true">✳</span></h2>
-            <p>{t.latitude === null ? 'Coordinates awaiting confirmation' : `${t.latitude?.toFixed(4)}°, ${t.longitude?.toFixed(4)}°`}</p>
-            <span className="tag">{t.rated_power_kw == null ? 'Capacity not configured' : `${t.rated_power_kw} kW rated`}</span>
-          </label>)}
-        </section>
-
-        <section className="panel" id="forecast">
-          <div className="section-heading"><div><span className="eyebrow">01 / FORECAST</span><h2>Hourly production outlook</h2></div><span className="tag">Normalized power · %</span></div>
-          <form className="controls" onSubmit={event => { event.preventDefault(); void act(async () => { setRun(await api.createForecast(request())); }); }}>
-            <label>Issue time · UTC<input aria-label="Issue time UTC" type="datetime-local" step="3600" value={issue} onChange={event => setIssue(event.target.value)} required /></label>
-            <label>Horizon<select value={horizon} onChange={event => setHorizon(Number(event.target.value) as 24 | 48)}><option value={24}>24 hours</option><option value={48}>48 hours</option></select></label>
-            <label>Weather<select value={source} onChange={event => setSource(event.target.value as 'demo' | 'archive')}><option value="demo">Synthetic demo</option><option value="archive">Verified archive</option></select></label>
-            <label>Power model<select value={model} onChange={event => setModel(event.target.value)}>{models.map(m => <option key={m.id} value={m.id}>{m.id === 'demo-power-curve' ? 'Demo power curve' : `${m.is_demo ? 'Demo · ' : ''}${m.algorithm} · ${m.id.slice(-6)}`}</option>)}</select></label>
-            <button className="primary" disabled={disabled || !selected.length} type="submit">{active(run?.status) ? 'Running…' : 'Run forecast ↗'}</button>
+        <section className="panel forecast-controls" aria-label="Forecast configuration">
+          <form onSubmit={event => { event.preventDefault(); void d.submitForecast(); }}>
+            <label className="control-field issue-field"><span><Icon name="calendar" size={13} />Issue time <small>UTC</small></span><input type="datetime-local" aria-label="Forecast issue time UTC" step="3600" value={d.issue} onChange={event => d.setIssue(event.target.value)} required disabled={d.disabled} /></label>
+            <fieldset className="horizon-control"><legend>Forecast horizon</legend><div className="segmented" aria-label="Forecast horizon">{([24, 48] as const).map(hours => <button key={hours} type="button" aria-pressed={d.horizon === hours} className={d.horizon === hours ? 'active' : ''} disabled={d.disabled} onClick={() => d.setHorizon(hours)}>{hours}h</button>)}</div></fieldset>
+            <label className="control-field"><span>Weather source</span><select value={d.source} onChange={event => d.setSource(event.target.value as 'demo' | 'archive')} disabled={d.disabled}><option value="demo">Synthetic demo</option><option value="archive">Verified archive</option></select></label>
+            <label className="control-field model-field"><span>Prediction model</span><select value={d.model} onChange={event => d.setModel(event.target.value)} disabled={d.disabled}>{!d.models.length && <option value="demo-power-curve">Demo power curve</option>}{d.models.map(model => <option key={model.id} value={model.id}>{model.id === 'demo-power-curve' ? 'Demo power curve' : `${model.is_demo ? 'Demo · ' : ''}${model.algorithm} · ${model.id.slice(-6)}`}</option>)}</select></label>
+            <button className="button primary run-button" type="submit" disabled={d.disabled || !d.selected.length}><Icon name={isActive(d.run?.status) ? 'refresh' : 'play'} size={14} className={isActive(d.run?.status) ? 'spinning' : ''} />{isActive(d.run?.status) ? 'Forecasting…' : 'Run forecast'}</button>
           </form>
-          {run ? <>
-            <div className="stats"><div><span>Run status</span><strong>{run.status}</strong></div><div><span>Mean across selected turbines</span><strong>{average === null ? '—' : `${(average * 100).toFixed(1)}%`}</strong></div><div><span>Hourly predictions</span><strong>{points.length || '—'}</strong></div><div><span>Issue time · UTC</span><strong className="small-value">{utcTime(run.request.issued_at)}</strong></div></div>
-            {run.error && <div className="alert error" role="alert">{run.error}</div>}
-            {run.result ? <><div className="result-label"><span className={`tag ${run.result.is_demo ? 'amber' : ''}`}>{run.result.is_demo ? 'DEMO RESULT' : 'ARCHIVE RESULT'}</span><span>{run.id}</span></div><ForecastChart run={run} turbines={turbines} />
-              <details><summary>Input provenance & limitations</summary><ul>{run.result.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>{run.result.snapshots.map(snapshot => <p key={snapshot.id}><strong>{snapshot.turbine_id}</strong> · {snapshot.weather_model} · {snapshot.verification}<br />Run: {utcTime(snapshot.run_init)} UTC · Available: {snapshot.available_at ? `${utcTime(snapshot.available_at)} UTC` : 'unverified'}</p>)}</details>
-              <div className="actions"><a className="button" href={`/api/v1/forecasts/${run.id}/export`}>Download hourly CSV ↓</a><button disabled={busy} onClick={() => void act(async () => { const response = await api.refresh(run.id); setRun(response.run); setNotice(response.changed ? 'Inputs changed. A new forecast was queued.' : 'Inputs are unchanged. The existing forecast remains current.'); })}>Check for updated inputs ↻</button></div>
-              <details><summary>View hourly values</summary><div className="table-scroll"><table><thead><tr><th>UTC time</th><th>Turbine</th><th>Lead</th><th>Normalized power</th></tr></thead><tbody>{points.map(p => <tr key={`${p.turbine_id}-${p.valid_time}`}><td>{utcTime(p.valid_time)}</td><td>{p.turbine_id}</td><td>+{p.lead_hours}h</td><td>{(p.power_normalized * 100).toFixed(2)}%</td></tr>)}</tbody></table></div></details>
-            </> : active(run.status) && <div className="empty" role="status">The agent is preparing weather and checking the forecast.</div>}
-          </> : <div className="empty"><span>↗</span><h3>Your first forecast starts here.</h3><p>Select your turbines and run the 48-hour demo.</p></div>}
+          <div className="asset-controls"><span className="field-label">Forecast assets</span><div className="asset-chips">{d.turbines.map(t => <button key={t.id} type="button" className={`asset-chip ${d.selected.includes(t.id) ? 'selected' : ''}`} aria-pressed={d.selected.includes(t.id)} disabled={d.disabled} onClick={() => d.toggleTurbine(t.id)}><Icon name="turbine" size={14} />{t.name}<Icon name={d.selected.includes(t.id) ? 'check' : 'close'} size={12} /></button>)}{!d.turbines.length && <span className="muted small">{d.loading ? 'Loading turbines…' : 'Station registry unavailable'}</span>}</div><span className="asset-count">{d.selected.length} selected</span></div>
         </section>
 
-        <div className="bottom-grid">
-          <section className="panel" id="activity"><div className="section-heading"><div><span className="eyebrow">02 / AGENT</span><h2>Decision log</h2></div><span className="tag">Policy workflow</span></div>
-            <ol className="event-list">{run?.events?.map((event, i) => <li key={i}><span className={`event-dot ${event.stage === 'failed' ? 'failed' : ''}`} /><div><strong>{event.stage}</strong><p>{event.message}</p><time>{utcTime(event.at)} UTC</time></div></li>)}</ol>{!run?.events?.length && <p className="muted">Weather selection, retries and quality checks appear here after a run.</p>}
+        {demo && <div className="notice warning"><Icon name="warning" size={15} /><span><strong>Demo data.</strong> Synthetic weather and/or a demonstration model. These results are not operational estimates.</span><span className="notice-end">Development workspace</span></div>}
+        {d.error && <div className="notice danger" role="alert"><Icon name="warning" /><span>{d.error}</span><button className="icon-button" onClick={() => d.setError('')} aria-label="Dismiss error"><Icon name="close" size={14} /></button></div>}
+        {d.notice && <div className="notice info" role="status"><Icon name="info" /><span>{d.notice}</span><button className="icon-button" onClick={() => d.setNotice('')} aria-label="Dismiss notification"><Icon name="close" size={14} /></button></div>}
+
+        <section className="kpi-grid" aria-label="Forecast key indicators">
+          <article className="kpi-card"><div><span>Mean normalized output</span><Icon name="chart" /></div><strong>{mean == null ? '—' : (mean * 100).toFixed(1)}<small>%</small></strong><p>Across forecast turbines & hours</p></article>
+          <article className="kpi-card"><div><span>Peak turbine output</span><Icon name="bars" /></div><strong>{peak == null ? '—' : (peak * 100).toFixed(1)}<small>%</small></strong><p>Highest individual hourly prediction</p></article>
+          <article className="kpi-card"><div><span>Mean forecast wind</span><Icon name="wind" /></div><strong>{meanWind == null ? '—' : meanWind.toFixed(1)}<small>m/s</small></strong><p>Weather inputs over the forecast</p></article>
+          <article className="kpi-card"><div><span>Forecast coverage</span><Icon name="turbine" /></div><strong>{points.length ? covered : '—'}<small>/ {d.run?.request.turbine_ids.length ?? d.selected.length} turbines</small></strong><p>{points.length ? `${points.length} hourly predictions · ${forecastHorizon}h horizon` : 'Waiting for a completed run'}</p></article>
+        </section>
+
+        <div className="forecast-grid">
+          <section className="panel power-panel" id="forecast" aria-labelledby="forecast-title">
+            <div className="panel-heading"><div><h2 id="forecast-title"><span className="context-mark" />{forecastHorizon}-hour power forecast</h2><p className="panel-subtitle">{d.run ? `Issued ${utcTime(d.run.request.issued_at)} UTC · Hourly resolution` : 'Hourly normalized generation for selected turbines'}</p></div><div className="panel-actions"><span className={`badge ${d.run?.status === 'failed' ? 'danger' : d.run?.status === 'succeeded' ? 'accent' : ''}`}><span className="status-dot" />{d.run?.status === 'succeeded' ? 'Complete' : d.run?.status || 'Awaiting run'}</span>{d.run?.status === 'succeeded' && <button className="icon-button" title="Check for updated forecast inputs" aria-label="Check for updated forecast inputs" disabled={d.disabled} onClick={() => void d.refreshForecast()}><Icon name="refresh" size={14} /></button>}</div></div>
+            {d.dirty && <div className="pending-inputs"><Icon name="info" size={13} />Controls changed. Run a new forecast to update the chart.</div>}
+            {d.run?.error && <div className="notice danger" role="alert"><Icon name="warning" /><span>{d.run.error}</span></div>}
+            <ForecastChart key={d.run?.id || 'empty'} run={d.run} turbines={d.turbines} horizon={d.horizon} activeLead={d.activeLead} onLeadChange={d.setActiveLead} />
           </section>
-          <section className="panel" id="replay"><div className="section-heading"><div><span className="eyebrow">03 / REPLAY</span><h2>February 2026</h2></div></div><p className="muted">Issue one forecast per day, January 31–February 28 at 00:00 UTC. Score target hours in February. The competition timezone still needs confirmation.</p>
-            <button className="primary" disabled={disabled || active(backtest?.status) || !selected.length} onClick={() => void act(async () => {
-              setBacktest(await api.createBacktest({ ...request(), issued_at: '2026-01-31T00:00:00Z', last_issued_at: '2026-02-28T00:00:00Z', evaluation_start: '2026-02-01T00:00:00Z', evaluation_end: '2026-03-01T00:00:00Z', actuals_dataset_id: null }));
-            })}>{active(backtest?.status) ? 'Replaying…' : 'Run daily replay ↻'}</button>
-            {backtest && <div className="replay-result"><strong>{backtest.status}</strong><p>{backtest.forecast_ids?.length ?? 0} daily runs · {backtest.scored_points} scored predictions</p>{backtest.error && <p className="error-text" role="alert">{backtest.error}</p>}{backtest.status === 'succeeded' && <><p className="muted">{backtest.unscored_points} predictions have no actuals attached. Accuracy metrics are unavailable until actual observations are supplied through the API.</p><a href={`/api/v1/backtests/${backtest.id}/export`}>Download February CSV ↓</a></>}</div>}
-          </section>
+          <WeatherPanel run={d.run} turbines={d.turbines} activeLead={d.activeLead} />
         </div>
-        <section className="panel"><div className="section-heading"><h2>Recent runs</h2><button disabled={busy} onClick={() => void act(async () => { const [runs, updatedModels] = await Promise.all([api.forecasts(), api.models()]); setHistory(runs); setModels(updatedModels); })}>Refresh list</button></div>{history.length ? <div className="history">{history.map(item => <button key={item.id} onClick={() => setRun(item)}><strong>{utcTime(item.request.issued_at)} UTC</strong><span>{item.request.weather_source} · {item.request.horizon_hours}h · {item.status}</span></button>)}</div> : <p className="muted">Saved runs will appear here. Refresh after creating a forecast.</p>}</section>
-        <footer>LOW PRIOR-IT <span>Wind forecasting workspace · All displayed times are UTC</span></footer>
+
+        <div className="context-grid"><StationMap turbines={d.turbines} selected={d.selected} onToggle={d.toggleTurbine} disabled={d.disabled} /><AgentPanel run={d.run} /></div>
+
+        <ForecastTable key={d.run?.id || 'empty-table'} run={d.run} turbines={d.turbines} activeLead={d.activeLead} onLeadChange={d.setActiveLead} />
+
+        <ReplayPanel backtest={d.backtest} datasets={d.datasets} models={d.models} turbines={d.turbines} disabled={d.disabled || !d.selected.length} onReplay={dataset => void d.startReplay(dataset)} />
+
+        <details className="panel provenance-panel"><summary><span><Icon name="shield" />Forecast provenance & model details</span><Icon name="chevron" size={14} /></summary><div className="provenance-content"><div className="provenance-model"><span className="field-label">Prediction model</span><strong>{forecastModel?.algorithm || 'No model result'}</strong><span>Training cutoff: {forecastModel?.trained_through ? `${utcTime(forecastModel.trained_through)} UTC` : 'Not applicable / untrained demo'}</span><span>Uncertainty: not calibrated</span>{d.run && <code>{d.run.id}</code>}</div><div className="provenance-weather">{d.run?.result?.snapshots.map(snapshot => <div key={snapshot.id}><strong>{d.turbines.find(t => t.id === snapshot.turbine_id)?.name || snapshot.turbine_id}</strong><span>{snapshot.weather_model} · {snapshot.verification}</span><span>Initialized {utcTime(snapshot.run_init)} UTC</span><span>Available {snapshot.available_at ? `${utcTime(snapshot.available_at)} UTC` : 'unverified'}</span></div>)}</div>{d.run?.result?.warnings.length ? <ul>{d.run.result.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul> : <p className="muted">Model and weather lineage appear with the forecast result.</p>}</div></details>
+        <footer className="workspace-footer"><span><Icon name="turbine" size={13} />LOW PRIOR-IT <span className="footer-divider">/</span> Wind forecasting</span><span>UTC time · Normalized power · Hourly resolution</span></footer>
       </main>
     </div>
-  );
+  </div>;
 }
