@@ -292,6 +292,8 @@ Tests cover real integration boundaries: full demo flow, persistent results and 
 
 ### Work from the integrated main branch
 
+Check your author email before committing; see [Contributing](CONTRIBUTING.md) for identity setup and historical author aliases.
+
 The frontend, ML/agent, and data branches are consolidated on `main`. The merge keeps the operational dashboard and shared API contracts, adapts the data branch's management controls and ridge model to those contracts, packages both Python modules, and regenerates the shared schemas. Existing feature branches remain available with their history.
 
 Start new work from the consolidated branch:
