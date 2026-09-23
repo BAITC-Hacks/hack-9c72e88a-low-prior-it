@@ -71,7 +71,9 @@ class ArchiveWeatherProvider:
                 f"{turbine.id}: no verified archive available by {request.issued_at.isoformat()} "
                 "covers every requested hour. Import a verified snapshot; demo fallback is disabled."
             )
-        return max(candidates, key=lambda s: (s.run_init, s.available_at, s.retrieved_at))
+        # Match SnapshotIndex so equal-timestamp archives select the same input
+        # during training and inference, independently of repository ordering.
+        return max(candidates, key=lambda s: (s.run_init, s.available_at, s.retrieved_at, s.id))
 
 
 async def download_single_run(

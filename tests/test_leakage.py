@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from wind_agent.interfaces import TransientWeatherError, WeatherUnavailable
 from wind_agent.orchestrator import ForecastAgent
 from wind_agent.weather import ArchiveWeatherProvider
+from wind_backend.catboost_model import SnapshotIndex
 from wind_backend.ml import DemoPowerCurve
 from wind_contracts.models import ForecastRequest, Turbine, WeatherSnapshot
 
@@ -33,6 +34,36 @@ def test_verified_weather_requires_publication_evidence():
         snapshot(availability_evidence="")
     with pytest.raises(ValidationError):
         snapshot(available_at=ISSUE - timedelta(days=1))
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_archive_ties_match_training_index_without_weakening_eligibility(reverse):
+    first = snapshot("archive-a")
+    selected = snapshot("archive-z")
+    selected.points[0].wind_speed_ms = 12
+    snapshots = [
+        first,
+        selected,
+        snapshot("archive-zz-late", available_at=ISSUE + timedelta(seconds=1)),
+        snapshot(
+            "archive-zz-future",
+            run_init=ISSUE + timedelta(hours=1),
+            available_at=ISSUE + timedelta(hours=2),
+        ),
+        snapshot("archive-zz-unverified", verification="unverified"),
+        snapshot("archive-zz-missing", points=first.points[:4] + first.points[5:]),
+        snapshot("archive-zz-wrong", turbine_id="turbine-2"),
+    ]
+    if reverse:
+        snapshots.reverse()
+    before = [item.model_dump_json() for item in snapshots]
+    turbine = Turbine(id="turbine-1", name="One")
+    request = ForecastRequest(turbine_ids=[turbine.id], issued_at=ISSUE, weather_source="archive")
+    training = SnapshotIndex(snapshots).select(turbine, request)
+    runtime = asyncio.run(ArchiveWeatherProvider(lambda: snapshots).fetch(turbine, request))
+    assert training.id == runtime.id == selected.id
+    assert runtime.points[0].wind_speed_ms == 12
+    assert [item.model_dump_json() for item in snapshots] == before
 
 
 def test_agent_does_not_trust_an_adapter_to_enforce_cutoff():

@@ -39,6 +39,18 @@ def select_winner(results):
     ]
     if any(sorted(coverage) != sorted(coverages[0]) for coverage in coverages):
         raise ValueError("Candidates must have identical fold and target coverage")
+    fingerprints = [
+        [
+            (fold["name"], fold["comparison"]["catboost"].get("scored_pairs_sha256"))
+            for fold in result["folds"]
+        ]
+        for result in results
+    ]
+    if any(digest is not None for entries in fingerprints for _, digest in entries):
+        if any(digest is None for entries in fingerprints for _, digest in entries) or any(
+            sorted(entries) != sorted(fingerprints[0]) for entries in fingerprints
+        ):
+            raise ValueError("Candidates must score identical issue/target pairs")
     for result in results:
         result["pooled"] = aggregate_metrics(
             [m for fold in result["folds"] for m in fold["comparison"]["catboost"]["metrics"]]

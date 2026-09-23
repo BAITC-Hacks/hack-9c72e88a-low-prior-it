@@ -98,3 +98,33 @@ def test_refit_keeps_selected_parameters_and_rejects_historical_cutoff():
     selection["selected"] = candidate | {"depth": 8}
     with pytest.raises(ValueError, match="frozen"):
         refit_request(selection, "dataset-fixture", "2026-01-31T00:00:00Z")
+
+
+def test_selection_rejects_different_pairs_despite_matching_cell_counts():
+    candidate = dict(
+        candidate=dict(name="one"),
+        folds=[
+            dict(
+                name="november",
+                comparison={
+                    "catboost": dict(
+                        metrics=[
+                            dict(
+                                turbine_id="turbine-1",
+                                horizon="1-24",
+                                samples=48,
+                                mae=0.2,
+                                rmse=0.3,
+                            )
+                        ],
+                        scored_pairs_sha256="a" * 64,
+                    )
+                },
+            )
+        ],
+    )
+    other = deepcopy(candidate)
+    other["candidate"]["name"] = "two"
+    other["folds"][0]["comparison"]["catboost"]["scored_pairs_sha256"] = "b" * 64
+    with pytest.raises(ValueError, match="identical issue/target pairs"):
+        select_winner([candidate, other])

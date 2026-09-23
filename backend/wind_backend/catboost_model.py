@@ -3,6 +3,8 @@
 import hashlib
 import json
 import math
+from bisect import bisect_right
+from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
 
@@ -21,20 +23,55 @@ from wind_backend.features import (
 from wind_backend.ml import validate_model_origin
 
 
-def select_snapshot(snapshots, turbine, request):
-    """Use the same deterministic provenance and coverage rules as the agent."""
-    candidates = []
-    for snapshot in snapshots:
-        try:
-            ForecastAgent.validate_snapshot(snapshot, turbine, request)
-        except ValueError:
-            continue
-        candidates.append(snapshot)
-    if not candidates:
+class SnapshotIndex:
+    """Index archives once by turbine/run, retaining the agent's strict validator.
+
+    Binary search excludes future runs. Prefix coverage bounds stop a backwards
+    search as soon as none of the earlier runs could cover the final target.
+    """
+
+    def __init__(self, snapshots):
+        groups = defaultdict(list)
+        for snapshot in snapshots:
+            groups[snapshot.turbine_id].append(snapshot)
+        self.groups, self.runs, self.coverage_ends = {}, {}, {}
+        for turbine_id, group in groups.items():
+            group.sort(
+                key=lambda s: (s.run_init, s.available_at or s.run_init, s.retrieved_at, s.id)
+            )
+            self.groups[turbine_id] = group
+            self.runs[turbine_id] = [s.run_init for s in group]
+            ends = []
+            for snapshot in group:
+                ends.append(
+                    max(snapshot.points[-1].valid_time, ends[-1])
+                    if ends
+                    else snapshot.points[-1].valid_time
+                )
+            self.coverage_ends[turbine_id] = ends
+
+    def select(self, turbine, request):
+        group = self.groups.get(turbine.id, [])
+        ends = self.coverage_ends.get(turbine.id, [])
+        final_target = target_hours(request)[-1]
+        index = bisect_right(self.runs.get(turbine.id, []), request.issued_at) - 1
+        while index >= 0 and ends[index] >= final_target:
+            snapshot = group[index]
+            index -= 1
+            try:
+                ForecastAgent.validate_snapshot(snapshot, turbine, request)
+            except ValueError:
+                continue
+            return snapshot
         raise ValueError(
             f"{turbine.id}: no eligible complete weather at {request.issued_at.isoformat()}"
         )
-    return max(candidates, key=lambda s: (s.run_init, s.available_at, s.retrieved_at, s.id))
+
+
+def select_snapshot(snapshots, turbine, request):
+    """Use the same deterministic provenance and coverage rules as the agent."""
+    index = snapshots if isinstance(snapshots, SnapshotIndex) else SnapshotIndex(snapshots)
+    return index.select(turbine, request)
 
 
 def daily_origins(first, last):
@@ -87,6 +124,9 @@ class CatBoostPower:
         if not turbines:
             raise ValueError("No observations available by training cutoff")
         version, names = feature_schema(request.feature_set)
+        snapshot_index = (
+            snapshots if isinstance(snapshots, SnapshotIndex) else SnapshotIndex(snapshots)
+        )
         models, report, total = {}, {}, 0
         parameters = dict(
             iterations=request.iterations,
@@ -102,6 +142,7 @@ class CatBoostPower:
         )
         for turbine_id in turbines:
             x, y, lineage, skipped = [], [], [], 0
+            skipped_weather = []
             for origin in forecast_origins(
                 request.first_origin, request.last_origin, request.origin_step_hours
             ):
@@ -113,9 +154,15 @@ class CatBoostPower:
                 )
                 targets = target_hours(query)
                 if request.feature_set == "weather-scada":
-                    snapshot = select_snapshot(
-                        snapshots, Turbine(id=turbine_id, name=turbine_id), query
-                    )
+                    try:
+                        snapshot = snapshot_index.select(
+                            Turbine(id=turbine_id, name=turbine_id), query
+                        )
+                    except ValueError:
+                        # Missing archives only exclude training origins. Prediction
+                        # and evaluation retain strict complete-weather requirements.
+                        skipped_weather.append(origin.isoformat())
+                        continue
                     weather = [p for p in snapshot.points if p.valid_time in set(targets)]
                     features = build_features(history, turbine_id, weather, origin)
                     lineage.append(
@@ -145,6 +192,8 @@ class CatBoostPower:
                     x.append(feature)
                     y.append(label.power_normalized)
             if len(y) < 48 or len(set(y)) < 2:
+                if not y and skipped_weather:
+                    raise ValueError(f"{turbine_id}: no eligible complete weather for training")
                 raise ValueError(
                     f"{turbine_id}: need at least 48 available training samples and varying power"
                 )
@@ -155,6 +204,8 @@ class CatBoostPower:
             report[turbine_id] = {
                 "training_samples": len(y),
                 "missing_or_late_targets": skipped,
+                "skipped_origins_no_weather": len(skipped_weather),
+                "origins_without_weather": skipped_weather,
                 "weather_lineage": lineage,
                 "feature_importance": dict(
                     zip(names, map(float, model.feature_importances_), strict=True)

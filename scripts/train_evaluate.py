@@ -1,4 +1,4 @@
-"""Train once before validation, compare CatBoost to persistence on identical targets."""
+"""Compare fixed CatBoost and training-only baselines on identical issue/target pairs."""
 
 import argparse
 import csv
@@ -8,20 +8,21 @@ from pathlib import Path
 from uuid import uuid4
 
 from pydantic import TypeAdapter
-from wind_agent.weather import target_hours
-from wind_backend.catboost_model import CatBoostPower, daily_origins, select_snapshot
+from wind_backend.catboost_model import CatBoostPower
 from wind_backend.config import Settings
-from wind_backend.evaluation import evaluate
 from wind_backend.ml import PersistencePredictor
 from wind_backend.service import WindService
 from wind_backend.storage import Repository
+from wind_backend.weather_experiment import (
+    SCADA_PARAMETERS,
+    TrainingBaselines,
+    evaluate_comparison,
+)
 from wind_contracts.models import (
     DatasetUpload,
-    ForecastRequest,
     Hour,
     Observation,
     TrainRequest,
-    Turbine,
     WeatherSnapshot,
 )
 
@@ -110,41 +111,25 @@ def main():
     baseline = PersistencePredictor.fit(
         f"model-{uuid4().hex}", dataset_id, rows, cutoff, dataset.is_demo
     )
-    predictions = {"catboost": [], "persistence": []}
-    exports = []
-    for origin in daily_origins(start, end):
-        query = ForecastRequest(
-            turbine_ids=model.info.turbine_ids, issued_at=origin, weather_source="archive"
+    models = {"catboost": model, "persistence": baseline}
+    if args.feature_set == "weather-scada":
+        scada_request = request.model_copy(
+            update={key: value for key, value in SCADA_PARAMETERS.items() if key != "name"}
         )
-        targets = target_hours(query)
-        for turbine_id in model.info.turbine_ids:
-            turbine = Turbine(id=turbine_id, name=turbine_id)
-            weather = None
-            if args.feature_set == "weather-scada":
-                snapshot = select_snapshot(snapshots, turbine, query)
-                weather = [p for p in snapshot.points if p.valid_time in set(targets)]
-            outputs = {
-                "catboost": model.predict_targets(turbine, targets, origin, weather),
-                "persistence": baseline.predict_targets(turbine, targets, origin),
-            }
-            for name, points in outputs.items():
-                predictions[name].extend(points)
-                exports.extend(
-                    {
-                        "algorithm": name,
-                        "issued_at": origin.isoformat(),
-                        **p.model_dump(mode="json"),
-                    }
-                    for p in points
-                )
-    comparison = {}
-    for name, points in predictions.items():
-        metrics, scored, missing = evaluate(points, rows)
-        comparison[name] = {
-            "metrics": [m.model_dump() for m in metrics],
-            "scored_points": scored,
-            "unscored_points": missing,
-        }
+        scada = CatBoostPower.fit(
+            f"model-{uuid4().hex}", rows, scada_request, is_demo=dataset.is_demo
+        )
+        scada_artifact = scada.save(artifact_root)
+        models["scada"] = CatBoostPower.load(scada_artifact, artifact_root, rows)
+    baselines = TrainingBaselines(rows, cutoff, request.first_origin)
+    comparison, exports = evaluate_comparison(
+        rows,
+        models,
+        start,
+        end,
+        snapshots,
+        baselines,
+    )
     if not comparison["catboost"]["scored_points"]:
         raise ValueError("No validation actuals match the predictions")
     report = {
@@ -157,10 +142,15 @@ def main():
         "validation_end": end.isoformat(),
         "weather_used": args.feature_set == "weather-scada",
         "comparison": comparison,
+        "baseline_training": baselines.report(),
+        "comparison_models": {
+            name: fitted.info.model_dump(mode="json") for name, fitted in models.items()
+        },
         "notes": [
             "Fixed model; chronological evaluation; no refitting or early stopping during evaluation.",
             "Each origin uses SCADA available by that origin, including earlier validation observations.",
             "Overlapping forecasts retained as separate issue/lead pairs; missing actuals unscored.",
+            "Constant and turbine x UTC hour climatology are medians fixed using training data only.",
         ],
     }
     (output / "report.json").write_text(
