@@ -17,7 +17,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(application):
-        service = WindService(Repository(settings.db_path), settings.turbines())
+        service = WindService(Repository(settings.db_path), settings.turbines(), settings.models_path)
         service.recover_interrupted_jobs()
         application.state.service = service
         yield

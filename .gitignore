@@ -12,6 +12,7 @@ __pycache__/
 .env
 data/*
 !data/README.md
+dataset/
 artifacts/*
 !artifacts/README.md
 config/turbines.local.json

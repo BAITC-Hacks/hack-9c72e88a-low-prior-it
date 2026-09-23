@@ -13,7 +13,9 @@ ISSUE = datetime(2026, 1, 31, tzinfo=UTC)
 
 @pytest.fixture
 def settings(tmp_path):
-    return Settings(tmp_path / "test.sqlite3", ROOT / "config/turbines.example.json")
+    return Settings(
+        tmp_path / "test.sqlite3", ROOT / "config/turbines.example.json", tmp_path / "models"
+    )
 
 
 @pytest.fixture
