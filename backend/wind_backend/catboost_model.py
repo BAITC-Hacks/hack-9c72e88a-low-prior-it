@@ -13,12 +13,10 @@ from wind_agent.weather import target_hours
 from wind_contracts.models import ForecastPoint, ForecastRequest, ModelInfo, TrainRequest, Turbine
 
 from wind_backend.features import (
-    FEATURE_NAMES,
-    FEATURE_VERSION,
-    SCADA_FEATURE_NAMES,
     ObservationHistory,
     build_features,
     build_scada_features,
+    feature_schema,
 )
 from wind_backend.ml import validate_model_origin
 
@@ -40,10 +38,16 @@ def select_snapshot(snapshots, turbine, request):
 
 
 def daily_origins(first, last):
+    return forecast_origins(first, last, 24)
+
+
+def forecast_origins(first, last, step_hours=24):
+    if step_hours not in (6, 12, 24) or last < first:
+        raise ValueError("Invalid forecast origin window or step")
     origin = first
     while origin <= last:
         yield origin
-        origin += timedelta(days=1)
+        origin += timedelta(hours=step_hours)
 
 
 def history_digest(history):
@@ -82,14 +86,15 @@ class CatBoostPower:
         turbines = sorted({t for t, _ in labels})
         if not turbines:
             raise ValueError("No observations available by training cutoff")
-        names = FEATURE_NAMES if request.feature_set == "weather-scada" else SCADA_FEATURE_NAMES
+        version, names = feature_schema(request.feature_set)
         models, report, total = {}, {}, 0
         parameters = dict(
             iterations=request.iterations,
             depth=request.depth,
             learning_rate=request.learning_rate,
             random_seed=request.random_seed,
-            loss_function="RMSE",
+            loss_function=request.loss_function,
+            l2_leaf_reg=request.l2_leaf_reg,
             thread_count=2,
             task_type="CPU",
             allow_writing_files=False,
@@ -97,7 +102,9 @@ class CatBoostPower:
         )
         for turbine_id in turbines:
             x, y, lineage, skipped = [], [], [], 0
-            for origin in daily_origins(request.first_origin, request.last_origin):
+            for origin in forecast_origins(
+                request.first_origin, request.last_origin, request.origin_step_hours
+            ):
                 query = ForecastRequest(
                     turbine_ids=[turbine_id],
                     issued_at=origin,
@@ -123,7 +130,13 @@ class CatBoostPower:
                         }
                     )
                 else:
-                    features = build_scada_features(history, turbine_id, targets, origin)
+                    features = build_scada_features(
+                        history,
+                        turbine_id,
+                        targets,
+                        origin,
+                        extended=request.feature_set == "scada-extended",
+                    )
                 for target, feature in zip(targets, features, strict=True):
                     label = labels.get((turbine_id, target))
                     if label is None:
@@ -162,7 +175,7 @@ class CatBoostPower:
             history,
             request.feature_set,
             {
-                "feature_version": FEATURE_VERSION,
+                "feature_version": version,
                 "features": names,
                 "catboost_version": catboost_version,
                 "parameters": parameters,
@@ -183,7 +196,13 @@ class CatBoostPower:
                 raise ValueError("Weather features must match every prediction target")
             features = build_features(self.history, turbine.id, weather, origin)
         else:
-            features = build_scada_features(self.history, turbine.id, targets, origin)
+            features = build_scada_features(
+                self.history,
+                turbine.id,
+                targets,
+                origin,
+                extended=self.feature_set == "scada-extended",
+            )
         values = self.models[turbine.id].predict(features)
         points = []
         for target, value in zip(targets, values, strict=True):
@@ -230,7 +249,11 @@ class CatBoostPower:
         history = ObservationHistory(rows)
         if history_digest(history) != artifact["report"]["history_sha256"]:
             raise ValueError("Model observation history checksum mismatch")
-        if artifact["report"]["feature_version"] != FEATURE_VERSION:
+        version, names = feature_schema(artifact["feature_set"])
+        if (
+            artifact["report"]["feature_version"] != version
+            or artifact["report"]["features"] != names
+        ):
             raise ValueError("Unsupported model feature version; retrain the model")
         models = {}
         directory = (root / info.id).resolve()

@@ -2034,6 +2034,7 @@
             "type": "string",
             "enum": [
               "scada",
+              "scada-extended",
               "weather-scada"
             ],
             "title": "Feature Set",
@@ -2108,6 +2109,32 @@
             "minimum": 0.0,
             "title": "Random Seed",
             "default": 42
+          },
+          "loss_function": {
+            "type": "string",
+            "enum": [
+              "RMSE",
+              "MAE"
+            ],
+            "title": "Loss Function",
+            "default": "RMSE"
+          },
+          "l2_leaf_reg": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "L2 Leaf Reg",
+            "default": 3.0
+          },
+          "origin_step_hours": {
+            "type": "integer",
+            "enum": [
+              6,
+              12,
+              24
+            ],
+            "title": "Origin Step Hours",
+            "default": 24
           }
         },
         "additionalProperties": false,

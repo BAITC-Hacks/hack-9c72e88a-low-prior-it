@@ -62,7 +62,11 @@ class WindService:
         dataset = DatasetUpload.model_validate(self.required("dataset", info.dataset_id)["data"])
         if info.algorithm == "persistence-v1":
             return PersistencePredictor(info, dataset.observations)
-        if info.algorithm in {"catboost-scada-v1", "catboost-weather-scada-v1"}:
+        if info.algorithm in {
+            "catboost-scada-v1",
+            "catboost-scada-extended-v1",
+            "catboost-weather-scada-v1",
+        }:
             from wind_backend.catboost_model import CatBoostPower
 
             return CatBoostPower.load(artifact, self.models_path, dataset.observations)

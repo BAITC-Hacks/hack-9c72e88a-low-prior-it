@@ -4,8 +4,8 @@ The repository now supports `binned-power-curve`, `persistence`, and `catboost`
 through the existing `POST /api/v1/models/train` endpoint. The default remains the
 original binned curve for compatibility. No API key or NVIDIA service is needed.
 CatBoost runs on CPU, one estimator per turbine, with a fixed seed and bounded
-iterations/depth. No hyperparameter search or early stopping on the reported
-validation set is performed.
+iterations/depth. Model selection uses earlier chronological folds; no search or
+early stopping is performed on the January comparison period.
 
 ## Source data and assumptions
 
@@ -99,6 +99,12 @@ being interpreted as zero power. Features are built identically during training
 and prediction. CatBoost numeric outputs are explicitly bounded to [0,1] within
 the numerical predictor; the agent and any future LLM do not alter them.
 
+`feature_set="scada-extended"` adds exact origin-relative lags at 1/2/3/6/12/24/48/72/168
+hours, trailing 48/168-hour mean/std/min/max/count, and changes over 3/24 hours.
+Absent or late lag readings remain missing; a row shift must never bridge a missing
+clock hour. All features use both event time and availability time. This mode has
+its own feature version, so existing `scada` and `weather-scada` artifacts still load.
+
 `feature_set="weather-scada"` additionally consumes forecast wind speed, cyclic
 wind direction and temperature from existing `WeatherSnapshot` contracts. It
 requires complete, verified historical forecasts published by each origin. Missing
@@ -146,6 +152,53 @@ For official February scoring use verified archive snapshots and confirmed data
 semantics. Current data stops in January, so February MAE/RMSE cannot be computed.
 Do not feed February actuals back into training or features without an explicit
 evaluation policy permitting that information at the relevant origins.
+
+## Chronological model selection
+
+```powershell
+.\.venv\Scripts\python.exe scripts/tune_model.py --prepared data/prepared/utc6-start-provisional-v2 --evaluate-january --register
+```
+
+This CPU job runs four predefined candidates on two development folds, saves the
+selection, then trains the winner through January 1 and evaluates it once on daily
+January 1–28 origins. `--register` applies only to this final model. Without
+`--evaluate-january`, the script stops after selection. No server is required.
+
+| Candidate | Features | Loss | Trees | Depth | Learning rate | L2 | Origin step |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| baseline | scada | RMSE | 300 | 6 | 0.05 | 3 | 24 h |
+| compact-mae | scada | MAE | 500 | 4 | 0.04 | 10 | 24 h |
+| extended-rmse | scada-extended | RMSE | 500 | 5 | 0.04 | 10 | 12 h |
+| extended-mae | scada-extended | MAE | 500 | 5 | 0.04 | 10 | 12 h |
+
+Development cutoffs are November 1 and December 1, 2025 at 00:00 UTC. Each fold
+scores daily origins on days 1–14 of its month, leads 1..48. Training starts April
+1, 2023, ends with an origin 72 hours before the cutoff, and filters labels by
+availability at that cutoff. The later fold may train on the earlier fold's
+observations: this is an expanding chronological window. Seed 42, two CPU threads,
+no early stopping. Subdaily origins expand training only; evaluation remains daily.
+
+The winner minimizes pooled MAE across turbine/horizon/fold samples; pooled RMSE
+breaks ties. Candidate coverage must match. The unchanged baseline is eligible,
+so an unhelpful new configuration cannot win merely because it is new. These
+hyperparameters follow the available [CatBoost regression objectives](https://catboost.ai/docs/en/concepts/loss-functions-regression)
+and [training parameters](https://catboost.ai/docs/en/references/training-parameters/common).
+
+Each invocation creates a new `artifacts/tuning/selection-*/` directory. `plan.json`
+is written before any fit; each fold retains its command, console log, model,
+report and predictions. `selection.json` is written before January is evaluated;
+`january.json` points to the final report. A failed subprocess stops selection and
+keeps completed reports for diagnosis. No existing artifact is overwritten.
+
+January had already been inspected for the original baseline. It is a reused
+comparison period, not a pristine unseen test set. It is excluded from this search,
+and the selected configuration is not changed after its January result is known.
+February remains outside all training and model selection. Overlapping 48-hour
+forecasts are correlated, so sample counts are not independent-trial counts.
+
+Individual runs also accept `--feature-set scada-extended`, `--loss-function MAE`,
+`--learning-rate`, `--l2-leaf-reg`, and `--origin-step-hours 6|12|24` in
+`scripts/train_evaluate.py`; the same bounded fields are available in `TrainRequest`.
 
 ## Checks
 

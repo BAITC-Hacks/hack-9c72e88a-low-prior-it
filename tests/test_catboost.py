@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 from wind_backend.catboost_model import CatBoostPower, select_snapshot
 from wind_backend.features import (
+    EXTENDED_FEATURE_NAMES,
     FEATURE_NAMES,
     SCADA_FEATURE_NAMES,
     ObservationHistory,
@@ -127,9 +128,10 @@ def test_persistence_uses_latest_available_per_origin_not_training_cutoff():
         model.predict(TURBINE, weather(BASE - timedelta(hours=1)), BASE - timedelta(hours=1))
 
 
-def test_catboost_training_roundtrip_and_checksum(tmp_path):
+@pytest.mark.parametrize("feature_set", ["scada", "scada-extended"])
+def test_catboost_training_roundtrip_and_checksum(tmp_path, feature_set):
     rows = observations()
-    model = CatBoostPower.fit("model-c", rows, request())
+    model = CatBoostPower.fit("model-c", rows, request(feature_set=feature_set))
     assert model.info.training_rows == 192
     assert len(model.models) == 2
     origin = BASE + timedelta(hours=74)
@@ -146,16 +148,17 @@ def test_catboost_training_roundtrip_and_checksum(tmp_path):
         CatBoostPower.load(artifact, tmp_path, rows)
 
 
-def test_future_training_labels_cannot_change_fit():
+@pytest.mark.parametrize("feature_set", ["scada", "scada-extended"])
+def test_future_training_labels_cannot_change_fit(feature_set):
     rows = observations()
-    first = CatBoostPower.fit("model-a", rows, request())
+    first = CatBoostPower.fit("model-a", rows, request(feature_set=feature_set))
     changed = [
         r.model_copy(update={"power_normalized": 1.0})
         if r.available_at > request().trained_through
         else r
         for r in rows
     ]
-    second = CatBoostPower.fit("model-b", changed, request())
+    second = CatBoostPower.fit("model-b", changed, request(feature_set=feature_set))
     # At the cutoff, changed rows are still unavailable as SCADA inputs, too.
     origin = request().trained_through
     assert first.predict(TURBINE, weather(origin), origin) == second.predict(
@@ -214,17 +217,19 @@ def test_archive_selection_rejects_late_publication_and_records_lineage():
     assert model.feature_set == "weather-scada"
 
 
-def test_api_catboost_and_persistence_survive_restart(client, settings):
+@pytest.mark.parametrize("feature_set", ["scada", "scada-extended"])
+def test_api_catboost_and_persistence_survive_restart(client, settings, feature_set):
     rows = [r.model_dump(mode="json") for r in observations()]
     dataset_id = client.post(
         "/api/v1/datasets", json={"name": "fixture", "is_demo": True, "observations": rows}
     ).json()["id"]
     trained = client.post(
-        "/api/v1/models/train", json=request(dataset_id=dataset_id).model_dump(mode="json")
+        "/api/v1/models/train",
+        json=request(dataset_id=dataset_id, feature_set=feature_set).model_dump(mode="json"),
     )
     assert trained.status_code == 201, trained.text
     info = trained.json()
-    assert info["algorithm"] == "catboost-scada-v1" and info["is_demo"]
+    assert info["algorithm"] == f"catboost-{feature_set}-v1" and info["is_demo"]
     persistence = client.post(
         "/api/v1/models/train",
         json={
@@ -253,3 +258,52 @@ def test_binned_direct_prediction_cannot_bypass_cutoff():
     model = BinnedPowerCurve.fit("model-b", "dataset-x", observations(), BASE + timedelta(hours=1))
     with pytest.raises(ValueError, match="cutoff"):
         model.predict(TURBINE, weather(BASE), BASE)
+
+
+def test_extended_features_respect_clock_gaps_and_delayed_history():
+    rows = [r for r in observations() if r.valid_time != BASE - timedelta(hours=2)]
+    # An old event can also arrive after the origin; neither case may become a lag.
+    rows = [
+        r.model_copy(update={"available_at": BASE + timedelta(hours=1)})
+        if r.valid_time == BASE - timedelta(hours=3)
+        else r
+        for r in rows
+    ]
+
+    def values(source):
+        vector = build_scada_features(
+            ObservationHistory(source),
+            TURBINE.id,
+            [BASE + timedelta(hours=48)],
+            BASE,
+            extended=True,
+        )[0]
+        return dict(zip(EXTENDED_FEATURE_NAMES, vector, strict=True))
+
+    features = values(rows)
+    assert features["power_lag_1h"] == features["last_power"]
+    for lag in (2, 3, 168):
+        assert math.isnan(features[f"power_lag_{lag}h"])
+    assert features["power_count_48h"] == 28
+    changed = [
+        r.model_copy(update={"power_normalized": 1.0, "wind_speed_ms": 99.0})
+        if r.available_at > BASE
+        else r
+        for r in rows
+    ]
+    for key, value in values(changed).items():
+        assert math.isnan(value) if math.isnan(features[key]) else value == features[key]
+
+
+def test_subdaily_origins_and_mae_training():
+    model = CatBoostPower.fit(
+        "model-halfday",
+        observations(),
+        request(
+            origin_step_hours=12, loss_function="MAE", l2_leaf_reg=10, feature_set="scada-extended"
+        ),
+    )
+    assert model.info.training_rows == 288  # three origins x two turbines x 48 leads
+    assert model.report["parameters"]["loss_function"] == "MAE"
+    with pytest.raises(ValueError):
+        request(origin_step_hours=12, last_origin=BASE + timedelta(hours=18))
