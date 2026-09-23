@@ -59,7 +59,7 @@ FOLDS = [
 ]
 
 
-def run_experiment(prepared, output, candidate, cutoff, end, register=False):
+def run_experiment(prepared, output, candidate, cutoff, end, register=False, resume=False):
     # A full day gap avoids crossing the cutoff even under delayed label availability.
     last = datetime.fromisoformat(cutoff) - timedelta(hours=72)
     command = [
@@ -85,14 +85,30 @@ def run_experiment(prepared, output, candidate, cutoff, end, register=False):
             command.extend(["--" + key.replace("_", "-"), str(value)])
     if register:
         command.append("--register")
-    output.mkdir(parents=True, exist_ok=False)
-    (output / "command.json").write_text(json.dumps(command, indent=2), encoding="utf-8")
-    with (output / "console.log").open("w", encoding="utf-8") as stream:
-        subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT, check=True)
+    if output.exists():
+        if (
+            not resume
+            or json.loads((output / "command.json").read_text(encoding="utf-8")) != command
+        ):
+            raise ValueError("Existing experiment requires --resume and an identical command")
+    else:
+        output.mkdir(parents=True, exist_ok=False)
+        (output / "command.json").write_text(json.dumps(command, indent=2), encoding="utf-8")
+    paths = list(output.glob("experiment-*/report.json"))
+    if not paths:
+        log = output / "console.log"
+        if log.exists():
+            log = output / f"console-retry-{uuid4().hex}.log"
+        with log.open("x", encoding="utf-8") as stream:
+            subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT, check=True)
     paths = list(output.glob("experiment-*/report.json"))
     if len(paths) != 1:
         raise ValueError("Expected exactly one completed experiment")
     report = json.loads(paths[0].read_text(encoding="utf-8"))
+    if report["preparation"] != json.loads(
+        (prepared / "preparation.json").read_text(encoding="utf-8")
+    ):
+        raise ValueError("Prepared data revision changed; start a new selection")
     comparison = report["comparison"]
     if comparison["catboost"]["scored_points"] != comparison["persistence"]["scored_points"]:
         raise ValueError("Candidates and baseline must use identical scoring coverage")
@@ -105,11 +121,13 @@ def main():
     parser.add_argument("--output-root", type=Path, default=Path("artifacts/tuning"))
     parser.add_argument("--evaluate-january", action="store_true")
     parser.add_argument("--register", action="store_true")
+    parser.add_argument(
+        "--resume", type=Path, help="Resume interrupted folds before winner selection"
+    )
     args = parser.parse_args()
     if args.register and not args.evaluate_january:
         parser.error("--register applies only to the frozen January model")
-    output = args.output_root / f"selection-{uuid4().hex}"
-    output.mkdir(parents=True, exist_ok=False)
+    output = args.resume or args.output_root / f"selection-{uuid4().hex}"
     plan = dict(
         created_at=datetime.now(UTC).isoformat(),
         candidates=CANDIDATES,
@@ -120,7 +138,14 @@ def main():
         first_origin="2023-04-01T00:00:00Z",
         prepared=str(args.prepared),
     )
-    (output / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
+    if args.resume:
+        saved = json.loads((output / "plan.json").read_text(encoding="utf-8"))
+        plan["created_at"] = saved["created_at"]
+        if plan != saved or (output / "selection.json").exists():
+            parser.error("Resume requires an identical plan with no winner selected yet")
+    else:
+        output.mkdir(parents=True, exist_ok=False)
+        (output / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
     results = []
     print(f"Frozen search plan: {output / 'plan.json'}", flush=True)
     for candidate in CANDIDATES:
@@ -133,6 +158,7 @@ def main():
                 candidate,
                 fold["cutoff"],
                 fold["end"],
+                resume=bool(args.resume),
             )
             result["folds"].append(dict(name=fold["name"], **experiment))
             print(aggregate_metrics(experiment["comparison"]["catboost"]["metrics"]), flush=True)

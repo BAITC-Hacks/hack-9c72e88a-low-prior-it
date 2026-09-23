@@ -158,7 +158,7 @@ def main():
         "weather_used": args.feature_set == "weather-scada",
         "comparison": comparison,
         "notes": [
-            "Fixed model; chronological holdout; no hyperparameter tuning on validation.",
+            "Fixed model; chronological evaluation; no refitting or early stopping during evaluation.",
             "Each origin uses SCADA available by that origin, including earlier validation observations.",
             "Overlapping forecasts retained as separate issue/lead pairs; missing actuals unscored.",
         ],

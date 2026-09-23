@@ -1,6 +1,10 @@
 """Sample-weighted selection on chronological development folds only."""
 
+from datetime import datetime, timedelta
 from math import isfinite, sqrt
+
+from pydantic import TypeAdapter
+from wind_contracts.models import Hour, TrainRequest
 
 
 def aggregate_metrics(metrics):
@@ -41,4 +45,26 @@ def select_winner(results):
         )
     return min(
         results, key=lambda r: (r["pooled"]["mae"], r["pooled"]["rmse"], r["candidate"]["name"])
+    )
+
+
+def refit_request(selection, dataset_id, cutoff):
+    cutoff = TypeAdapter(Hour).validate_python(cutoff)
+    winner = select_winner(selection["results"])["candidate"]
+    if selection["plan"]["january_used_for_selection"] or winner != selection["selected"]:
+        raise ValueError("Selection must match the frozen development-fold winner")
+    last_development_target = max(
+        datetime.fromisoformat(fold["end"]) + timedelta(hours=48)
+        for fold in selection["plan"]["folds"]
+    )
+    if cutoff <= last_development_target:
+        raise ValueError("Refit cutoff must follow all development targets")
+    return TrainRequest(
+        dataset_id=dataset_id,
+        algorithm="catboost",
+        trained_through=cutoff,
+        first_origin=selection["plan"]["first_origin"],
+        last_origin=cutoff - timedelta(hours=72),
+        random_seed=selection["plan"]["random_seed"],
+        **{key: value for key, value in winner.items() if key != "name"},
     )

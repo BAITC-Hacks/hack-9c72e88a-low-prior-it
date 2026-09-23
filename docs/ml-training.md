@@ -14,8 +14,9 @@ adapter maps their Russian headers explicitly. Source files are never edited and
 `dataset/` is ignored by Git. Prepared data belongs in `data/prepared/`.
 
 The current files contain 142,360 and 149,499 readings, from March 11, 2023 through
-January 31, 2026 in the source clock. No February actuals or archived weather
-forecasts were supplied. Values fall within the existing normalized-power contract
+January 31, 2026 in the source clock. No February actuals or verified archived weather
+forecasts are available. Candidate weather CSVs merged from main remain unverified;
+see [DATA.md](../DATA.md). Values fall within the existing normalized-power contract
 of [0,1], but the physical normalization definition is not confirmed.
 
 The user confirmed **fixed UTC+06:00** and timestamps at the **start** of each
@@ -188,7 +189,10 @@ Each invocation creates a new `artifacts/tuning/selection-*/` directory. `plan.j
 is written before any fit; each fold retains its command, console log, model,
 report and predictions. `selection.json` is written before January is evaluated;
 `january.json` points to the final report. A failed subprocess stops selection and
-keeps completed reports for diagnosis. No existing artifact is overwritten.
+keeps completed reports for diagnosis. Before winner selection, add
+`--resume artifacts/tuning/selection-REPLACE` to continue interrupted folds under
+the identical plan and commands. Completed reports are reused; retry logs and models
+get new paths. No existing model artifact is overwritten.
 
 January had already been inspected for the original baseline. It is a reused
 comparison period, not a pristine unseen test set. It is excluded from this search,
